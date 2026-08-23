@@ -46,14 +46,30 @@ async function thuLai<T>(viec: () => Promise<T>, lanToiDa = 3): Promise<T> {
   throw loiCuoi;
 }
 
-async function goiModel(params: any): Promise<any> {
+/** Ghi lượng token đã dùng.
+ *
+ *  Không phải để theo dõi cho vui: câu hỏi "một trang tốn bao nhiêu" quyết định
+ *  công cụ này có triển khai được cho cả một trường hay không, mà đoán thì
+ *  không trả lời được. */
+function ghiSoToken(viec: string, model: string, res: any) {
+  const u = res?.usageMetadata;
+  if (!u) return;
+  console.log(`[verso/token] ${viec} model=${model} vao=${u.promptTokenCount ?? 0} `
+    + `ra=${u.candidatesTokenCount ?? 0} suyNghi=${u.thoughtsTokenCount ?? 0} tong=${u.totalTokenCount ?? 0}`);
+}
+
+async function goiModel(params: any, viec = 'goi'): Promise<any> {
   try {
-    return await thuLai(() => client().models.generateContent({ ...params, model: MODEL_CHINH }));
+    const r = await thuLai(() => client().models.generateContent({ ...params, model: MODEL_CHINH }));
+    ghiSoToken(viec, MODEL_CHINH, r);
+    return r;
   } catch (e: any) {
     const msg = String(e?.message || e);
     // Tài khoản chưa mở model mới thì lùi về model ổn định, thay vì để cả app chết.
     if (/not found|NOT_FOUND|not supported|permission|404|400/i.test(msg)) {
-      return await thuLai(() => client().models.generateContent({ ...params, model: MODEL_DU_PHONG }));
+      const r = await thuLai(() => client().models.generateContent({ ...params, model: MODEL_DU_PHONG }));
+      ghiSoToken(viec, MODEL_DU_PHONG, r);
+      return r;
     }
     throw e;
   }
@@ -168,7 +184,7 @@ export async function docTrangSach(
       responseSchema: SCHEMA_TRANG,
       temperature: 0.15,   // chuyển dạng cần chính xác, không cần sáng tạo
     },
-  });
+  }, 'doc-trang');
 
   const kq = tachJSON<KetQuaDocTrang>(res.text ?? '', RONG);
   kq.khoi = (kq.khoi || [])
