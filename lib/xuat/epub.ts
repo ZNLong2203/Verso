@@ -3,7 +3,7 @@ import type { BanVerso, Khoi } from '@/lib/types';
 import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 import { taoZip, xml } from './zip';
 import { dungCay, dungNav, dungTrangCua, type Muc, type MucNav } from './noiDung';
-import { dungNeo, neoChuThich } from '@/lib/neo';
+import { dungNeo, neoChuThich, soTuNeo, loiChuThich } from '@/lib/neo';
 
 /** Mọi thứ bộ dựng cần biết ngoài bản thân khối. */
 interface Boi { neo: Map<string, string>; trangCua: Map<string, number> }
@@ -19,6 +19,8 @@ body { font-family: Georgia, 'Times New Roman', serif; line-height: 1.7; margin:
 h1,h2,h3,h4 { line-height: 1.3; }
 .chi-doc-man-hinh { position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+.chi-doc-man-hinh:focus-within { position: static; width: auto; height: auto;
+  overflow: visible; clip: auto; clip-path: none; white-space: normal; }
 .tho { white-space: pre-wrap; margin: 1em 0 1em 1.5em; }
 .cong-thuc { margin: 1em 0; padding: 0.6em 0.9em; background: #f3f0e8; border-radius: 6px; }
 figure { margin: 1em 0; padding: 0.8em 1em; background: #f3f0e8; border-radius: 6px; }
@@ -35,23 +37,29 @@ th, td { border: 1px solid #b9ac8e; padding: 0.4em 0.6em; text-align: left; }
 const capDoi = (kyHieu: string, loi: string) =>
   `<span aria-hidden="true">${xml(kyHieu)}</span><span class="chi-doc-man-hinh">${xml(loi)}</span>`;
 
-/** "[chú thích 3]" → liên kết nhảy tới lời giải nghĩa CỦA CHÍNH TRANG ĐÓ. */
-function noiChuThich(s: string, trang: number): string {
+/** "[chú thích 3]" → liên kết nhảy tới lời giải nghĩa CỦA CHÍNH TRANG ĐÓ.
+ *
+ *  coLien = false cho bản chỉ để NHÌN (đã aria-hidden): liên kết nằm trong vùng
+ *  aria-hidden thì người dùng bàn phím vẫn tab vào được một thứ trình đọc màn
+ *  hình không hề xướng. */
+function noiChuThich(s: string, trang: number, coLien = true): string {
   return s.split(/(\[chú thích \d+\])/g).map((p) => {
     const m = p.match(/^\[chú thích (\d+)\]$/);
-    return m
+    if (!m) return xml(p);
+    return coLien
       ? `<a href="#${neoChuThich(trang, m[1])}" epub:type="noteref" aria-label="Chú thích ${m[1]}, nhảy tới phần giải nghĩa"><sup>[${m[1]}]</sup></a>`
-      : xml(p);
+      : `<sup>[${m[1]}]</sup>`;
   }).join('');
 }
 
 function khoiRaXhtml(k: Khoi, b: Boi): string {
   const id = b.neo.get(k.id) ?? `khoi-${k.id}`;
   const ct = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1);
+  const ctNhin = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1, false);
   switch (k.loai) {
     case 'van-ban':
       return k.vanBanDoc
-        ? `<p><span aria-hidden="true">${ct(k.vanBan ?? '')}</span><span class="chi-doc-man-hinh">${ct(k.vanBanDoc)}</span></p>`
+        ? `<p><span aria-hidden="true">${ctNhin(k.vanBan ?? '')}</span><span class="chi-doc-man-hinh">${ct(k.vanBanDoc)}</span></p>`
         : `<p>${ct(k.vanBan ?? '')}</p>`;
 
     case 'tho':
@@ -83,16 +91,16 @@ function khoiRaXhtml(k: Khoi, b: Boi): string {
     case 'bai-tap': {
       const dan = k.soBaiTap ? `Bài tập ${k.soBaiTap}. ` : 'Bài tập. ';
       const than = k.vanBanDoc
-        ? `<span aria-hidden="true">${ct(k.vanBan ?? '')}</span><span class="chi-doc-man-hinh">${ct(k.vanBanDoc)}</span>`
+        ? `<span aria-hidden="true">${ctNhin(k.vanBan ?? '')}</span><span class="chi-doc-man-hinh">${ct(k.vanBanDoc)}</span>`
         : ct(k.vanBan ?? '');
       return `<div class="bai-tap" id="${xml(id)}"><span class="chi-doc-man-hinh">${xml(dan)}</span>${than}</div>`;
     }
 
     case 'chu-thich': {
-      const so = (k.vanBan ?? '').match(/^\((\d+)\)/)?.[1];
+      const so = soTuNeo(id);
       return `<aside epub:type="footnote" id="${xml(id)}">`
         + `<span class="chi-doc-man-hinh">Chú thích${so ? ` ${so}` : ''}: </span>`
-        + (k.thuocVe ? `<b>${xml(k.thuocVe)}: </b>` : '') + xml(k.vanBan) + `</aside>`;
+        + xml(loiChuThich(k)) + `</aside>`;
     }
 
     case 'khung-luu-y':

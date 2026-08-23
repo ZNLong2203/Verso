@@ -76,7 +76,10 @@ NGUYÊN TẮC BẮT BUỘC:
    Vì vậy trong vanBan hãy viết ký hiệu đó thành "[chú thích 1]" — đọc lên thành "chú thích một",
    người nghe hiểu ngay đó là dấu chú thích chứ không phải một phần của câu.
    Ví dụ: "Sương chùng chình [chú thích 1] qua ngõ".
-   Riêng trong khối chu-thich thì bỏ hẳn số thứ tự ở đầu, vì đã có trường thuocVe.
+   Riêng trong khối chu-thich thì bỏ số thứ tự ra khỏi vanBan, NHƯNG PHẢI điền số đó vào
+   trường soChuThich ("1", "2", ...). Đó là thứ duy nhất nối dấu "[chú thích 1]" trong bài
+   với lời giải nghĩa ở chân trang — thiếu nó thì học sinh bấm vào dấu chú thích mà không
+   tới được lời giải nghĩa.
 
 9. GIỮ SỐ HIỆU BÀI TẬP. Mỗi đề bài phải có soBaiTap ("3", "3a", "Bài 12") — đó là mốc để học sinh
    nhảy thẳng tới bài thầy cô giao mà không phải nghe lại từ đầu.

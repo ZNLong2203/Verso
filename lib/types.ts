@@ -68,6 +68,10 @@ export interface Khoi {
   /** Chú thích này thuộc về từ nào trong văn bản. */
   thuocVe?: string;
 
+  /** Số thứ tự của chú thích ("1", "2") — là thứ nối dấu [chú thích 1] trong bài
+   *  với lời giải nghĩa ở chân trang. Thiếu nó thì bấm vào dấu chú thích không đi đâu cả. */
+  soChuThich?: string;
+
   doTinCay: DoTinCay;
   ghiChu?: string;      // vì sao chưa chắc
   daDuyet: boolean;     // giáo viên đã xác nhận
@@ -118,6 +122,7 @@ export interface KhoiTho {
   thuocVe: string;
   doTinCay: string;
   ghiChu: string;
+  soChuThich: string;
 }
 
 export interface KetQuaDocTrang {

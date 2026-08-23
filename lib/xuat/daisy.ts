@@ -3,7 +3,7 @@ import type { BanVerso, Khoi } from '@/lib/types';
 import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 import { taoZip, xml } from './zip';
 import { dungCay, dungNav, dungTrangCua, type Muc, type MucNav } from './noiDung';
-import { dungNeo, neoChuThich, nhanMuc } from '@/lib/neo';
+import { dungNeo, neoChuThich, nhanMuc, soTuNeo, loiChuThich } from '@/lib/neo';
 import { maSo } from '@/lib/chuoi';
 
 interface Boi { neo: Map<string, string>; trangCua: Map<string, number> }
@@ -20,11 +20,13 @@ interface Boi { neo: Map<string, string>; trangCua: Map<string, number> }
 /** Dạng nên đọc thành tiếng của một khối. */
 const loiDoc = (k: Khoi) => k.vanBanDoc || k.vanBan || '';
 
-function tho(s: string): string {
+function tho(s: string, ct: (t: string) => string): string {
   const kho = s.split(/\n\s*\n/);
+  // Từng dòng cũng phải đi qua ct: thơ Ngữ văn đầy chú thích từ Hán-Việt, mà
+  // dòng thơ thì không được gộp lại — mỗi <line> là một dòng đúng như trên sách.
   return `<poem>` + kho.map((k) =>
     `<linegroup>` + k.split('\n').filter((d) => d.trim())
-      .map((d) => `<line>${xml(d.trim())}</line>`).join('') + `</linegroup>`,
+      .map((d) => `<line>${ct(d.trim())}</line>`).join('') + `</linegroup>`,
   ).join('') + `</poem>`;
 }
 
@@ -47,7 +49,7 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
       return `<p>${ct(k.vanBanDoc || k.vanBan || '')}</p>`;
 
     case 'tho':
-      return tho(k.vanBan ?? '');
+      return tho(k.vanBan ?? '', ct);
 
     case 'hinh-anh':
       // prodnote render="required" = lời do người làm sách thêm vào, BẮT BUỘC đọc.
@@ -76,8 +78,11 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
     }
 
     case 'chu-thich': {
-      return `<note id="${xml(id)}"><p>`
-        + (k.thuocVe ? `${xml(k.thuocVe)}: ` : '') + xml(k.vanBan) + `</p></note>`;
+      // Xướng "Chú thích 1" trước lời giải nghĩa: người nghe nhảy tới đây từ
+      // giữa bài, cần biết ngay mình đang nghe chú thích số mấy.
+      const so = soTuNeo(id);
+      return `<note id="${xml(id)}"><p>Chú thích${so ? ` ${so}` : ''}: `
+        + xml(loiChuThich(k)) + `</p></note>`;
     }
 
     case 'khung-luu-y':

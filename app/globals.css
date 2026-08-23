@@ -67,6 +67,18 @@ body {
   border-width: 0;
 }
 
+/* Dấu chú thích đọc được nằm trong vùng chỉ-đọc-màn-hình. Người dùng bàn phím
+   sáng mắt vẫn tab tới được, nên khi nhận tiêu điểm thì phải HIỆN RA — tab vào
+   một thứ không nhìn thấy gì là mất dấu tiêu điểm (WCAG 2.4.7). */
+.chi-doc-man-hinh:focus-within {
+  position: static;
+  width: auto; height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
 /* Liên kết bỏ qua — người dùng bàn phím bấm Tab lần đầu là gặp ngay */
 .bo-qua {
   position: absolute; left: -9999px; top: 0; z-index: 100;

@@ -42,6 +42,7 @@ export function chuanHoaKhoi(tho: KhoiTho, i: number): Khoi {
     capTieuDe: tho.capTieuDe || undefined,
     soBaiTap: tho.soBaiTap || undefined,
     thuocVe: tho.thuocVe || undefined,
+    soChuThich: tho.soChuThich || undefined,
     doTinCay,
     ghiChu: tho.ghiChu || undefined,
     // Hình vẽ và công thức LUÔN phải qua mắt giáo viên, dù model có tự tin đến đâu.

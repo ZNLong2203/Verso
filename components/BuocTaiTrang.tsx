@@ -13,7 +13,7 @@ export const BuocTaiTrang: React.FC = () => {
   const [loi, setLoi] = React.useState<string[]>([]);
   const fileRef = React.useRef<HTMLInputElement>(null);
 
-  const xuLy = async (files: FileList | null) => {
+  const xuLy = async (files: FileList | File[] | null) => {
     if (!files?.length) return;
     const ds = Array.from(files).filter((f) => f.type.startsWith('image/'));
     if (!ds.length) return;
@@ -39,6 +39,25 @@ export const BuocTaiTrang: React.FC = () => {
     }
     setDangChay(false);
     if (fileRef.current) fileRef.current.value = '';
+  };
+
+  /** Thử ngay bằng trang sách mẫu.
+   *
+   *  Người mở Verso lần đầu hầu như không có sẵn ảnh trang sách trong máy, mà
+   *  chưa thấy kết quả thì không hiểu công cụ này làm gì. Hai trang mẫu dưới đây
+   *  do chính dự án soạn và vẽ — không phải bản chụp sách có bản quyền. */
+  const dungMau = async (ten: string, nhan: string) => {
+    setDangChay(true); setLoi([]); setTienDo({ xong: 0, tong: 1 });
+    try {
+      const r = await fetch(`/mau/${ten}.png`);
+      if (!r.ok) throw new Error('khong-tai-duoc');
+      const f = new File([await r.blob()], `${nhan}.png`, { type: 'image/png' });
+      setDangChay(false);
+      await xuLy([f]);
+    } catch {
+      setDangChay(false);
+      setLoi(['Không tải được trang mẫu. Kiểm tra kết nối mạng rồi thử lại.']);
+    }
   };
 
   const tongKhoi = ban.trang.reduce((s, t) => s + t.khoi.length, 0);
@@ -68,6 +87,21 @@ export const BuocTaiTrang: React.FC = () => {
             </span>
           </span>
         </label>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muc-mo">Chưa có ảnh trang sách?</span>
+          <button type="button" disabled={dangChay} onClick={() => dungMau('toan-9', 'Trang mẫu Toán 9')}
+            className="text-sm font-bold text-verso-700 underline underline-offset-2 min-h-[44px] px-2 rounded
+                       hover:bg-verso-50 disabled:opacity-50 disabled:no-underline">
+            Thử trang mẫu Toán 9
+          </button>
+          <span aria-hidden="true" className="text-muc-mo">·</span>
+          <button type="button" disabled={dangChay} onClick={() => dungMau('ngu-van-9', 'Trang mẫu Ngữ văn 9')}
+            className="text-sm font-bold text-verso-700 underline underline-offset-2 min-h-[44px] px-2 rounded
+                       hover:bg-verso-50 disabled:opacity-50 disabled:no-underline">
+            Thử trang mẫu Ngữ văn 9
+          </button>
+        </div>
 
         {dangChay && (
           <div className="mt-5">

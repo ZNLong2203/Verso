@@ -1,20 +1,26 @@
 import React from 'react';
 import type { Khoi } from '@/lib/types';
-import { neoChuThich } from '@/lib/neo';
+import { neoChuThich, soTuNeo, loiChuThich } from '@/lib/neo';
 
 /* Không có 'use client' — bộ dựng này chạy được ở máy chủ, nên trang học sinh
    là HTML thuần. Trình đọc màn hình đọc được ngay cả khi JavaScript không tải. */
 
 /** Tách "[chú thích 3]" trong văn bản thành liên kết nhảy tới chú thích tương ứng.
  *  Trình đọc màn hình đọc "chú thích ba, liên kết" — người nghe biết đó là dấu chú
- *  thích chứ không phải một phần của câu, và nhảy tới đọc nghĩa được. */
-function noiChuThich(text: string, trang: number): React.ReactNode[] {
+ *  thích chứ không phải một phần của câu, và nhảy tới đọc nghĩa được.
+ *
+ *  coLien = false dùng cho bản chỉ để NHÌN (đã aria-hidden). Bên trong vùng
+ *  aria-hidden mà đặt liên kết thì người dùng bàn phím vẫn tab vào được một thứ
+ *  trình đọc màn hình không hề xướng — lạc hẳn, không biết mình đang ở đâu. */
+function noiChuThich(text: string, trang: number, coLien: boolean): React.ReactNode[] {
   const phan = text.split(/(\[chú thích \d+\])/g);
   return phan.map((p, i) => {
     const m = p.match(/^\[chú thích (\d+)\]$/);
     if (!m) return <React.Fragment key={i}>{p}</React.Fragment>;
+    if (!coLien) return <sup key={i} className="text-verso-700">[{m[1]}]</sup>;
     return (
-      <a key={i} href={`#${neoChuThich(trang, m[1])}`} className="text-verso-700 no-underline"
+      <a key={i} href={`#${neoChuThich(trang, m[1])}`}
+        className="text-verso-700 no-underline inline-grid place-items-center min-w-[24px] min-h-[24px] align-middle"
         aria-label={`Chú thích ${m[1]}, nhảy tới phần giải nghĩa`}>
         <sup>[{m[1]}]</sup>
       </a>
@@ -43,7 +49,9 @@ export const KhoiDoc: React.FC<{
    *  nếu không người dùng trình đọc màn hình mất phương hướng khi nhảy theo cấp. */
   lechCap?: number;
 }> = ({ khoi: k, neo, trang, hienCoDuyet, lechCap = 1 }) => {
-  const ct = (t: string) => noiChuThich(t, trang);
+  /** ct = bản đọc được (có liên kết) · ctNhin = bản chỉ để nhìn (không tab vào được) */
+  const ct = (t: string) => noiChuThich(t, trang, true);
+  const ctNhin = (t: string) => noiChuThich(t, trang, false);
   const canKiem = hienCoDuyet && !k.daDuyet && k.doTinCay !== 'cao';
   const boc = (con: React.ReactNode) =>
     canKiem ? (
@@ -66,8 +74,8 @@ export const KhoiDoc: React.FC<{
       return boc(
         k.vanBanDoc
           ? <p>
-              <span aria-hidden="true">{ct(k.vanBan ?? '')}</span>
-              <span className="chi-doc-man-hinh">{k.vanBanDoc}</span>
+              <span aria-hidden="true">{ctNhin(k.vanBan ?? '')}</span>
+              <span className="chi-doc-man-hinh">{ct(k.vanBanDoc)}</span>
             </p>
           : <p>{ct(k.vanBan ?? '')}</p>,
       );
@@ -143,29 +151,32 @@ export const KhoiDoc: React.FC<{
           </span>
           {k.vanBanDoc ? (
             <>
-              <span aria-hidden="true">{ct(k.vanBan ?? '')}</span>
-              <span className="chi-doc-man-hinh">{k.vanBanDoc}</span>
+              <span aria-hidden="true">{ctNhin(k.vanBan ?? '')}</span>
+              <span className="chi-doc-man-hinh">{ct(k.vanBanDoc)}</span>
             </>
           ) : ct(k.vanBan ?? '')}
         </div>,
       );
 
     case 'chu-thich': {
-      const so = (k.vanBan ?? '').match(/^\((\d+)\)/)?.[1];
+      const so = soTuNeo(neo);
       return boc(
         <aside id={neo}>
           <span className="chi-doc-man-hinh">Chú thích{so ? ` ${so}` : ''}: </span>
-          {k.thuocVe && <b>{k.thuocVe}: </b>}
-          {k.vanBan}
+          {loiChuThich(k)}
         </aside>,
       );
     }
 
     case 'khung-luu-y':
+      // role="note" chứ không phải <aside>: mỗi <aside aria-label="Khung lưu ý">
+      // là một landmark, mà trang nào cũng có vài khung — danh sách landmark đầy
+      // những mục trùng tên, người dùng trình đọc màn hình không dùng được nữa.
       return boc(
-        <aside className="border-l-4 border-verso-600" aria-label="Khung lưu ý">
+        <div role="note" id={neo} className="border-l-4 border-verso-600 pl-4 my-4">
+          <span className="chi-doc-man-hinh">Khung lưu ý: </span>
           {k.vanBan}
-        </aside>,
+        </div>,
       );
 
     default:
