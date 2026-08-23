@@ -6,6 +6,7 @@ import { useVerso } from '@/lib/store';
 import { LOAI_KHOI_INFO } from '@/lib/constants';
 import { THONG_BAO_LOI } from '@/lib/loi';
 import type { Khoi, Trang } from '@/lib/types';
+import { loiDocCuaKhoi, docTo, coGiongDoc } from '@/lib/loiDoc';
 
 const TinCay: React.FC<{ k: Khoi }> = ({ k }) =>
   k.doTinCay === 'cao' ? null : (
@@ -13,6 +14,41 @@ const TinCay: React.FC<{ k: Khoi }> = ({ k }) =>
       {k.doTinCay === 'thap' ? '⚠ chưa chắc' : '~ nên xem lại'}
     </Nhan>
   );
+
+/** Nghe thử đúng thứ học sinh sẽ nghe.
+ *
+ *  Đây là lỗ hổng chất lượng lớn nhất trước đây: giáo viên duyệt mô tả hình bằng MẮT,
+ *  nhưng thứ học sinh nhận là ÂM THANH. Đọc thấy trôi chảy không có nghĩa nghe lên trôi chảy —
+ *  nhất là với công thức, nơi một dấu đọc sai làm hỏng cả bài. */
+const NutNgheThu: React.FC<{ k: Khoi }> = ({ k }) => {
+  const [dangDoc, setDangDoc] = React.useState(false);
+  const dung = React.useRef<(() => void) | null>(null);
+
+  React.useEffect(() => () => dung.current?.(), []);
+
+  if (!coGiongDoc()) return null;
+  const loi = loiDocCuaKhoi(k);
+  if (!loi.trim()) return null;
+
+  const bam = () => {
+    if (dangDoc) { dung.current?.(); setDangDoc(false); return; }
+    setDangDoc(true);
+    dung.current = docTo(loi, () => setDangDoc(false));
+  };
+
+  return (
+    <button onClick={bam}
+      aria-label={dangDoc ? 'Dừng nghe thử' : 'Nghe thử phần này như học sinh sẽ nghe'}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-bold border transition-colors ${
+        dangDoc ? 'bg-verso-700 border-verso-700 text-white' : 'bg-white border-vien text-verso-700 hover:border-verso-600'
+      }`}>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        {dangDoc ? <rect x="6" y="6" width="12" height="12" rx="1" /> : <path d="M8 5v14l11-7z" />}
+      </svg>
+      {dangDoc ? 'Dừng' : 'Nghe thử'}
+    </button>
+  );
+};
 
 const OSua: React.FC<{ nhan: string; gt: string; doi: (v: string) => void; dong?: number }> =
   ({ nhan, gt, doi, dong = 3 }) => {
@@ -53,6 +89,7 @@ const KhoiSua: React.FC<{ trang: Trang; k: Khoi }> = ({ trang, k }) => {
             {k.soBaiTap && <Nhan>Bài {k.soBaiTap}</Nhan>}
             <TinCay k={k} />
             {k.daSua && <Nhan kieu="xong">đã sửa</Nhan>}
+            <NutNgheThu k={k} />
           </div>
 
           {k.ghiChu && (
@@ -153,6 +190,10 @@ export const BuocDuyet: React.FC = () => {
           Học sinh khiếm thị <b>không có cách nào tự đối chiếu với sách gốc</b>. Sai sót lọt ra là
           các em học sai mà không biết. Verso đã tự đánh dấu những phần nó không chắc — bạn xem
           lại đúng những chỗ đó là đủ.
+        </p>
+        <p className="mt-3 text-sm text-muc-nhat bg-verso-50 border border-verso-200 rounded-lg px-3.5 py-2.5">
+          💡 Với hình vẽ và công thức, hãy bấm <b>Nghe thử</b> thay vì chỉ đọc bằng mắt —
+          đọc thấy trôi chảy không có nghĩa nghe lên trôi chảy.
         </p>
         <div className="mt-5"><ThanhTienDo xong={daDuyet} tong={tongKhoi} nhan="Phần đã duyệt" /></div>
 

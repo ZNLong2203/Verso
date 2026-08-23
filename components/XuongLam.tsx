@@ -22,6 +22,11 @@ const Ruot: React.FC = () => {
   return (
     <div className="min-h-screen bg-giay">
       <header className="border-b border-vien bg-white">
+        {/* Đúng một <h1> cho cả trang, ẩn về mặt thị giác vì logo và tiêu đề từng bước
+            đã đủ dẫn dắt bằng mắt. Đặt trong <header> để không nằm ngoài landmark nào. */}
+        <h1 className="chi-doc-man-hinh">
+          Verso — chuyển trang sách giáo khoa thành bản đọc được
+        </h1>
         <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
           <a href="/" className="flex items-center gap-2.5 no-underline text-muc">
             <span className="w-9 h-9 rounded-lg bg-verso-700 text-white grid place-items-center font-doc font-bold text-lg">V</span>

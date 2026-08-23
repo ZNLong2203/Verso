@@ -7,7 +7,7 @@ import { nenAnh, anhNho } from '@/lib/anh';
 import { THONG_BAO_LOI } from '@/lib/loi';
 
 export const BuocTaiTrang: React.FC = () => {
-  const { ban, themTrang, xoaTrang, datBuoc } = useVerso();
+  const { ban, themTrang, xoaTrang, doiThuTuTrang, datBuoc } = useVerso();
   const [dangChay, setDangChay] = React.useState(false);
   const [tienDo, setTienDo] = React.useState({ xong: 0, tong: 0 });
   const [loi, setLoi] = React.useState<string[]>([]);
@@ -91,8 +91,14 @@ export const BuocTaiTrang: React.FC = () => {
               Đã đọc {ban.trang.length} trang · {tongKhoi} phần nội dung
             </h3>
           </div>
+          {ban.trang.length > 1 && (
+            <p className="text-sm text-muc-mo mb-3">
+              Thứ tự dưới đây là thứ tự học sinh sẽ nghe. Trang tải lại sau luôn rơi xuống cuối —
+              dùng mũi tên để xếp lại cho khớp sách.
+            </p>
+          )}
           <ul className="grid gap-2 m-0 p-0 list-none">
-            {ban.trang.map((t) => {
+            {ban.trang.map((t, idx) => {
               const hinh = t.khoi.filter((k) => k.loai === 'hinh-anh').length;
               const canKiem = t.khoi.filter((k) => !k.daDuyet).length;
               return (
@@ -111,10 +117,28 @@ export const BuocTaiTrang: React.FC = () => {
                       {canKiem > 0 && <Nhan kieu="canh">{canKiem} phần cần kiểm</Nhan>}
                     </p>
                   </div>
-                  <button onClick={() => xoaTrang(t.id)} aria-label={`Xoá trang ${t.soTrang || t.thuTu}`}
-                    className="p-2 rounded-lg text-muc-mo hover:text-loi-600 hover:bg-loi-50">
-                    <Icon ten="xoa" co={16} />
-                  </button>
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <button onClick={() => doiThuTuTrang(t.id, -1)} disabled={idx === 0}
+                      aria-label={`Đưa trang ${t.soTrang || t.thuTu} lên trước`}
+                      className="w-10 h-10 grid place-items-center rounded-lg text-muc-mo hover:text-verso-700 hover:bg-verso-50 disabled:opacity-25 disabled:pointer-events-none">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="m18 15-6-6-6 6" />
+                      </svg>
+                    </button>
+                    <button onClick={() => doiThuTuTrang(t.id, 1)} disabled={idx === ban.trang.length - 1}
+                      aria-label={`Đưa trang ${t.soTrang || t.thuTu} xuống sau`}
+                      className="w-10 h-10 grid place-items-center rounded-lg text-muc-mo hover:text-verso-700 hover:bg-verso-50 disabled:opacity-25 disabled:pointer-events-none">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                    <button onClick={() => xoaTrang(t.id)} aria-label={`Xoá trang ${t.soTrang || t.thuTu}`}
+                      className="w-10 h-10 grid place-items-center rounded-lg text-muc-mo hover:text-loi-600 hover:bg-loi-50">
+                      <Icon ten="xoa" co={16} />
+                    </button>
+                  </div>
                 </li>
               );
             })}

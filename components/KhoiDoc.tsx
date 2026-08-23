@@ -127,16 +127,22 @@ export const KhoiDoc: React.FC<{
 
     case 'bai-tap':
       return boc(
-        <section id={k.soBaiTap ? `bai-${maSo(k.soBaiTap)}` : `khoi-${k.id}`}
-          aria-label={k.soBaiTap ? `Bài tập ${k.soBaiTap}` : 'Bài tập'}
+        // Không dùng <section aria-label> ở đây: mỗi cái sẽ thành một landmark,
+        // và hai bài trùng số hiệu sẽ tạo landmark trùng tên. Dùng div kèm câu dẫn ẩn —
+        // nhảy tới vẫn được xướng "Bài tập 3", mà không làm loạn danh sách landmark.
+        <div id={k.soBaiTap ? `bai-${maSo(k.soBaiTap)}` : `khoi-${k.id}`}
+          tabIndex={-1}
           className="my-5 pl-4 border-l-4 border-verso-200">
+          <span className="chi-doc-man-hinh">
+            {k.soBaiTap ? `Bài tập ${k.soBaiTap}. ` : 'Bài tập. '}
+          </span>
           {k.vanBanDoc ? (
             <>
               <span aria-hidden="true">{noiChuThich(k.vanBan ?? '')}</span>
               <span className="chi-doc-man-hinh">{k.vanBanDoc}</span>
             </>
           ) : noiChuThich(k.vanBan ?? '')}
-        </section>,
+        </div>,
       );
 
     case 'chu-thich': {

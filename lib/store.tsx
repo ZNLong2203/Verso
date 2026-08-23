@@ -23,6 +23,7 @@ interface Ctx {
   suaBan: (p: Partial<BanVerso>) => void;
   themTrang: (kq: KetQuaDocTrang, anhNho: string) => void;
   xoaTrang: (id: string) => void;
+  doiThuTuTrang: (id: string, huong: -1 | 1) => void;
   danhDauDangDoc: (khoa: string, v: boolean) => void;
   suaKhoi: (trangId: string, khoiId: string, p: Partial<Khoi>) => void;
   xoaKhoi: (trangId: string, khoiId: string) => void;
@@ -86,6 +87,19 @@ export const VersoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       trang: b.trang.filter((t) => t.id !== id).map((t, i) => ({ ...t, thuTu: i + 1 })),
     }));
 
+  /** Đưa một trang lên trước hoặc xuống sau.
+   *  Cần vì trang đọc hỏng phải tải lại, và nó luôn rơi xuống cuối danh sách —
+   *  trong khi thứ tự trang phải khớp với sách thật thì học sinh mới theo được. */
+  const doiThuTuTrang = (id: string, huong: -1 | 1) =>
+    datBan((b) => {
+      const i = b.trang.findIndex((t) => t.id === id);
+      const j = i + huong;
+      if (i < 0 || j < 0 || j >= b.trang.length) return b;
+      const ds = [...b.trang];
+      [ds[i], ds[j]] = [ds[j], ds[i]];
+      return { ...b, trang: ds.map((t, k) => ({ ...t, thuTu: k + 1 })) };
+    });
+
   const suaKhoi = (trangId: string, khoiId: string, p: Partial<Khoi>) =>
     datBan((b) => ({
       ...b,
@@ -116,7 +130,7 @@ export const VersoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <C.Provider value={{
       ban, buoc, maDaXuatBan, dangDoc,
       soChuaDuyet: demChuaDuyet(ban.trang),
-      datBuoc, suaBan, themTrang, xoaTrang,
+      datBuoc, suaBan, themTrang, xoaTrang, doiThuTuTrang,
       danhDauDangDoc: (khoa, v) => setDangDoc((d) => ({ ...d, [khoa]: v })),
       suaKhoi, xoaKhoi, duyetTatCa, datMaXuatBan, lamLai,
     }}>

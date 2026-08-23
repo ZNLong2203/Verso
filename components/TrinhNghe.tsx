@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { doiKyHieuSot, chiaDoan, giongViet } from '@/lib/loiDoc';
 
 /**
  * Trình nghe cho trang đọc.
@@ -31,41 +32,6 @@ function layLoiDoc(el: Element): string {
   return doiKyHieuSot(ra.replace(/\s+/g, ' ').replace(/\.\s*\./g, '.').trim());
 }
 
-/** Lưới an toàn: đổi ký hiệu còn sót sang tiếng Việt.
- *
- *  Đúng ra Gemini phải điền vanBanDoc cho mọi câu có ký hiệu, và prompt đã yêu cầu vậy.
- *  Nhưng model bỏ sót là chuyện có thật — đo trên bản mẫu thấy α và ° vẫn lọt.
- *  Bảng này không thay được vanBanDoc (nó không hiểu ngữ cảnh), chỉ để câu đọc lên
- *  đỡ thành rác khi model quên. */
-const KY_HIEU: [RegExp, string][] = [
-  [/°/g, ' độ'], [/α/g, 'an-pha'], [/β/g, 'bê-ta'], [/γ/g, 'gam-ma'], [/δ/g, 'đen-ta'],
-  [/θ/g, 'tê-ta'], [/λ/g, 'lam-đa'], [/μ/g, 'muy'], [/π/g, 'pi'], [/φ/g, 'phi'], [/ω/g, 'ô-mê-ga'],
-  [/Δ/g, 'đen-ta'], [/Ω/g, 'ô-mê-ga'],
-  [/≤/g, ' nhỏ hơn hoặc bằng '], [/≥/g, ' lớn hơn hoặc bằng '], [/≠/g, ' khác '],
-  [/±/g, ' cộng trừ '], [/×/g, ' nhân '], [/÷/g, ' chia '], [/∞/g, ' vô cùng '],
-  [/⊥/g, ' vuông góc với '], [/∥/g, ' song song với '], [/√/g, ' căn bậc hai của '],
-  [/²/g, ' bình phương'], [/³/g, ' lập phương'],
-  [/[₀₁₂₃₄₅₆₇₈₉]/g, (m: string) => ' ' + '0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(m)] + ' '] as never,
-];
-
-function doiKyHieuSot(s: string): string {
-  let r = s;
-  for (const [re, thay] of KY_HIEU) r = r.replace(re, thay as string);
-  return r.replace(/\s{2,}/g, ' ').trim();
-}
-
-/** Chrome cắt ngang khi chuỗi quá dài — chia thành đoạn ≤180 ký tự theo ranh giới câu. */
-function chiaDoan(s: string): string[] {
-  const cau = s.match(/[^.!?;]+[.!?;]?/g) ?? [s];
-  const ra: string[] = [];
-  let dem = '';
-  for (const c of cau) {
-    if ((dem + c).length > 180) { if (dem.trim()) ra.push(dem.trim()); dem = c; }
-    else dem += c;
-  }
-  if (dem.trim()) ra.push(dem.trim());
-  return ra;
-}
 
 export const TrinhNghe: React.FC = () => {
   // null = chưa kiểm (đang dựng ở máy chủ). Nếu khởi tạo bằng false, HTML máy chủ sẽ
@@ -86,10 +52,7 @@ export const TrinhNghe: React.FC = () => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     setCoGiong(true);
 
-    const napGiong = () => {
-      const ds = window.speechSynthesis.getVoices();
-      giong.current = ds.find((v) => v.lang === 'vi-VN') ?? ds.find((v) => v.lang.startsWith('vi')) ?? null;
-    };
+    const napGiong = () => { giong.current = giongViet(); };
     napGiong();
     window.speechSynthesis.onvoiceschanged = napGiong;
 
@@ -203,7 +166,7 @@ export const TrinhNghe: React.FC = () => {
       <label className="flex items-center gap-2 text-sm ml-1">
         <span className="text-muc-mo">Tốc độ</span>
         <select value={tocDo} onChange={(e) => setTocDo(Number(e.target.value))}
-          className="px-2 py-1.5 rounded border-2 border-vien bg-white text-sm">
+          className="px-3 py-2.5 min-h-[44px] rounded border-2 border-vien bg-white text-sm">
           <option value={0.75}>Chậm</option>
           <option value={1}>Bình thường</option>
           <option value={1.25}>Nhanh</option>

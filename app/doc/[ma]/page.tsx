@@ -53,16 +53,19 @@ export default async function TrangDoc({ params }: Props) {
 
         {/* Nút nghe cho ai chưa cài trình đọc màn hình. Nó đọc ĐÚNG thứ trình đọc
             màn hình đọc, nên cũng là công cụ tự kiểm chất lượng bản chuyển đổi. */}
-        <div className="my-5 p-4 rounded-lg bg-verso-50 border border-verso-200">
+        <section aria-label="Nghe bản đọc"
+          className="my-5 p-4 rounded-lg bg-verso-50 border border-verso-200">
           <TrinhNghe />
-        </div>
+        </section>
 
         {/* Mục lục là tính năng quan trọng nhất với học sinh khiếm thị:
             thầy cô giao "làm bài 3" thì các em nhảy thẳng tới bài 3, không nghe lại từ đầu. */}
         {mucLuc.length > 0 && (
           <nav aria-label="Mục lục" className="my-6 p-5 bg-giay-sau rounded-lg">
             <h2 className="text-base font-extrabold m-0 mb-3">Mục lục — nhảy nhanh tới phần cần đọc</h2>
-            <ol className="m-0 pl-5 space-y-1.5">
+            {/* Liên kết mục lục để cỡ chữ thường thì chỉ cao ~20px — quá nhỏ với người
+                thị lực yếu hoặc tay run. Cho thành khối, có đệm, cao tối thiểu 44px. */}
+            <ol className="m-0 pl-5 space-y-0.5">
               {mucLuc.map((k) => {
                 const dich = k.loai === 'bai-tap' && k.soBaiTap
                   ? `#bai-${maSo(k.soBaiTap)}` : `#khoi-${k.id}`;
@@ -74,7 +77,10 @@ export default async function TrangDoc({ params }: Props) {
                   : (k.vanBan ?? '');
                 return (
                   <li key={k.id} className={k.capTieuDe === 1 ? 'font-bold' : ''}>
-                    <a href={dich} className="text-verso-700 underline underline-offset-2">{nhan}</a>
+                    <a href={dich}
+                      className="block py-2.5 min-h-[44px] text-verso-700 underline underline-offset-2 hover:bg-verso-100 rounded px-2 -mx-2">
+                      {nhan}
+                    </a>
                   </li>
                 );
               })}
