@@ -191,3 +191,7 @@ lỗi tệ nhất: hỏng mà không kêu.
 - [ACCESSIBILITY.md](ACCESSIBILITY.md) — kỹ thuật tiếp cận, phần quyết định chất lượng
 - [AI-INTEGRATION.md](AI-INTEGRATION.md) — prompt, schema, 9 môn học
 - [DEPLOYMENT.md](DEPLOYMENT.md) — chạy, triển khai, xử lý sự cố
+
+---
+
+Xem thêm: [Xuất file EPUB 3 / DAISY 3](XUAT-FILE.md)
