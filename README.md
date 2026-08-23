@@ -81,7 +81,6 @@ tính sẵn có của dịch vụ — **không có file khoá nào tồn tại t
 ## Chạy tại máy
 
 ```bash
-cd verso
 npm install
 cp .env.local.example .env.local     # điền khoá Gemini
 npm run dev
@@ -101,19 +100,19 @@ npm run dev
 
 ```
 docs/                 tài liệu kiến trúc
-verso/
-  app/
-    page.tsx            xưởng làm việc của giáo viên (4 bước)
-    doc/[ma]/page.tsx   trang học sinh đọc — server-rendered, HTML thuần
-    thu-vien/           thư viện dùng chung
-    api/                doc-trang · xuat-ban
-  lib/
-    prompt.ts           9 nguyên tắc + hướng dẫn riêng từng môn  ← linh hồn sản phẩm
-    gemini.server.ts    schema, thử lại có lùi dần
-    kho.server.ts       Firestore, mã chia sẻ, thư viện
-    types.ts            mô hình Khối — đơn vị trung tâm
-  components/
-    KhoiDoc.tsx         bộ dựng khối tiếp cận được  ← quyết định screen reader nghe gì
+app/
+  page.tsx            xưởng làm việc của giáo viên (4 bước)
+  doc/[ma]/page.tsx   trang học sinh đọc — server-rendered, HTML thuần
+  thu-vien/           thư viện dùng chung
+  api/                doc-trang · xuat-ban
+lib/
+  prompt.ts           9 nguyên tắc + hướng dẫn riêng từng môn  ← linh hồn sản phẩm
+  gemini.server.ts    schema, thử lại có lùi dần
+  kho.server.ts       Firestore, mã chia sẻ, thư viện
+  types.ts            mô hình Khối — đơn vị trung tâm
+components/
+  KhoiDoc.tsx         bộ dựng khối tiếp cận được  ← quyết định screen reader nghe gì
+  TrinhNghe.tsx       trình nghe — đọc đúng thứ trình đọc màn hình đọc
 ```
 
 ## Miễn trừ

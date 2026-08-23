@@ -31,3 +31,14 @@ dist/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# ── từ verso/.gitignore ──
+# Khoá & bí mật
+service-account*.json
+
+# Tài liệu nội bộ dự thi
+
+# Tư liệu người dùng thật (ảnh trang sách có bản quyền, dữ liệu trường học)
+
+
+.claude/settings.local.json

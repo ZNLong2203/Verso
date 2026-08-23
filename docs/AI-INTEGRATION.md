@@ -1,7 +1,7 @@
 # Tích hợp Gemini
 
-Toàn bộ lệnh gọi model nằm trong `verso/lib/gemini.server.ts`, và **prompt nằm riêng ở
-`verso/lib/prompt.ts`** — file đó dài hơn phần code gọi model, vì nó mới là sản phẩm.
+Toàn bộ lệnh gọi model nằm trong `lib/gemini.server.ts`, và **prompt nằm riêng ở
+`lib/prompt.ts`** — file đó dài hơn phần code gọi model, vì nó mới là sản phẩm.
 
 | Model | Vai trò |
 |---|---|

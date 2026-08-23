@@ -11,7 +11,6 @@
 ## Chạy tại máy
 
 ```bash
-cd verso
 npm install
 cp .env.local.example .env.local
 npm run dev
@@ -80,7 +79,6 @@ done
 ### Deploy
 
 ```bash
-cd verso
 $GC run deploy verso --source . \
   --region asia-southeast1 --allow-unauthenticated --project verso-43e8b \
   --set-env-vars "GEMINI_API_KEY=<khoá>,FIREBASE_PROJECT_ID=verso-43e8b" \
