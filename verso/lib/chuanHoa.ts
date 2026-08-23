@@ -34,6 +34,7 @@ export function chuanHoaKhoi(tho: KhoiTho, i: number): Khoi {
     loai,
     thuTu: tho.thuTu || i + 1,
     vanBan: tho.vanBan || undefined,
+    vanBanDoc: tho.vanBanDoc && tho.vanBanDoc !== tho.vanBan ? tho.vanBanDoc : undefined,
     moTa: tho.moTa || undefined,
     docThanhLoi: tho.docThanhLoi || undefined,
     kyHieuGoc: tho.kyHieuGoc || undefined,
@@ -49,7 +50,10 @@ export function chuanHoaKhoi(tho: KhoiTho, i: number): Khoi {
     // Một lỗi chính tả trong đoạn văn thì đọc lên là thấy ngợ; còn mô tả sai một cạnh
     // tam giác, hay đọc sai một dấu trong công thức, thì các em cứ thế học theo.
     // Model "tự tin" không có nghĩa là model đúng.
-    daDuyet: loai === 'hinh-anh' || loai === 'cong-thuc' ? false : doTinCay === 'cao',
+    daDuyet:
+      loai === 'hinh-anh' || loai === 'cong-thuc' || !!tho.vanBanDoc
+        ? false                     // có ký hiệu toán → bắt buộc giáo viên xem
+        : doTinCay === 'cao',
     daSua: false,
   };
 }

@@ -57,7 +57,14 @@ export const KhoiDoc: React.FC<{
     }
 
     case 'van-ban':
-      return boc(<p>{noiChuThich(k.vanBan ?? '')}</p>);
+      return boc(
+        k.vanBanDoc
+          ? <p>
+              <span aria-hidden="true">{noiChuThich(k.vanBan ?? '')}</span>
+              <span className="chi-doc-man-hinh">{k.vanBanDoc}</span>
+            </p>
+          : <p>{noiChuThich(k.vanBan ?? '')}</p>,
+      );
 
     case 'tho':
       // white-space: pre-wrap giữ nguyên từng dòng thơ và khoảng cách giữa các khổ
@@ -123,7 +130,12 @@ export const KhoiDoc: React.FC<{
         <section id={k.soBaiTap ? `bai-${maSo(k.soBaiTap)}` : `khoi-${k.id}`}
           aria-label={k.soBaiTap ? `Bài tập ${k.soBaiTap}` : 'Bài tập'}
           className="my-5 pl-4 border-l-4 border-verso-200">
-          {noiChuThich(k.vanBan ?? '')}
+          {k.vanBanDoc ? (
+            <>
+              <span aria-hidden="true">{noiChuThich(k.vanBan ?? '')}</span>
+              <span className="chi-doc-man-hinh">{k.vanBanDoc}</span>
+            </>
+          ) : noiChuThich(k.vanBan ?? '')}
         </section>,
       );
 

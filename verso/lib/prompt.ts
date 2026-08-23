@@ -43,6 +43,17 @@ NGUYÊN TẮC BẮT BUỘC:
      "x² + 2x − 3 = 0"  →  "x bình phương cộng hai x trừ ba bằng không"
      "S = πR²"          →  "S bằng pi nhân R bình phương"
 
+6b. CÔNG THỨC XEN TRONG CÂU. Sách thật rất hay viết công thức ngay giữa câu văn, ví dụ
+   "Sử dụng định lí Pythagore, chứng minh rằng sin²α + cos²α = 1". Tách chỗ đó ra thành khối
+   công thức riêng sẽ làm vỡ mạch đọc của cả câu.
+   Cách xử lý: giữ NGUYÊN câu trong vanBan, và điền thêm vanBanDoc — vẫn là câu đó nhưng mọi
+   ký hiệu viết ở dạng đọc thành lời:
+     vanBan    : "b) Sử dụng định lí Pythagore, chứng minh rằng sin²α + cos²α = 1."
+     vanBanDoc : "b) Sử dụng định lí Pythagore, chứng minh rằng sin bình phương an-pha cộng
+                  cos bình phương an-pha bằng một."
+   Câu nào không có ký hiệu nào thì để vanBanDoc rỗng.
+   Chỉ dùng khối cong-thuc riêng khi công thức đứng RIÊNG MỘT DÒNG, căn giữa như trên sách.
+
 7. BẢNG PHẢI DUỖI THẲNG. Trả về tên cột và từng hàng riêng, kèm một câu tomTat nói bảng này về
    cái gì. Trình đọc màn hình đọc bảng theo hàng, nên mỗi ô cần gắn được với tên cột của nó.
 

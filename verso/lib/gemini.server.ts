@@ -90,6 +90,10 @@ const SCHEMA_TRANG = {
             type: Type.STRING,
             description: 'Văn bản NGUYÊN VĂN. Với thơ: mỗi dòng thơ một dòng, khổ cách nhau dòng trống. Rỗng nếu khối là hình/bảng.',
           },
+          vanBanDoc: {
+            type: Type.STRING,
+            description: 'Chỉ điền khi vanBan CÓ CHỨA ký hiệu toán học. Chép lại nguyên câu nhưng mọi ký hiệu viết ở dạng đọc thành lời. Câu không có ký hiệu nào thì để rỗng.',
+          },
           moTa: {
             type: Type.STRING,
             description: 'CHỈ dùng cho loai="hinh-anh". Mô tả hình đủ chi tiết để học sinh khiếm thị làm được bài tập liên quan. Rỗng với loại khác.',

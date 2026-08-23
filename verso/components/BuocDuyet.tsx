@@ -80,8 +80,14 @@ const KhoiSua: React.FC<{ trang: Trang; k: Khoi }> = ({ trang, k }) => {
                 <OSua nhan="Chú thích này giải nghĩa từ nào" dong={1} gt={k.thuocVe ?? ''} doi={(v) => sua({ thuocVe: v })} />
               )}
               {k.loai !== 'hinh-anh' && k.loai !== 'cong-thuc' && k.loai !== 'bang' && (
-                <OSua nhan={k.loai === 'tho' ? 'Nội dung thơ — giữ nguyên từng dòng' : 'Nội dung'}
-                  dong={k.loai === 'tho' ? 8 : 4} gt={k.vanBan ?? ''} doi={(v) => sua({ vanBan: v })} />
+                <>
+                  <OSua nhan={k.loai === 'tho' ? 'Nội dung thơ — giữ nguyên từng dòng' : 'Nội dung'}
+                    dong={k.loai === 'tho' ? 8 : 4} gt={k.vanBan ?? ''} doi={(v) => sua({ vanBan: v })} />
+                  {k.vanBanDoc && (
+                    <OSua nhan="Bản đọc thành lời — có ký hiệu toán trong câu, trình đọc màn hình sẽ đọc dòng này"
+                      dong={4} gt={k.vanBanDoc} doi={(v) => sua({ vanBanDoc: v })} />
+                  )}
+                </>
               )}
               {k.loai === 'bang' && k.bang && (
                 <div className="mt-2 overflow-x-auto">

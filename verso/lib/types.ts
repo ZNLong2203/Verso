@@ -41,6 +41,12 @@ export interface Khoi {
   /** Văn bản nguyên văn — dùng cho tieu-de, van-ban, tho, bai-tap, chu-thich, khung-luu-y. */
   vanBan?: string;
 
+  /** Văn bản đó nhưng mọi ký hiệu toán học viết ở dạng đọc thành lời.
+   *  Chỉ có khi trong câu có ký hiệu — sách thật rất hay viết công thức XEN TRONG câu
+   *  ("chứng minh rằng sin²α + cos²α = 1"), lúc đó tách ra thành khối riêng sẽ làm
+   *  vỡ mạch đọc, nên giữ nguyên câu và kèm thêm bản đọc được. */
+  vanBanDoc?: string;
+
   /** Mô tả hình vẽ, viết như giáo viên giảng cho học sinh khiếm thị. */
   moTa?: string;
 
@@ -102,6 +108,7 @@ export interface KhoiTho {
   loai: string;
   thuTu: number;
   vanBan: string;
+  vanBanDoc: string;
   moTa: string;
   docThanhLoi: string;
   kyHieuGoc: string;
