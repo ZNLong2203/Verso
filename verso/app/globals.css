@@ -116,6 +116,15 @@ body {
 
 .ban-doc aside { margin: 1.2em 0; padding: .9em 1.1em; background: var(--color-giay-sau); border-radius: 6px; font-size: .9em; }
 
+/* Khối đang được đọc — giúp học sinh còn thị lực yếu bám theo dòng đang nghe.
+   Dùng cả nền lẫn viền, không chỉ màu. */
+.dang-nghe {
+  background: var(--color-verso-50);
+  box-shadow: -4px 0 0 0 var(--color-verso-600);
+  border-radius: 0 4px 4px 0;
+  scroll-margin-block: 30vh;
+}
+
 /* Chỗ giáo viên chưa duyệt — có cả viền, biểu tượng và chữ, không chỉ màu */
 .chua-duyet { background: var(--color-can-kiem-50); border-left: 4px solid var(--color-can-kiem-600); }
 

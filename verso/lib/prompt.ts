@@ -52,6 +52,15 @@ NGUYÊN TẮC BẮT BUỘC:
      vanBanDoc : "b) Sử dụng định lí Pythagore, chứng minh rằng sin bình phương an-pha cộng
                   cos bình phương an-pha bằng một."
    Câu nào không có ký hiệu nào thì để vanBanDoc rỗng.
+
+   "Ký hiệu" ở đây hiểu RỘNG, không chỉ là công thức. Phải điền vanBanDoc nếu trong câu có
+   bất kỳ thứ nào sau đây — vì trình đọc màn hình đọc chúng thành rác hoặc bỏ qua hẳn:
+     · chữ Hy Lạp:      α β γ δ θ λ π φ ω  → "an-pha", "bê-ta", "pi", …
+     · dấu độ:          20°               → "hai mươi độ"
+     · số mũ / chỉ số:  x² H₂O            → "x bình phương", "H hai O"
+     · dấu toán:        ≤ ≥ ≠ ± × ÷ √ ∞ ⊥ ∥ → đọc thành lời
+     · mũ trên chữ:     B̂ ΔABC            → "góc B", "tam giác ABC"
+     · viết tắt hình:   H.4.37            → "Hình bốn chấm ba mươi bảy"
    Chỉ dùng khối cong-thuc riêng khi công thức đứng RIÊNG MỘT DÒNG, căn giữa như trên sách.
 
 7. BẢNG PHẢI DUỖI THẲNG. Trả về tên cột và từng hàng riêng, kèm một câu tomTat nói bảng này về

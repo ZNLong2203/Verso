@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { docBanDaXuatBan } from '@/lib/kho.server';
 import { KhoiDoc, maSo } from '@/components/KhoiDoc';
+import { TrinhNghe } from '@/components/TrinhNghe';
 import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 
 /* Trang này KHÔNG có 'use client'.
@@ -49,6 +50,12 @@ export default async function TrangDoc({ params }: Props) {
             {ban.nguon && <> · Nguồn: {ban.nguon}</>}
           </p>
         </header>
+
+        {/* Nút nghe cho ai chưa cài trình đọc màn hình. Nó đọc ĐÚNG thứ trình đọc
+            màn hình đọc, nên cũng là công cụ tự kiểm chất lượng bản chuyển đổi. */}
+        <div className="my-5 p-4 rounded-lg bg-verso-50 border border-verso-200">
+          <TrinhNghe />
+        </div>
 
         {/* Mục lục là tính năng quan trọng nhất với học sinh khiếm thị:
             thầy cô giao "làm bài 3" thì các em nhảy thẳng tới bài 3, không nghe lại từ đầu. */}
