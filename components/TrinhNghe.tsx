@@ -68,7 +68,10 @@ function chiaDoan(s: string): string[] {
 }
 
 export const TrinhNghe: React.FC = () => {
-  const [coGiong, setCoGiong] = React.useState(false);
+  // null = chưa kiểm (đang dựng ở máy chủ). Nếu khởi tạo bằng false, HTML máy chủ sẽ
+  // chứa câu "trình duyệt không hỗ trợ" — và người dùng trình đọc màn hình có thể nghe
+  // đúng câu sai đó trước khi JavaScript kịp chạy.
+  const [coGiong, setCoGiong] = React.useState<boolean | null>(null);
   const [dangDoc, setDangDoc] = React.useState(false);
   const [tamDung, setTamDung] = React.useState(false);
   const [viTri, setViTri] = React.useState(0);
@@ -152,6 +155,11 @@ export const TrinhNghe: React.FC = () => {
     if (tamDung) { window.speechSynthesis.resume(); setTamDung(false); }
     else { window.speechSynthesis.pause(); setTamDung(true); }
   };
+
+  // Chưa kiểm xong: giữ chỗ trung tính, không khẳng định điều gì.
+  if (coGiong === null) {
+    return <p className="text-sm text-muc-mo m-0">Đang chuẩn bị phần nghe…</p>;
+  }
 
   if (!coGiong) {
     return (
