@@ -4,8 +4,11 @@
   "private": true,
   "description": "Verso — bien trang sach giao khoa thanh ban nghe duoc cho hoc sinh khiem thi",
   "scripts": {
+    "copy:pdf-worker": "cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/",
+    "predev": "npm run copy:pdf-worker",
     "dev": "next dev",
     "dev:lan": "next dev -H 0.0.0.0",
+    "prebuild": "npm run copy:pdf-worker",
     "build": "next build",
     "postbuild": "cp -R .next/static .next/standalone/.next/ && cp -R public .next/standalone/ || true",
     "start": "node .next/standalone/server.js",

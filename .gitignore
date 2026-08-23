@@ -42,3 +42,7 @@ service-account*.json
 
 
 .claude/settings.local.json
+
+# Bản sao worker của pdf.js — do "npm run build" tự chép từ node_modules,
+# commit vào đây sẽ lệch phiên bản với thư viện khi npm cài bản mới hơn.
+public/pdf.worker.min.mjs
