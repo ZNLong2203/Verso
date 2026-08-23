@@ -1,0 +1,33 @@
+# ───────────────────────────────────────────────
+#  BÍ MẬT — không bao giờ đẩy lên GitHub
+# ───────────────────────────────────────────────
+# Khoá service account của Firebase/Google Cloud, mọi dạng tên
+*firebase-adminsdk*.json
+*service-account*.json
+*-key.json
+gha-creds-*.json
+.env
+.env.*
+!.env.local.example
+*.pem
+*.key
+
+# Tài liệu nội bộ dự thi
+private/
+
+# Tư liệu thật: ảnh trang sách có bản quyền, dữ liệu trường học
+user-data/
+tu-lieu/
+
+node_modules/
+.next/
+next-env.d.ts
+out/
+dist/
+.turbo/
+*.tsbuildinfo
+*.log
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

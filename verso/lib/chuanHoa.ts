@@ -1,0 +1,72 @@
+import type { Khoi, KhoiTho, KetQuaDocTrang, LoaiKhoi, DoTinCay, Trang } from './types';
+
+export const taoId = () =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const LOAI_HOP_LE: LoaiKhoi[] = [
+  'tieu-de', 'van-ban', 'tho', 'hinh-anh', 'cong-thuc', 'bang', 'bai-tap', 'chu-thich', 'khung-luu-y',
+];
+const TIN_CAY_HOP_LE: DoTinCay[] = ['cao', 'trung-binh', 'thap'];
+
+/** Biến kết quả thô từ model thành khối dùng được, và tự bảo vệ trước dữ liệu lệch chuẩn. */
+export function chuanHoaKhoi(tho: KhoiTho, i: number): Khoi {
+  const loai = (LOAI_HOP_LE.includes(tho.loai as LoaiKhoi) ? tho.loai : 'van-ban') as LoaiKhoi;
+  const doTinCay = (TIN_CAY_HOP_LE.includes(tho.doTinCay as DoTinCay) ? tho.doTinCay : 'trung-binh') as DoTinCay;
+
+  const bang = tho.bang && Array.isArray(tho.bang.hang)
+    ? {
+        tieuDeCot: tho.bang.tieuDeCot ?? [],
+        hang: tho.bang.hang ?? [],
+        // Chỉ giữ hangDoc khi nó khớp đúng kích thước với hang — lệch một ô là
+        // trình đọc màn hình đọc sai ô, còn tệ hơn không có.
+        hangDoc:
+          Array.isArray(tho.bang.hangDoc) &&
+          tho.bang.hangDoc.length === (tho.bang.hang?.length ?? 0) &&
+          tho.bang.hangDoc.every((h, r) => h.length === (tho.bang!.hang[r]?.length ?? 0))
+            ? tho.bang.hangDoc
+            : [],
+        tomTat: tho.bang.tomTat ?? '',
+      }
+    : undefined;
+
+  return {
+    id: taoId(),
+    loai,
+    thuTu: tho.thuTu || i + 1,
+    vanBan: tho.vanBan || undefined,
+    moTa: tho.moTa || undefined,
+    docThanhLoi: tho.docThanhLoi || undefined,
+    kyHieuGoc: tho.kyHieuGoc || undefined,
+    bang,
+    capTieuDe: tho.capTieuDe || undefined,
+    soBaiTap: tho.soBaiTap || undefined,
+    thuocVe: tho.thuocVe || undefined,
+    doTinCay,
+    ghiChu: tho.ghiChu || undefined,
+    // Hình vẽ và công thức LUÔN phải qua mắt giáo viên, dù model có tự tin đến đâu.
+    //
+    // Lý do: đây là hai chỗ mà học sinh khiếm thị KHÔNG CÓ CÁCH NÀO tự phát hiện sai.
+    // Một lỗi chính tả trong đoạn văn thì đọc lên là thấy ngợ; còn mô tả sai một cạnh
+    // tam giác, hay đọc sai một dấu trong công thức, thì các em cứ thế học theo.
+    // Model "tự tin" không có nghĩa là model đúng.
+    daDuyet: loai === 'hinh-anh' || loai === 'cong-thuc' ? false : doTinCay === 'cao',
+    daSua: false,
+  };
+}
+
+export function chuanHoaTrang(kq: KetQuaDocTrang, thuTu: number, anhGoc: string): Trang {
+  return {
+    id: taoId(),
+    soTrang: kq.soTrang || 0,
+    thuTu,
+    anhGoc,
+    khoi: (kq.khoi ?? []).map(chuanHoaKhoi).sort((a, b) => a.thuTu - b.thuTu),
+    trangThai: 'xong',
+    anhKhongRo: !!kq.anhKhongRo,
+    ghiChuDocAnh: kq.ghiChuDocAnh ?? '',
+  };
+}
+
+/** Số khối giáo viên còn phải xem trước khi được phép xuất bản. */
+export const demChuaDuyet = (trang: Trang[]) =>
+  trang.flatMap((t) => t.khoi).filter((k) => !k.daDuyet).length;
