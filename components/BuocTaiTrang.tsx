@@ -7,11 +7,15 @@ import { nenAnh, anhNho } from '@/lib/anh';
 import { THONG_BAO_LOI } from '@/lib/loi';
 
 export const BuocTaiTrang: React.FC = () => {
-  const { ban, themTrang, xoaTrang, doiThuTuTrang, datBuoc } = useVerso();
+  const { ban, themTrang, thayTrang, xoaTrang, doiThuTuTrang, datBuoc } = useVerso();
   const [dangChay, setDangChay] = React.useState(false);
   const [tienDo, setTienDo] = React.useState({ xong: 0, tong: 0 });
   const [loi, setLoi] = React.useState<string[]>([]);
   const fileRef = React.useRef<HTMLInputElement>(null);
+  const docLaiRef = React.useRef<HTMLInputElement>(null);
+  // ref chứ không phải state: nút bấm mở ngay hộp thoại chọn tệp, sự kiện change
+  // có thể về TRƯỚC khi React dựng lại — lúc đó state mới chưa tới tay hàm xử lý.
+  const dangThay = React.useRef('');
 
   const xuLy = async (files: FileList | File[] | null) => {
     if (!files?.length) return;
@@ -39,6 +43,34 @@ export const BuocTaiTrang: React.FC = () => {
     }
     setDangChay(false);
     if (fileRef.current) fileRef.current.value = '';
+  };
+
+  /** Đọc lại một trang, giữ nguyên vị trí trong sách.
+   *
+   *  Ảnh gốc không được giữ lại (chỉ có bản thu nhỏ để xem), nên phải chọn lại
+   *  tệp — nhưng trang mới thay đúng chỗ trang cũ, không rơi xuống cuối. */
+  const docLai = async (files: FileList | null) => {
+    const id = dangThay.current;
+    const f = files?.[0];
+    if (docLaiRef.current) docLaiRef.current.value = '';
+    dangThay.current = '';
+    if (!id || !f?.type.startsWith('image/')) return;
+
+    setDangChay(true); setLoi([]); setTienDo({ xong: 0, tong: 1 });
+    try {
+      const a = await nenAnh(f);
+      const r = await fetch('/api/doc-trang', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anhBase64: a.base64, mimeType: a.mimeType, monHoc: ban.monHoc }),
+      });
+      const kq = await r.json();
+      if (kq.loi) setLoi([`${f.name}: ${THONG_BAO_LOI[kq.loi] ?? kq.loi}`]);
+      else thayTrang(id, kq, await anhNho(a.dataUrl));
+    } catch {
+      setLoi([`${f.name}: không đọc được tệp này`]);
+    }
+    setTienDo({ xong: 1, tong: 1 });
+    setDangChay(false);
   };
 
   /** Thử ngay bằng trang sách mẫu.
@@ -127,10 +159,14 @@ export const BuocTaiTrang: React.FC = () => {
           </div>
           {ban.trang.length > 1 && (
             <p className="text-sm text-muc-mo mb-3">
-              Thứ tự dưới đây là thứ tự học sinh sẽ nghe. Trang tải lại sau luôn rơi xuống cuối —
-              dùng mũi tên để xếp lại cho khớp sách.
+              Thứ tự dưới đây là thứ tự học sinh sẽ nghe. Trang nào đọc chưa tốt thì bấm
+              <b> Đọc lại</b> — trang mới thay đúng chỗ trang cũ, không phải xếp lại.
             </p>
           )}
+          {/* Một ô chọn tệp dùng chung cho mọi nút Đọc lại — dangThay giữ trang nào đang thay */}
+          <input ref={docLaiRef} type="file" accept="image/*" className="chi-doc-man-hinh"
+            aria-hidden="true" tabIndex={-1} onChange={(e) => docLai(e.target.files)} />
+
           <ul className="grid gap-2 m-0 p-0 list-none">
             {ban.trang.map((t, idx) => {
               const hinh = t.khoi.filter((k) => k.loai === 'hinh-anh').length;
@@ -166,6 +202,16 @@ export const BuocTaiTrang: React.FC = () => {
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                    <button onClick={() => { dangThay.current = t.id; docLaiRef.current?.click(); }}
+                      disabled={dangChay}
+                      aria-label={`Đọc lại trang ${t.soTrang || t.thuTu} bằng ảnh khác`}
+                      title="Đọc lại trang này"
+                      className="w-10 h-10 grid place-items-center rounded-lg text-muc-mo hover:text-verso-700 hover:bg-verso-50 disabled:opacity-25 disabled:pointer-events-none">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" />
                       </svg>
                     </button>
                     <button onClick={() => xoaTrang(t.id)} aria-label={`Xoá trang ${t.soTrang || t.thuTu}`}

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Nut, The, Icon, Nhan, ThanhTienDo } from './ui';
 import { useVerso } from '@/lib/store';
+import { nhanMuc } from '@/lib/neo';
 import { LOAI_KHOI_INFO } from '@/lib/constants';
 import { THONG_BAO_LOI } from '@/lib/loi';
 import type { Khoi, Trang } from '@/lib/types';
@@ -87,7 +88,7 @@ const KhoiSua: React.FC<{ trang: Trang; k: Khoi }> = ({ trang, k }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <Nhan>{info.ten}</Nhan>
-            {k.soBaiTap && <Nhan>Bài {k.soBaiTap}</Nhan>}
+            {k.soBaiTap && <Nhan>{nhanMuc(k)}</Nhan>}
             <TinCay k={k} />
             {k.daSua && <Nhan kieu="xong">đã sửa</Nhan>}
             <NutNgheThu k={k} />
@@ -115,7 +116,18 @@ const KhoiSua: React.FC<{ trang: Trang; k: Khoi }> = ({ trang, k }) => {
                 </>
               )}
               {k.loai === 'chu-thich' && (
-                <OSua nhan="Chú thích này giải nghĩa từ nào" dong={1} gt={k.thuocVe ?? ''} doi={(v) => sua({ thuocVe: v })} />
+                <>
+                  <OSua nhan="Chú thích này giải nghĩa từ nào" dong={1} gt={k.thuocVe ?? ''} doi={(v) => sua({ thuocVe: v })} />
+                  {/* Số này nối dấu [chú thích 1] trong bài với lời giải nghĩa ở đây.
+                      Sai số thì học sinh bấm vào dấu chú thích mà không tới được đâu cả. */}
+                  <OSua nhan="Số chú thích — phải khớp với dấu [chú thích …] trong bài" dong={1}
+                    gt={k.soChuThich ?? ''} doi={(v) => sua({ soChuThich: v.trim() })} />
+                </>
+              )}
+              {k.loai === 'bai-tap' && (
+                // Số hiệu là mốc để học sinh nhảy thẳng tới bài thầy cô giao.
+                <OSua nhan="Số hiệu bài — mốc để nhảy nhanh tới đúng bài" dong={1}
+                  gt={k.soBaiTap ?? ''} doi={(v) => sua({ soBaiTap: v.trim() })} />
               )}
               {k.loai !== 'hinh-anh' && k.loai !== 'cong-thuc' && k.loai !== 'bang' && (
                 <>

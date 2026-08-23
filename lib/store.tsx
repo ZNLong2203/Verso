@@ -22,6 +22,7 @@ interface Ctx {
   datBuoc: (b: Buoc) => void;
   suaBan: (p: Partial<BanVerso>) => void;
   themTrang: (kq: KetQuaDocTrang, anhNho: string) => void;
+  thayTrang: (id: string, kq: KetQuaDocTrang, anhNho: string) => void;
   xoaTrang: (id: string) => void;
   doiThuTuTrang: (id: string, huong: -1 | 1) => void;
   danhDauDangDoc: (khoa: string, v: boolean) => void;
@@ -81,6 +82,18 @@ export const VersoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const themTrang = (kq: KetQuaDocTrang, anh: string) =>
     datBan((b) => ({ ...b, trang: [...b.trang, chuanHoaTrang(kq, b.trang.length + 1, anh)] }));
 
+  /** Đọc lại một trang, giữ nguyên vị trí trong sách.
+   *
+   *  Trang đọc hỏng thì trước đây phải xoá rồi tải lại, mà trang mới luôn rơi
+   *  xuống cuối danh sách — thứ tự lệch khỏi sách thật là học sinh không theo
+   *  được lớp nữa. */
+  const thayTrang = (id: string, kq: KetQuaDocTrang, anh: string) =>
+    datBan((b) => ({
+      ...b,
+      trang: b.trang.map((t) => t.id !== id ? t
+        : { ...chuanHoaTrang(kq, t.thuTu, anh), id: t.id }),
+    }));
+
   const xoaTrang = (id: string) =>
     datBan((b) => ({
       ...b,
@@ -130,7 +143,7 @@ export const VersoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <C.Provider value={{
       ban, buoc, maDaXuatBan, dangDoc,
       soChuaDuyet: demChuaDuyet(ban.trang),
-      datBuoc, suaBan, themTrang, xoaTrang, doiThuTuTrang,
+      datBuoc, suaBan, themTrang, thayTrang, xoaTrang, doiThuTuTrang,
       danhDauDangDoc: (khoa, v) => setDangDoc((d) => ({ ...d, [khoa]: v })),
       suaKhoi, xoaKhoi, duyetTatCa, datMaXuatBan, lamLai,
     }}>
