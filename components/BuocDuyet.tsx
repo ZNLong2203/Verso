@@ -7,6 +7,7 @@ import { LOAI_KHOI_INFO } from '@/lib/constants';
 import { THONG_BAO_LOI } from '@/lib/loi';
 import type { Khoi, Trang } from '@/lib/types';
 import { loiDocCuaKhoi, docTo, coGiongDoc } from '@/lib/loiDoc';
+import { SuaBang } from './SuaBang';
 
 const TinCay: React.FC<{ k: Khoi }> = ({ k }) =>
   k.doTinCay === 'cao' ? null : (
@@ -127,16 +128,7 @@ const KhoiSua: React.FC<{ trang: Trang; k: Khoi }> = ({ trang, k }) => {
                 </>
               )}
               {k.loai === 'bang' && k.bang && (
-                <div className="mt-2 overflow-x-auto">
-                  <p className="text-xs font-bold text-muc-mo mb-1">Bảng (sửa trực tiếp chưa hỗ trợ ở bản này)</p>
-                  <table className="text-xs border-collapse">
-                    <tbody>
-                      {[k.bang.tieuDeCot, ...k.bang.hang].map((h, r) => (
-                        <tr key={r}>{h.map((o, c) => <td key={c} className="border border-vien px-2 py-1">{o}</td>)}</tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <SuaBang bang={k.bang} doi={(b) => sua({ bang: b })} />
               )}
               <button onClick={() => xoaKhoi(trang.id, k.id)}
                 className="mt-3 text-xs font-bold text-muc-mo hover:text-loi-600 inline-flex items-center gap-1.5">
