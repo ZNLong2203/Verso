@@ -4,13 +4,20 @@ import React from 'react';
 import { Nut, The, Icon, Nhan, ThanhTienDo } from './ui';
 import { useVerso } from '@/lib/store';
 import { nenAnh, anhNho } from '@/lib/anh';
+import { soTrangPdf, docKhoangTrang, anhTuPdf, TOI_DA_MOI_LAN } from '@/lib/pdf';
 import { THONG_BAO_LOI } from '@/lib/loi';
 
 export const BuocTaiTrang: React.FC = () => {
   const { ban, themTrang, thayTrang, xoaTrang, doiThuTuTrang, datBuoc } = useVerso();
   const [dangChay, setDangChay] = React.useState(false);
+  const [pdf, setPdf] = React.useState<{ file: File; soTrang: number } | null>(null);
+  const [chonTrang, setChonTrang] = React.useState('');
+  const [dangTach, setDangTach] = React.useState('');
   const [tienDo, setTienDo] = React.useState({ xong: 0, tong: 0 });
   const [loi, setLoi] = React.useState<string[]>([]);
+  /** Nhắc một câu về thao tác (chọn trang, mở tệp) — khác hẳn danh sách trang đọc hỏng,
+   *  nên không dùng chung khung, kẻo hiện thành "Có 1 trang chưa đọc được". */
+  const [nhac, setNhac] = React.useState('');
   const fileRef = React.useRef<HTMLInputElement>(null);
   const docLaiRef = React.useRef<HTMLInputElement>(null);
   // ref chứ không phải state: nút bấm mở ngay hộp thoại chọn tệp, sự kiện change
@@ -19,10 +26,30 @@ export const BuocTaiTrang: React.FC = () => {
 
   const xuLy = async (files: FileList | File[] | null) => {
     if (!files?.length) return;
-    const ds = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    const tep = Array.from(files);
+
+    // PDF thì chưa đọc vội: sách giáo khoa cả trăm trang, phải hỏi cần trang nào đã.
+    const tepPdf = tep.find((f) => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+    if (tepPdf) {
+      if (fileRef.current) fileRef.current.value = '';
+      setLoi([]); setNhac('');
+      try {
+        setDangTach('Đang mở tệp PDF…');
+        const n = await soTrangPdf(tepPdf);
+        setPdf({ file: tepPdf, soTrang: n });
+        setChonTrang(n <= TOI_DA_MOI_LAN ? `1-${n}` : '1-5');
+      } catch {
+        setNhac('Không mở được tệp PDF này. Nếu tệp có mật khẩu thì cần bỏ mật khẩu trước.');
+      } finally {
+        setDangTach('');
+      }
+      return;
+    }
+
+    const ds = tep.filter((f) => f.type.startsWith('image/'));
     if (!ds.length) return;
 
-    setDangChay(true); setLoi([]); setTienDo({ xong: 0, tong: ds.length });
+    setDangChay(true); setLoi([]); setNhac(''); setTienDo({ xong: 0, tong: ds.length });
 
     // Xử lý TUẦN TỰ, không song song: mỗi trang là một lượt gọi model khá nặng,
     // bắn cùng lúc dễ chạm hạn mức và mất luôn cả loạt.
@@ -43,6 +70,27 @@ export const BuocTaiTrang: React.FC = () => {
     }
     setDangChay(false);
     if (fileRef.current) fileRef.current.value = '';
+  };
+
+  /** Tách những trang giáo viên chọn ra khỏi PDF rồi đưa vào đúng luồng đọc ảnh. */
+  const tachPdf = async () => {
+    if (!pdf) return;
+    const ds = docKhoangTrang(chonTrang, pdf.soTrang);
+    if (!ds.length) { setNhac('Chưa chọn trang nào. Ví dụ hợp lệ: 71-75 hoặc 71, 73, 80.'); return; }
+    if (ds.length > TOI_DA_MOI_LAN) {
+      setNhac(`Mỗi lần chỉ nên chuyển tối đa ${TOI_DA_MOI_LAN} trang. Bạn đang chọn ${ds.length} trang — hãy chia thành nhiều lần.`);
+      return;
+    }
+    setNhac('');
+    try {
+      const anh = await anhTuPdf(pdf.file, ds, (x, t) => setDangTach(`Đang tách trang ${x}/${t}…`));
+      setDangTach('');
+      setPdf(null);
+      await xuLy(anh.map((a) => new File([a.blob], `trang-${a.so}.jpg`, { type: 'image/jpeg' })));
+    } catch {
+      setDangTach('');
+      setNhac('Không tách được trang từ tệp PDF này.');
+    }
   };
 
   /** Đọc lại một trang, giữ nguyên vị trí trong sách.
@@ -99,23 +147,25 @@ export const BuocTaiTrang: React.FC = () => {
       <The lop="p-6">
         <h2 className="text-xl font-extrabold m-0">Tải trang sách lên</h2>
         <p className="text-muc-nhat mt-2 leading-relaxed">
-          Chọn nhiều trang một lúc cũng được. Verso đọc lần lượt từng trang và giữ đúng thứ tự
-          bạn chọn. Ảnh chụp bằng điện thoại dùng tốt, miễn là <b>chụp thẳng, đủ sáng, thấy hết
-          bốn góc trang</b>.
+          Có <b>tệp PDF cả cuốn sách</b> thì chọn thẳng tệp đó — Verso hỏi bạn cần trang nào,
+          và tách ngay trên máy bạn. Hoặc chọn ảnh từng trang, nhiều tệp một lúc cũng được.
+          Ảnh chụp bằng điện thoại dùng tốt, miễn là <b>chụp thẳng, đủ sáng, thấy hết bốn góc
+          trang</b>.
         </p>
 
         <label className={`mt-5 block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
           dangChay ? 'border-vien bg-giay-sau pointer-events-none opacity-60' : 'border-verso-200 bg-verso-50 hover:border-verso-600'
         }`}>
-          <input ref={fileRef} type="file" accept="image/*" multiple className="chi-doc-man-hinh"
+          <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" multiple
+            className="chi-doc-man-hinh"
             onChange={(e) => xuLy(e.target.files)} disabled={dangChay} />
           <span className="inline-flex flex-col items-center gap-2 text-verso-700">
             <Icon ten="tai" co={34} />
             <span className="font-extrabold text-base">
-              {dangChay ? 'Đang đọc…' : 'Chọn ảnh trang sách'}
+              {dangChay ? 'Đang đọc…' : 'Chọn ảnh hoặc tệp PDF'}
             </span>
             <span className="text-sm text-muc-mo font-normal">
-              JPG hoặc PNG · chọn được nhiều tệp cùng lúc
+              JPG, PNG hoặc PDF · chọn được nhiều tệp cùng lúc
             </span>
           </span>
         </label>
@@ -135,11 +185,50 @@ export const BuocTaiTrang: React.FC = () => {
           </button>
         </div>
 
+        {dangTach && (
+          <p role="status" className="mt-4 text-sm font-bold text-verso-700">{dangTach}</p>
+        )}
+
+        {pdf && (
+          <div className="mt-5 p-4 rounded-lg bg-verso-50 border border-verso-200">
+            <h3 className="text-base font-extrabold m-0">
+              {pdf.file.name} · {pdf.soTrang} trang
+            </h3>
+            <p className="text-sm text-muc-nhat mt-1 mb-3 leading-relaxed">
+              Chọn những trang cần chuyển. Đây là <b>số trang trong tệp PDF</b>, có thể lệch với
+              số in trên sách nếu tệp có bìa và mục lục ở đầu.
+            </p>
+            <label htmlFor="chon-trang" className="block text-xs font-bold text-muc-mo mb-1">
+              Trang cần chuyển — ví dụ 71-75 hoặc 71, 73, 80
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <input id="chon-trang" value={chonTrang} onChange={(e) => setChonTrang(e.target.value)}
+                inputMode="numeric"
+                className="flex-1 min-w-[12rem] px-3 min-h-[44px] rounded-lg border border-vien bg-white
+                           focus:border-verso-600 outline-none text-sm" />
+              <Nut onClick={tachPdf} tat={!!dangTach || dangChay} icon="tai">
+                Đọc {docKhoangTrang(chonTrang, pdf.soTrang).length || 0} trang này
+              </Nut>
+              <Nut kieu="phu" onClick={() => { setPdf(null); setNhac(''); }} tat={!!dangTach}>Bỏ</Nut>
+            </div>
+            <p className="text-sm text-muc-mo mt-2 mb-0">
+              Mỗi lần tối đa {TOI_DA_MOI_LAN} trang. Tệp PDF không rời khỏi máy bạn — Verso chỉ gửi đi
+              ảnh của những trang bạn chọn.
+            </p>
+          </div>
+        )}
+
         {dangChay && (
           <div className="mt-5">
             <ThanhTienDo xong={tienDo.xong} tong={tienDo.tong} nhan="Đang đọc trang" />
             <p className="text-sm text-muc-mo mt-2">Mỗi trang mất khoảng 5–15 giây. Đừng đóng tab.</p>
           </div>
+        )}
+
+        {nhac && (
+          <p role="alert" className="mt-4 p-3 rounded-lg bg-loi-50 border border-loi-200 text-sm font-semibold text-loi-700">
+            {nhac}
+          </p>
         )}
 
         {loi.length > 0 && (

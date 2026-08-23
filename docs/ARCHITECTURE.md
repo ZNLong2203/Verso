@@ -194,4 +194,24 @@ lỗi tệ nhất: hỏng mà không kêu.
 
 ---
 
+## Tách PDF ngay trên máy giáo viên
+
+Sách giáo khoa lưu hành dưới dạng PDF, và bản quét thì **không có lớp chữ nào** — bản SGK
+Toán 9 dùng để thử là 123 trang ảnh, chọn chữ không được một ký tự.
+
+`lib/pdf.ts` dựng trang bằng **pdf.js ngay trong trình duyệt**, không gửi tệp lên máy chủ:
+
+- một cuốn SGK là hơn 20 MB, mà giáo viên chỉ cần vài trang
+- tệp sách không rời khỏi máy — chỉ ảnh của những trang được chọn mới gửi đi
+- thư viện nạp **trễ**, ai chỉ tải ảnh thì không phải tải gần 1 MB mã
+
+Mỗi mẻ giới hạn 20 trang: nhiều hơn thì một lượt mất hơn nửa tiếng và rất dễ đứt giữa chừng.
+Trang được dựng thẳng ở đúng độ phân giải cuối (1800px) chứ không dựng to rồi thu nhỏ —
+máy của giáo viên thường yếu, và canvas được trả về bộ nhớ ngay sau mỗi trang.
+
+Giao diện nói rõ đây là **số trang trong tệp**, có thể lệch với số in trên sách: tệp thật
+có bìa và mục lục ở đầu, nên trang 71 của tệp là trang 69 của sách.
+
+---
+
 Xem thêm: [Xuất file EPUB 3 / DAISY 3](XUAT-FILE.md)
