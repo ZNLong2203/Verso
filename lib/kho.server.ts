@@ -1,18 +1,10 @@
 import 'server-only';
 import { db, coFirebase, BO_SUU_TAP } from './firebase.server';
 import type { BanVerso, MonHoc } from './types';
+import { boDau } from './chuoi';
 
-/** Bỏ dấu tiếng Việt để so khớp khi tìm kiếm.
- *  Giáo viên gõ "tam giac" phải tìm ra "tam giác" — gõ có dấu trên máy tính
- *  chậm hơn nhiều, gần như không ai gõ đủ dấu khi tìm nhanh. */
-export function boDau(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')   // bỏ dấu thanh và dấu mũ
-    .replace(/đ/g, 'd').replace(/Đ/g, 'D')  // đ không tách được bằng NFD
-    .toLowerCase()
-    .trim();
-}
+export { boDau };
+
 
 /** Mã chia sẻ: 8 ký tự, bỏ các chữ dễ đọc nhầm (0/O, 1/I/l).
  *  Đủ ngắn để đọc qua điện thoại cho đồng nghiệp, đủ dài để không dò ra được. */

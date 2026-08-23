@@ -3,6 +3,7 @@
 import React from 'react';
 import { Nut, The, Icon } from './ui';
 import { useVerso } from '@/lib/store';
+import { TaiVe } from './TaiVe';
 
 export const BuocXong: React.FC = () => {
   const { ban, maDaXuatBan, lamLai } = useVerso();
@@ -64,6 +65,8 @@ export const BuocXong: React.FC = () => {
         </div>
       </The>
 
+      <TaiVe ma={maDaXuatBan} />
+
       <The lop="p-6">
         <h3 className="text-base font-extrabold m-0">Gửi cho học sinh thế nào</h3>
         <ol className="mt-3 mb-0 pl-5 grid gap-2 text-sm text-muc-nhat leading-relaxed">
@@ -71,6 +74,7 @@ export const BuocXong: React.FC = () => {
           <li>Học sinh mở bằng trình duyệt bất kỳ — <b>không cần cài gì</b>.</li>
           <li>Trình đọc màn hình sẵn có trên máy các em (NVDA, VoiceOver, TalkBack) đọc được ngay.</li>
           <li>Thầy cô giao “làm bài 3” thì các em nhảy thẳng tới bài 3 từ mục lục.</li>
+          <li>Em nào nhà không có mạng thì tải file EPUB hoặc DAISY về, chép vào máy đọc sách.</li>
         </ol>
       </The>
 

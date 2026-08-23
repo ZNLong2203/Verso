@@ -36,11 +36,12 @@ export default async function ThuVien({ searchParams }: Props) {
     <div className="min-h-screen bg-giay">
       <header className="border-b border-vien bg-white">
         <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
-          <a href="/" className="flex items-center gap-2.5 no-underline text-muc">
+          <a href="/" className="flex items-center gap-2.5 no-underline text-muc min-h-[44px] py-1">
             <span className="w-9 h-9 rounded-lg bg-verso-700 text-white grid place-items-center font-doc font-bold text-lg">V</span>
             <span className="font-extrabold">Verso</span>
           </a>
-          <a href="/" className="text-sm font-bold text-verso-700">Chuyển tài liệu mới</a>
+          <a href="/" className="text-sm font-bold text-verso-700 inline-flex items-center
+            min-h-[44px] px-2 -mx-2 rounded hover:bg-verso-50">Chuyển tài liệu mới</a>
         </div>
       </header>
 
@@ -81,7 +82,7 @@ export default async function ThuVien({ searchParams }: Props) {
               {[1,2,3,4,5,6,7,8,9,10,11,12].map((l) => <option key={l} value={l}>Lớp {l}</option>)}
             </select>
           </div>
-          <button type="submit" className="px-4 py-2 rounded-lg bg-verso-700 text-white text-sm font-bold">Lọc</button>
+          <button type="submit" className="px-4 min-h-[44px] rounded-lg bg-verso-700 text-white text-sm font-bold">Lọc</button>
         </form>
 
         {loiKho ? (

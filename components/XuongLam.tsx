@@ -28,14 +28,16 @@ const Ruot: React.FC = () => {
           Verso — chuyển trang sách giáo khoa thành bản đọc được
         </h1>
         <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
-          <a href="/" className="flex items-center gap-2.5 no-underline text-muc">
+          <a href="/" className="flex items-center gap-2.5 no-underline text-muc min-h-[44px] py-1">
             <span className="w-9 h-9 rounded-lg bg-verso-700 text-white grid place-items-center font-doc font-bold text-lg">V</span>
             <span className="leading-tight">
               <span className="block font-extrabold">Verso</span>
               <span className="block text-xs text-muc-mo">Sách giáo khoa nghe được</span>
             </span>
           </a>
-          <a href="/thu-vien" className="text-sm font-bold text-verso-700 inline-flex items-center gap-1.5">
+          <a href="/thu-vien"
+            className="text-sm font-bold text-verso-700 inline-flex items-center gap-1.5
+                       min-h-[44px] px-2 -mx-2 rounded hover:bg-verso-50">
             <Icon ten="sach" co={16} /> Thư viện
           </a>
         </div>
@@ -53,7 +55,7 @@ const Ruot: React.FC = () => {
                   {i > 0 && <span className="text-muc-mo" aria-hidden="true">›</span>}
                   <button onClick={() => bamDuoc && datBuoc(b.id)} disabled={!bamDuoc && !dangO}
                     aria-current={dangO ? 'step' : undefined}
-                    className={`px-2.5 py-1 rounded font-bold ${
+                    className={`px-3 min-h-[44px] rounded font-bold ${
                       dangO ? 'bg-verso-700 text-white'
                       : daQua ? 'text-verso-700 hover:bg-verso-50'
                       : 'text-muc-mo cursor-default'}`}>

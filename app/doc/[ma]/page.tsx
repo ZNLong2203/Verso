@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { docBanDaXuatBan } from '@/lib/kho.server';
-import { KhoiDoc, maSo } from '@/components/KhoiDoc';
+import { KhoiDoc } from '@/components/KhoiDoc';
+import { dungNeo, nhanMuc } from '@/lib/neo';
 import { TrinhNghe } from '@/components/TrinhNghe';
+import { TaiVe } from '@/components/TaiVe';
 import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 
 /* Trang này KHÔNG có 'use client'.
@@ -28,6 +30,7 @@ export default async function TrangDoc({ params }: Props) {
   const ban = await docBanDaXuatBan(ma);
   if (!ban) notFound();
 
+  const neo = dungNeo(ban);
   const moiKhoi = ban.trang.flatMap((t) => t.khoi);
   const mucLuc = moiKhoi.filter((k) => k.loai === 'tieu-de' || k.loai === 'bai-tap');
   const soHinh = moiKhoi.filter((k) => k.loai === 'hinh-anh').length;
@@ -58,6 +61,8 @@ export default async function TrangDoc({ params }: Props) {
           <TrinhNghe />
         </section>
 
+        <TaiVe ma={ma} />
+
         {/* Mục lục là tính năng quan trọng nhất với học sinh khiếm thị:
             thầy cô giao "làm bài 3" thì các em nhảy thẳng tới bài 3, không nghe lại từ đầu. */}
         {mucLuc.length > 0 && (
@@ -66,35 +71,27 @@ export default async function TrangDoc({ params }: Props) {
             {/* Liên kết mục lục để cỡ chữ thường thì chỉ cao ~20px — quá nhỏ với người
                 thị lực yếu hoặc tay run. Cho thành khối, có đệm, cao tối thiểu 44px. */}
             <ol className="m-0 pl-5 space-y-0.5">
-              {mucLuc.map((k) => {
-                const dich = k.loai === 'bai-tap' && k.soBaiTap
-                  ? `#bai-${maSo(k.soBaiTap)}` : `#khoi-${k.id}`;
-                // Số hiệu đôi khi đã chứa sẵn chữ "Bài" ("Bài 1") — đừng ghép thành "Bài tập Bài 1"
-                const nhan = k.loai === 'bai-tap'
-                  ? (k.soBaiTap
-                      ? (/^bài/i.test(k.soBaiTap) ? k.soBaiTap : `Bài ${k.soBaiTap}`)
-                      : 'Bài tập')
-                  : (k.vanBan ?? '');
-                return (
-                  <li key={k.id} className={k.capTieuDe === 1 ? 'font-bold' : ''}>
-                    <a href={dich}
-                      className="block py-2.5 min-h-[44px] text-verso-700 underline underline-offset-2 hover:bg-verso-100 rounded px-2 -mx-2">
-                      {nhan}
-                    </a>
-                  </li>
-                );
-              })}
+              {mucLuc.map((k) => (
+                <li key={k.id} className={k.capTieuDe === 1 ? 'font-bold' : ''}>
+                  <a href={`#${neo.get(k.id)}`}
+                    className="block py-2.5 min-h-[44px] text-verso-700 underline underline-offset-2 hover:bg-verso-100 rounded px-2 -mx-2">
+                    {nhanMuc(k)}
+                  </a>
+                </li>
+              ))}
             </ol>
           </nav>
         )}
 
         <main id="noi-dung" className="ban-doc">
-          {ban.trang.map((t) => (
+          {ban.trang.map((t, i) => (
             <article key={t.id} aria-label={t.soTrang ? `Trang ${t.soTrang}` : `Trang ${t.thuTu}`}>
               <p className="chi-doc-man-hinh">
                 Bắt đầu {t.soTrang ? `trang ${t.soTrang}` : `trang thứ ${t.thuTu}`} của sách.
               </p>
-              {t.khoi.map((k) => <KhoiDoc key={k.id} khoi={k} lechCap={1} />)}
+              {t.khoi.map((k) => (
+                <KhoiDoc key={k.id} khoi={k} neo={neo.get(k.id) ?? `khoi-${k.id}`} trang={i + 1} lechCap={1} />
+              ))}
             </article>
           ))}
         </main>
