@@ -214,4 +214,4 @@ có bìa và mục lục ở đầu, nên trang 71 của tệp là trang 69 củ
 
 ---
 
-Xem thêm: [Xuất file EPUB 3 / DAISY 3](XUAT-FILE.md) · [Giọng đọc](GIONG-DOC.md) · [Chi phí thật](CHI-PHI.md)
+Xem thêm: [Xuất file EPUB 3 / DAISY 3](XUAT-FILE.md) · [Giọng đọc](GIONG-DOC.md) · [Chi phí thật](CHI-PHI.md) · [Đưa lên AI Studio](DUA-LEN-AI-STUDIO.md)

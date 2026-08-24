@@ -5,6 +5,9 @@
 Dự thi **AI Riser Vietnam 2026 · #BuildwithGoogleAI** — hạng mục *Inclusive Access · Education*
 
 🔗 **Dùng thử:** https://verso-262579043496.asia-southeast1.run.app
+🎓 **Bản trên AI Studio:** *(đang chờ import — sẽ là `https://verso.ai.studio`)*
+
+> Mở lên bấm **"Thử trang mẫu Toán 9"** là thấy kết quả ngay, không cần có sẵn ảnh nào.
 
 ---
 

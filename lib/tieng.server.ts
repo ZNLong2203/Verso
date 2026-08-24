@@ -46,7 +46,15 @@ function auth(): GoogleAuth {
 let _thung: ReturnType<Storage['bucket']> | null = null;
 function thung() {
   if (_thung) return _thung;
-  _thung = new Storage({ projectId: DU_AN || undefined }).bucket(THUNG_TIENG);
+  const email = process.env.FIREBASE_CLIENT_EMAIL;
+  const khoa = (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+  // Có khoá thì dùng khoá. Không có thì để SDK tự dò danh tính sẵn có của máy chủ
+  // (Cloud Run). Thiếu bước này, chạy ngoài Google Cloud là kho giọng im lặng ngừng
+  // hoạt động: vẫn đọc được, nhưng MỖI LƯỢT NGHE lại tổng hợp lại và tính tiền lại.
+  _thung = new Storage({
+    projectId: DU_AN || undefined,
+    ...(email && khoa ? { credentials: { client_email: email, private_key: khoa } } : {}),
+  }).bucket(THUNG_TIENG);
   return _thung;
 }
 
