@@ -1,7 +1,14 @@
 import type { MonHoc, LoaiKhoi } from './types';
 
-export const MODEL_CHINH = 'gemini-3.7-flash';
-export const MODEL_DU_PHONG = 'gemini-2.5-flash';
+/* Đo trên trang SGK thật (mẫu Toán 9, 1240×1251), cùng prompt và schema:
+     3.5-flash  13/14/13 khối · đọc đúng số trang · khung hình 6-8% trang · ~20s
+     3.6-flash  13/12    khối · đọc đúng số trang · khung hình 5%   trang · 36-61s
+     3.7-flash  chất lượng tương đương nhưng đang 503 "high demand" liên tục
+     2.5-flash  404 — Google đã gỡ khỏi tài khoản mới
+   Chọn 3.5 làm chính vì nhanh gấp đôi mà chất lượng ngang, 3.6 làm dự phòng.
+   Dự phòng KHÔNG được để là model đã bị gỡ: lúc cần đến nó là lúc hỏng hẳn. */
+export const MODEL_CHINH = 'gemini-3.5-flash';
+export const MODEL_DU_PHONG = 'gemini-3.6-flash';
 
 export const MON_HOC_INFO: Record<MonHoc, { ten: string; icon: string }> = {
   'toan':      { ten: 'Toán',        icon: '∑' },
