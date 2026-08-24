@@ -1,5 +1,7 @@
 # Đưa Verso lên Google AI Studio
 
+**Đã làm xong:** https://verso-zkare.ai.studio
+
 Ba bước, mất khoảng một phút. **Phải tự làm** — import cần đăng nhập tài khoản Google
 của bạn rồi cấp quyền cho GitHub, không ai làm hộ được.
 
@@ -28,20 +30,33 @@ Thiếu chúng thì:
 Ba cái đầu hỏng thì thấy ngay. **Cái thứ tư mới nguy**: nó không báo lỗi gì cả, chỉ âm
 thầm đốt tiền. Danh sách biến đầy đủ nằm trong [`.env.local.example`](../.env.local.example).
 
-### Đặt biến cho dịch vụ AI Studio vừa tạo
+### Đặt biến trong Secrets panel của AI Studio
 
-Sau khi publish, tìm tên dịch vụ trong Cloud Run rồi chạy:
+AI Studio **không** deploy vào project của bạn mà vào hạ tầng riêng của nó, nên không
+đặt biến bằng `gcloud` được. Vào **Build → Secrets** rồi thêm bốn mục sau.
+`GEMINI_API_KEY` thì AI Studio tự đặt sẵn, khỏi thêm.
+
+| Tên | Giá trị |
+|---|---|
+| `FIREBASE_PROJECT_ID` | `verso-43e8b` |
+| `FIREBASE_CLIENT_EMAIL` | `firebase-adminsdk-…@verso-43e8b.iam.gserviceaccount.com` |
+| `FIREBASE_PRIVATE_KEY` | cả khối `-----BEGIN PRIVATE KEY-----…` trong file JSON |
+| `VERSO_BUCKET_TIENG` | `verso-43e8b-tieng` |
+| `APP_URL` | `https://verso-zkare.ai.studio` |
+
+Chạy ngoài Google Cloud thì service account phải tự mang đủ quyền. Đã cấp:
 
 ```bash
-gcloud run services update <TÊN-DỊCH-VỤ> \
-  --project verso-43e8b --region <VÙNG> \
-  --set-env-vars GEMINI_API_KEY=...,FIREBASE_PROJECT_ID=verso-43e8b,VERSO_BUCKET_TIENG=verso-43e8b-tieng
+gcloud storage buckets add-iam-policy-binding gs://verso-43e8b-tieng \
+  --member="serviceAccount:firebase-adminsdk-…@verso-43e8b.iam.gserviceaccount.com" \
+  --role=roles/storage.objectAdmin --project verso-43e8b
+
+gcloud projects add-iam-policy-binding verso-43e8b \
+  --member="serviceAccount:firebase-adminsdk-…@verso-43e8b.iam.gserviceaccount.com" \
+  --role=roles/serviceusage.serviceUsageConsumer
 ```
 
-Nếu dịch vụ nằm **cùng project** `verso-43e8b` thì chỉ cần bấy nhiêu — nó dùng chính danh
-tính của Cloud Run, khỏi mang khoá riêng tư lên máy chủ. Nếu nằm **project khác** thì phải
-thêm `FIREBASE_CLIENT_EMAIL` và `FIREBASE_PRIVATE_KEY`, và cấp cho service account đó
-`roles/datastore.user`, `roles/cloudtts.user`, `roles/storage.objectAdmin`.
+Kiểm bằng chính khoá đó: gọi được Cloud TTS ✅ và ghi/đọc được thùng giọng ✅.
 
 ---
 
