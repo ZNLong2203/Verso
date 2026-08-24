@@ -3,7 +3,7 @@ import type { BanVerso, Khoi } from '@/lib/types';
 import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 import { taoZip, xml } from './zip';
 import { dungCay, dungNav, dungTrangCua, type Muc, type MucNav } from './noiDung';
-import { dungNeo, neoChuThich, nhanMuc, soTuNeo, loiChuThich } from '@/lib/neo';
+import { dungNeo, neoChuThich, nhanMuc, soTuNeo, loiChuThich, thanBaiTap } from '@/lib/neo';
 import { maSo } from '@/lib/chuoi';
 import { loiDocCuaKhoi, doiKyHieuSot } from '@/lib/loiDoc';
 import { giayCuaMp3, gioDaisy } from './mp3';
@@ -101,7 +101,7 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
 
     case 'bai-tap': {
       const dan = k.soBaiTap ? `${nhanMuc(k)}. ` : 'Bài tập. ';
-      const than = ct(k.vanBanDoc || k.vanBan || '');
+      const than = ct(thanBaiTap(k));
       return `<p id="${xml(id)}"${sr}${lg} class="bai-tap">${xml(dan)}${than}</p>`;
     }
 

@@ -72,3 +72,25 @@ export function loiChuThich(k: Khoi): string {
   const daCo = boDau(boMocNnu(than)).replace(/^[\s(]*\d+[)\s]*/, '').startsWith(boDau(boMocNnu(tu)));
   return daCo ? than : `${tu}: ${than}`;
 }
+
+/** Thân đề bài, đã bỏ số hiệu lặp ở đầu.
+ *
+ *  Sách in "1. Nghe và đọc đoạn hội thoại sau", còn Verso xướng thêm câu dẫn
+ *  "Bài tập 1." cho người nghe biết mình đang ở đâu. Ghép thẳng thành
+ *  "Bài tập 1. 1. Nghe và đọc…" — nghe như máy vấp, và đo được là dài hơn ~35%
+ *  cho cùng một câu. */
+export function thanBaiTap(k: Khoi): string {
+  const than = (k.vanBanDoc || k.vanBan || '').trim();
+  const so = (k.soBaiTap ?? '').trim();
+  if (!so) return than;
+
+  // Chỉ cắt đúng phần số hiệu đứng đầu, kèm dấu chấm hoặc ngoặc đi liền sau nó.
+  // Bỏ cả tiền tố chữ ("Bài 4.2" so với "4.2." in trên sách) để hai bên vẫn khớp.
+  const loi = so.replace(/^(bài|câu|bài tập)\s+/i, '');
+  for (const mau of [so, loi]) {
+    if (!mau) continue;
+    const re = new RegExp(`^${mau.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[.):]?\\s+`, 'i');
+    if (re.test(than)) return than.replace(re, '');
+  }
+  return than;
+}

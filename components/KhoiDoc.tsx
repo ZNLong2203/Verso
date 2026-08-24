@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Khoi } from '@/lib/types';
-import { neoChuThich, soTuNeo, loiChuThich } from '@/lib/neo';
+import { neoChuThich, soTuNeo, loiChuThich, thanBaiTap } from '@/lib/neo';
 import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 /* Không có 'use client' — bộ dựng này chạy được ở máy chủ, nên trang học sinh
@@ -128,7 +128,7 @@ export const KhoiDoc: React.FC<{
       const coDoc = (b.hangDoc?.length ?? 0) > 0;
       return boc(
         <div>
-          <p className="text-sm text-muc-mo mb-2">{ct(b.tomTat)}</p>
+          <p className="text-base text-muc-mo mb-2">{ct(b.tomTat)}</p>
           <div className="overflow-x-auto">
             <table>
               <caption className="chi-doc-man-hinh">{b.tomTat}</caption>
@@ -169,19 +169,19 @@ export const KhoiDoc: React.FC<{
           {k.vanBanDoc ? (
             <>
               <span aria-hidden="true">{ctNhin(k.vanBan ?? '')}</span>
-              <span className="chi-doc-man-hinh">{ct(k.vanBanDoc)}</span>
+              <span className="chi-doc-man-hinh">{ct(thanBaiTap(k))}</span>
             </>
-          ) : ct(k.vanBan ?? '')}
+          ) : ct(thanBaiTap(k))}
         </div>,
       );
 
     case 'chu-thich': {
       const so = soTuNeo(neo);
       return boc(
-        <aside id={neo} {...langKhoi}>
+        <div role="note" id={neo} {...langKhoi} className="my-4 px-4 py-2 rounded-lg bg-giay-sau text-base">
           <span className="chi-doc-man-hinh">Chú thích{so ? ` ${so}` : ''}: </span>
           {ct(loiChuThich(k))}
-        </aside>,
+        </div>,
       );
     }
 

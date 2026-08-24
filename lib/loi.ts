@@ -1,5 +1,9 @@
 /** Mã lỗi từ máy chủ → câu tiếng Việt cho giáo viên đọc. */
 export const THONG_BAO_LOI: Record<string, string> = {
+  SAI_MA_SUA: 'Mã sửa không đúng, nên không ghi đè được bản đã phát hành. Hãy mở bằng đúng link sửa của bản đó.',
+  KHONG_MO_DUOC: 'Không mở được bản này để sửa. Kiểm tra lại link sửa.',
+  THIEU_ANH: 'Chưa chọn được ảnh trang sách.',
+  KHONG_PHAI_ANH: 'Tệp này không phải ảnh. Hãy chọn ảnh JPG, PNG hoặc tệp PDF.',
   THIEU_KHOA_API: 'Máy chủ chưa được cấp khoá Gemini hợp lệ. Người cài đặt cần kiểm tra lại.',
   THIEU_FIREBASE: 'Máy chủ chưa cấu hình nơi lưu trữ, nên chưa xuất bản được.',
   HET_QUOTA: 'Hôm nay đã dùng hết lượt đọc miễn phí. Thử lại sau nhé.',

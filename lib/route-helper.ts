@@ -6,6 +6,8 @@ export async function xuLy<T>(fn: () => Promise<T>) {
     return NextResponse.json(await fn());
   } catch (e: unknown) {
     const msg = String((e as Error)?.message ?? e);
+    if (msg.includes('SAI_MA_SUA'))
+      return NextResponse.json({ loi: 'SAI_MA_SUA' }, { status: 403 });
     if (msg.includes('THIEU_KHOA_API') || /API_KEY_INVALID|API key not valid/i.test(msg))
       return NextResponse.json({ loi: 'THIEU_KHOA_API' }, { status: 503 });
     if (/RESOURCE_EXHAUSTED|quota|rate limit|429/i.test(msg))

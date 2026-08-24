@@ -49,7 +49,7 @@ export const TaiVeTieng: React.FC<{ href: string; ten: string; mo: string }> = (
         <span aria-hidden="true" className="text-2xl leading-none mt-0.5">{dangTao ? '⏳' : '⤓'}</span>
         <span className="block">
           <span className="block font-bold text-muc">{ten}</span>
-          <span className="block text-sm text-muc-mo leading-snug mt-0.5">
+          <span className="block text-base text-muc-mo leading-snug mt-0.5">
             {dangTao ? 'Đang tạo giọng đọc cho từng đoạn, chờ khoảng một phút…' : mo}
           </span>
         </span>

@@ -111,6 +111,8 @@ export interface BanVerso {
   trang: Trang[];
   daXuatBan: boolean;
   maChiaSe: string;         // mã trong đường link công khai
+  /** Chìa khoá riêng để mở lại bản này mà sửa. KHÔNG bao giờ hiện trên trang đọc. */
+  maSua?: string;
   ngayTao: string;
   ngayCapNhat: string;
 }

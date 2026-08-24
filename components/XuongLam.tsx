@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { VersoProvider, useVerso, type Buoc } from '@/lib/store';
+import { MoDeSua } from './MoDeSua';
 import { BuocThongTin } from './BuocThongTin';
 import { BuocTaiTrang } from './BuocTaiTrang';
 import { BuocDuyet } from './BuocDuyet';
@@ -68,6 +69,7 @@ const Ruot: React.FC = () => {
         </nav>
 
         <main id="noi-dung">
+          <MoDeSua />
           {buoc === 'thong-tin' && <BuocThongTin />}
           {buoc === 'tai-trang' && <BuocTaiTrang />}
           {buoc === 'duyet' && <BuocDuyet />}

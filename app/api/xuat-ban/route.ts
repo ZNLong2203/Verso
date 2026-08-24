@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!coFirebase()) {
     return NextResponse.json({ loi: 'THIEU_FIREBASE' }, { status: 503 });
   }
-  const ban = (await req.json()) as BanVerso;
+  const { maSua, ...ban } = (await req.json()) as BanVerso & { maSua?: string };
 
   if (!ban?.tieuDe?.trim()) {
     return NextResponse.json({ loi: 'THIEU_TIEU_DE' }, { status: 400 });
@@ -27,5 +27,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ loi: 'CON_KHOI_CHUA_DUYET', soKhoi: conLai }, { status: 409 });
   }
 
-  return xuLy(() => xuatBan(ban));
+  return xuLy(() => xuatBan(ban as BanVerso, maSua));
 }

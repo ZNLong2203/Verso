@@ -199,7 +199,7 @@ export const BuocDuyet: React.FC = () => {
       });
       const d = await r.json();
       if (d.loi) { setLoi(THONG_BAO_LOI[d.loi] ?? d.loi); return; }
-      datMaXuatBan(d.maChiaSe);
+      datMaXuatBan(d.maChiaSe, d.maSua);
       datBuoc('xong');
     } catch {
       setLoi(THONG_BAO_LOI.MAT_MANG);
@@ -268,10 +268,21 @@ export const BuocDuyet: React.FC = () => {
 
       {loi && <div role="alert" className="p-4 rounded-lg bg-loi-50 border border-loi-200 text-loi-700 font-semibold">{loi}</div>}
 
+      {/* Nói rõ link cũ vẫn dùng được: thầy cô đã gửi link cho cả lớp rồi, không ai
+          dám bấm nút sửa nếu sợ nó sinh ra một đường dẫn khác. */}
+      {ban.maChiaSe && (
+        <p className="text-sm text-muc-nhat m-0">
+          Bản này đã phát hành với mã <b className="font-mono">{ban.maChiaSe}</b>. Cập nhật sẽ
+          <b> giữ nguyên đường dẫn cũ</b> — học sinh đang giữ link vẫn nhận được bản mới.
+        </p>
+      )}
+
       <div className="flex gap-3 flex-wrap">
         <Nut kieu="phu" icon="trai" onClick={() => datBuoc('tai-trang')}>Quay lại</Nut>
         <Nut co="lon" icon="lien" onClick={xuatBan} tat={soChuaDuyet > 0 || dangXuatBan}>
-          {dangXuatBan ? 'Đang xuất bản…' : 'Xuất bản và lấy link'}
+          {dangXuatBan
+            ? 'Đang xuất bản…'
+            : ban.maChiaSe ? 'Cập nhật bản đã phát hành' : 'Xuất bản và lấy link'}
         </Nut>
         {soChuaDuyet > 0 && (
           <span className="text-sm text-muc-mo self-center">Còn {soChuaDuyet} phần chưa duyệt</span>

@@ -1,5 +1,5 @@
 import type { Khoi } from './types';
-import { loiChuThich } from './neo';
+import { loiChuThich, thanBaiTap } from './neo';
 
 /** Lưới an toàn: đổi ký hiệu còn sót sang tiếng Việt.
  *
@@ -59,7 +59,7 @@ export function loiDocCuaKhoi(k: Khoi): string {
       return doi(`${dan('Chú thích.')} ${loiChuThich(k)}`);
 
     case 'bai-tap':
-      return doi(`${dan(`Bài tập${k.soBaiTap ? ` ${k.soBaiTap}` : ''}.`)} ${k.vanBanDoc || k.vanBan || ''}`);
+      return doi(`${dan(`Bài tập${k.soBaiTap ? ` ${k.soBaiTap}` : ''}.`)} ${thanBaiTap(k)}`);
 
     default:
       return doi(k.vanBanDoc || k.vanBan);

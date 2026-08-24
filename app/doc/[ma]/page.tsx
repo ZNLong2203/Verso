@@ -46,7 +46,7 @@ export default async function TrangDoc({ params }: Props) {
             {mon.ten}{ban.lop ? ` · Lớp ${ban.lop}` : ''}
           </p>
           <h1 className="font-doc text-3xl leading-tight mt-2 mb-0">{ban.tieuDe}</h1>
-          <p className="text-muc-mo mt-3 text-sm leading-relaxed">
+          <p className="text-muc-mo mt-3 text-base leading-relaxed">
             {ban.trang.length} trang · {moiKhoi.length} phần
             {soHinh > 0 && <> · <b className="text-muc-nhat">{soHinh} hình đã được mô tả</b></>}
             {soCongThuc > 0 && <> · {soCongThuc} công thức đọc được</>}
@@ -96,7 +96,7 @@ export default async function TrangDoc({ params }: Props) {
           ))}
         </main>
 
-        <footer className="mt-12 pt-6 border-t border-vien text-sm text-muc-mo leading-relaxed">
+        <footer className="mt-12 pt-6 border-t border-vien text-base text-muc-mo leading-relaxed">
           {ban.nguoiChuyen && <p className="m-0 mb-2">Người chuyển đổi: {ban.nguoiChuyen}</p>}
           <p className="m-0">{MIEN_TRU}</p>
         </footer>

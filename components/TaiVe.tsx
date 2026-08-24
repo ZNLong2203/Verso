@@ -12,7 +12,7 @@ const Muc: React.FC<{ href: string; ten: string; mo: string }> = ({ href, ten, m
     <span aria-hidden="true" className="text-2xl leading-none mt-0.5">⤓</span>
     <span className="block">
       <span className="block font-bold text-muc">{ten}</span>
-      <span className="block text-sm text-muc-mo leading-snug mt-0.5">{mo}</span>
+      <span className="block text-base text-muc-mo leading-snug mt-0.5">{mo}</span>
     </span>
   </a>
 );
@@ -28,7 +28,7 @@ export const TaiVe: React.FC<{ ma: string }> = ({ ma }) => (
     <h2 id="tai-ve-tieu-de" className="text-base font-extrabold m-0 mb-1">
       Tải về để đọc khi không có mạng
     </h2>
-    <p className="text-sm text-muc-mo m-0 mb-3 leading-relaxed">
+    <p className="text-base text-muc-mo m-0 mb-3 leading-relaxed">
       Cả ba định dạng đều giữ nguyên mô tả hình vẽ, dạng đọc của công thức và mục lục nhảy nhanh.
     </p>
     <div className="flex flex-wrap gap-3">

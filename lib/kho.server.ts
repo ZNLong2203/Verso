@@ -77,27 +77,54 @@ const moNoiDung = (chuoi: string): BanVerso['trang'] => {
   try { return JSON.parse(chuoi); } catch { return []; }
 };
 
-export async function xuatBan(ban: BanVerso): Promise<{ maChiaSe: string }> {
+/** Mã sửa — chìa khoá riêng để mở lại bản đã phát hành.
+ *
+ *  Không dùng chính mã chia sẻ làm chìa: mã đó nằm trong đường dẫn cả lớp đang giữ,
+ *  ai cũng đọc được. Lấy nó làm chìa nghĩa là bất kỳ ai có link đều sửa đè được sách
+ *  của người khác — mà học sinh khiếm thị thì không có cách nào phát hiện bản đã bị đổi. */
+export async function xuatBan(ban: BanVerso, maSuaGui?: string): Promise<{ maChiaSe: string; maSua: string }> {
   const maChiaSe = ban.maChiaSe || taoMaChiaSe();
   const ngayXuatBan = new Date().toISOString();
   const sach = bocAnhGoc({ ...ban, maChiaSe, daXuatBan: true, ngayCapNhat: ngayXuatBan });
 
+  const kho = db().collection(BO_SUU_TAP).doc(maChiaSe);
+  const cu = await kho.get();
+  const maSuaCu = cu.exists ? ((cu.data() as { maSua?: string }).maSua ?? '') : '';
+
+  // Đã có bản cũ thì phải đưa đúng mã sửa mới được ghi đè.
+  if (maSuaCu && maSuaGui !== maSuaCu) throw new Error('SAI_MA_SUA');
+  const maSua = maSuaCu || taoMaChiaSe(12);
+
   const { trang, ...phanConLai } = sach;
   // tomTat() đã chứa ngayXuatBan — trải sau cùng để không khai trùng trường.
-  await db().collection(BO_SUU_TAP).doc(maChiaSe).set({
+  await kho.set({
     ...phanConLai,
+    maSua,
     trangJSON: goiNoiDung(trang),
     ...tomTat(sach, ngayXuatBan),
   });
-  return { maChiaSe };
+  return { maChiaSe, maSua };
+}
+
+/** Mở lại bản đã phát hành để sửa. Chỉ trả về khi đưa đúng mã sửa. */
+export async function moDeSua(maChiaSe: string, maSua: string): Promise<BanVerso | null> {
+  if (!coFirebase() || !maSua) return null;
+  const snap = await db().collection(BO_SUU_TAP).doc(maChiaSe.toUpperCase()).get();
+  if (!snap.exists) return null;
+  const d = snap.data() as Omit<BanVerso, 'trang'> & { trangJSON?: string; maSua?: string };
+  if (!d.maSua || d.maSua !== maSua) return null;
+  const { maSua: _bo, trangJSON, ...con } = d;
+  return { ...con, trang: moNoiDung(trangJSON ?? '[]') } as BanVerso;
 }
 
 export async function docBanDaXuatBan(maChiaSe: string): Promise<BanVerso | null> {
   if (!coFirebase()) return null;
   const snap = await db().collection(BO_SUU_TAP).doc(maChiaSe.toUpperCase()).get();
   if (!snap.exists) return null;
-  const d = snap.data() as Omit<BanVerso, 'trang'> & { trangJSON?: string };
-  return { ...d, trang: moNoiDung(d.trangJSON ?? '[]') } as BanVerso;
+  // maSua KHÔNG được rời khỏi máy chủ theo đường này: trang đọc là trang công khai.
+  const { maSua: _bo, trangJSON, ...d } = snap.data() as
+    Omit<BanVerso, 'trang'> & { trangJSON?: string; maSua?: string };
+  return { ...d, trang: moNoiDung(trangJSON ?? '[]') } as BanVerso;
 }
 
 /** Thư viện dùng chung: chuyển một lần, mọi trường cùng dùng.
@@ -134,4 +161,18 @@ export async function danhSachThuVien(
   if (!tk) return ds;
   return ds.filter((b) =>
     boDau([b.tieuDe, b.nguon, b.nguoiChuyen].join(' ')).includes(tk));
+}
+
+/** Gỡ một bản đã phát hành. Cần đúng mã sửa.
+ *
+ *  Thư viện là chỗ công khai ai cũng phát hành được, nên phải có đường gỡ: bản
+ *  chuyển hỏng hoặc bản thử nghiệm nằm lại đó thì học sinh vẫn mở phải. */
+export async function goBan(maChiaSe: string, maSua: string): Promise<{ daGo: boolean }> {
+  if (!coFirebase() || !maSua) throw new Error('SAI_MA_SUA');
+  const kho = db().collection(BO_SUU_TAP).doc(maChiaSe.toUpperCase());
+  const snap = await kho.get();
+  if (!snap.exists) return { daGo: false };
+  if ((snap.data() as { maSua?: string }).maSua !== maSua) throw new Error('SAI_MA_SUA');
+  await kho.delete();
+  return { daGo: true };
 }

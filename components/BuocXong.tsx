@@ -3,16 +3,20 @@
 import React from 'react';
 import { Nut, The, Icon } from './ui';
 import { useVerso } from '@/lib/store';
+import { THONG_BAO_LOI } from '@/lib/loi';
 import { TaiVe } from './TaiVe';
 
 export const BuocXong: React.FC = () => {
-  const { ban, maDaXuatBan, lamLai } = useVerso();
+  const { ban, maDaXuatBan, lamLai, datBuoc } = useVerso();
   const [daChep, setDaChep] = React.useState(false);
   const [goc, setGoc] = React.useState('');
+  const [dangGo, setDangGo] = React.useState(false);
+  const [loiGo, setLoiGo] = React.useState('');
 
   // window chỉ có ở trình duyệt — đọc trong effect để tránh lệch hydration
   React.useEffect(() => setGoc(window.location.origin), []);
   const lien = goc ? `${goc}/doc/${maDaXuatBan}` : '';
+  const lienSua = goc && ban.maSua ? `${goc}/?sua=${maDaXuatBan}&khoa=${ban.maSua}` : '';
 
   const chep = async () => {
     try {
@@ -65,6 +69,21 @@ export const BuocXong: React.FC = () => {
         </div>
       </The>
 
+      {lienSua && (
+        <The lop="p-5">
+          <h3 className="text-base font-extrabold m-0">Link để sửa lại sau — giữ riêng</h3>
+          <p className="text-sm text-muc-nhat mt-1.5 mb-3 leading-relaxed">
+            Bản nháp chỉ nằm trong máy này. Lưu link dưới đây thì mở ở máy khác vẫn sửa tiếp
+            được, và bản mới <b>giữ nguyên đường dẫn cũ</b> của học sinh.
+            <b> Đừng gửi link này cho học sinh</b> — ai có nó cũng sửa được bản đọc.
+          </p>
+          <label htmlFor="lien-sua" className="chi-doc-man-hinh">Đường dẫn để sửa lại</label>
+          <input id="lien-sua" readOnly value={lienSua}
+            onFocus={(e) => e.currentTarget.select()}
+            className="w-full px-3.5 py-2.5 rounded-lg border-2 border-can-kiem-200 bg-can-kiem-50 text-sm font-mono" />
+        </The>
+      )}
+
       <TaiVe ma={maDaXuatBan} />
 
       <The lop="p-6">
@@ -78,8 +97,28 @@ export const BuocXong: React.FC = () => {
         </ol>
       </The>
 
-      <div className="flex gap-3">
+      {loiGo && <p role="alert" className="text-sm font-semibold text-loi-700 m-0">{loiGo}</p>}
+
+      <div className="flex gap-3 flex-wrap">
+        {/* Phát hiện sai sót sau khi gửi link là chuyện thường. Không có đường quay
+            lại thì thầy cô phải làm lại từ đầu, và bản sai vẫn nằm đó. */}
+        <Nut kieu="phu" icon="sua" onClick={() => datBuoc('duyet')}>Sửa lại nội dung</Nut>
         <Nut kieu="phu" icon="cong" onClick={lamLai}>Chuyển tài liệu khác</Nut>
+        {ban.maSua && (
+          // Bản chuyển hỏng mà không gỡ được thì cứ nằm trong thư viện, học sinh vẫn mở phải.
+          <Nut kieu="phu" icon="xoa" tat={dangGo} onClick={async () => {
+            if (!window.confirm(`Gỡ "${ban.tieuDe}" khỏi thư viện? Đường dẫn đã gửi sẽ không mở được nữa.`)) return;
+            setDangGo(true); setLoiGo('');
+            try {
+              const r = await fetch(`/api/ban/${maDaXuatBan}?khoa=${encodeURIComponent(ban.maSua!)}`, { method: 'DELETE' });
+              if (!r.ok) { const d = await r.json().catch(() => ({})); setLoiGo(THONG_BAO_LOI[d?.loi] ?? 'Chưa gỡ được bản này.'); return; }
+              lamLai();
+            } catch { setLoiGo(THONG_BAO_LOI.MAT_MANG); }
+            finally { setDangGo(false); }
+          }}>
+            {dangGo ? 'Đang gỡ…' : 'Gỡ khỏi thư viện'}
+          </Nut>
+        )}
         <a href="/thu-vien" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-vien bg-white text-sm font-bold hover:border-verso-600 hover:text-verso-700">
           <Icon ten="sach" co={16} /> Xem thư viện
         </a>

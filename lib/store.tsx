@@ -29,7 +29,13 @@ interface Ctx {
   suaKhoi: (trangId: string, khoiId: string, p: Partial<Khoi>) => void;
   xoaKhoi: (trangId: string, khoiId: string) => void;
   duyetTatCa: () => void;
-  datMaXuatBan: (ma: string) => void;
+  /** Ghi mã chia sẻ vào chính bản nháp.
+   *
+   *  Trước đây mã chỉ nằm trong state React: tải lại trang là mất link, và tệ hơn,
+   *  sửa xong phát hành lại thì sinh mã MỚI — link đã gửi cho học sinh vẫn trỏ vào
+   *  bản sai, mà thầy cô không hề biết. */
+  datMaXuatBan: (ma: string, maSua?: string) => void;
+  napBan: (b: BanVerso) => void;
   lamLai: () => void;
 }
 
@@ -45,7 +51,6 @@ export const VersoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // khiến HTML máy chủ khác HTML client và React báo lỗi hydration.
   const [ban, datBan] = React.useState<BanVerso>(banMoi);
   const [buoc, datBuoc] = React.useState<Buoc>('thong-tin');
-  const [maDaXuatBan, datMaXuatBan] = React.useState('');
   const [dangDoc, setDangDoc] = React.useState<Record<string, boolean>>({});
   const [daNap, setDaNap] = React.useState(false);
 
@@ -134,18 +139,27 @@ export const VersoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       trang: b.trang.map((t) => ({ ...t, khoi: t.khoi.map((k) => ({ ...k, daDuyet: true })) })),
     }));
 
+  const datMaXuatBan = (ma: string, maSua?: string) =>
+    datBan((b) => ({
+      ...b, maChiaSe: ma, maSua: maSua ?? b.maSua,
+      daXuatBan: true, ngayCapNhat: new Date().toISOString(),
+    }));
+
+  /** Nạp một bản đã phát hành vào chỗ làm việc, để sửa tiếp trên máy khác. */
+  const napBan = (b: BanVerso) => { datBan(b); datBuoc('duyet'); };
+
   const lamLai = () => {
-    datBan(banMoi()); datBuoc('thong-tin'); datMaXuatBan(''); setDangDoc({});
+    datBan(banMoi()); datBuoc('thong-tin'); setDangDoc({});
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
   };
 
   return (
     <C.Provider value={{
-      ban, buoc, maDaXuatBan, dangDoc,
+      ban, buoc, maDaXuatBan: ban.maChiaSe, dangDoc,
       soChuaDuyet: demChuaDuyet(ban.trang),
       datBuoc, suaBan, themTrang, thayTrang, xoaTrang, doiThuTuTrang,
       danhDauDangDoc: (khoa, v) => setDangDoc((d) => ({ ...d, [khoa]: v })),
-      suaKhoi, xoaKhoi, duyetTatCa, datMaXuatBan, lamLai,
+      suaKhoi, xoaKhoi, duyetTatCa, datMaXuatBan, napBan, lamLai,
     }}>
       {children}
     </C.Provider>
