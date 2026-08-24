@@ -5,6 +5,7 @@ import { KhoiDoc } from '@/components/KhoiDoc';
 import { dungNeo, nhanMuc } from '@/lib/neo';
 import { TrinhNghe } from '@/components/TrinhNghe';
 import { TaiVe } from '@/components/TaiVe';
+import { BaoDocSai } from '@/components/BaoDocSai';
 import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 
 /* Trang này KHÔNG có 'use client'.
@@ -59,6 +60,9 @@ export default async function TrangDoc({ params }: Props) {
         <section aria-label="Nghe bản đọc"
           className="my-5 p-4 rounded-lg bg-verso-50 border border-verso-200">
           <TrinhNghe ma={ma} />
+          <div className="mt-3 pt-3 border-t border-verso-200">
+            <BaoDocSai ma={ma} />
+          </div>
         </section>
 
         <TaiVe ma={ma} />

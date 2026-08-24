@@ -3,6 +3,7 @@
 import React from 'react';
 import { doiKyHieuSot } from '@/lib/loiDoc';
 import { taiTieng, taiTruoc, LoiTieng, THONG_BAO_TIENG } from '@/lib/tiengKhach';
+import { ghiDangNghe } from '@/lib/dangNghe';
 
 /**
  * Trình nghe cho trang đọc.
@@ -123,6 +124,8 @@ export const TrinhNghe: React.FC<{ ma?: string }> = ({ ma }) => {
     const e = khoi.current[i];
     if (!e) return;
     e.classList.add('dang-nghe');
+    // Ghi lại để ô "Báo chỗ đọc sai" còn biết phần nào, kể cả sau khi đã dừng.
+    ghiDangNghe(e.getAttribute('data-khoi') ?? '', (e.textContent ?? '').trim().slice(0, 60));
     e.scrollIntoView({ block: 'center', behavior: 'smooth' });
   };
 

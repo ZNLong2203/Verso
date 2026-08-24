@@ -70,6 +70,8 @@ export const KhoiDoc: React.FC<{
   const ct = (t: string) => chuCoNnu(t, goc, trang, true);
   const ctNhin = (t: string) => chuCoNnu(t, goc, trang, false);
   const canKiem = hienCoDuyet && !k.daDuyet && k.doTinCay !== 'cao';
+  /** id để nhảy tới, và data-khoi để nối góp ý về đúng khối trong màn duyệt. */
+  const chung = { id: neo, 'data-khoi': k.id } as const;
   const boc = (con: React.ReactNode) =>
     canKiem ? (
       <div className="chua-duyet pl-4 py-2 my-3">
@@ -84,23 +86,23 @@ export const KhoiDoc: React.FC<{
     case 'tieu-de': {
       const cap = Math.min(Math.max((k.capTieuDe || 2) + lechCap, 1), 6);
       const The = `h${cap}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-      return boc(<The id={neo} {...langKhoi}>{ct(k.vanBan ?? '')}</The>);
+      return boc(<The {...chung} {...langKhoi}>{ct(k.vanBan ?? '')}</The>);
     }
 
     case 'van-ban':
       return boc(
         k.vanBanDoc
-          ? <p {...langKhoi}>
+          ? <p {...chung} {...langKhoi}>
               <span aria-hidden="true">{ctNhin(k.vanBan ?? '')}</span>
               <span className="chi-doc-man-hinh">{ct(k.vanBanDoc)}</span>
             </p>
-          : <p {...langKhoi}>{ct(k.vanBan ?? '')}</p>,
+          : <p {...chung} {...langKhoi}>{ct(k.vanBan ?? '')}</p>,
       );
 
     case 'tho':
       // white-space: pre-wrap giữ nguyên từng dòng thơ và khoảng cách giữa các khổ
       return boc(
-        <div className="tho" role="group" aria-label="Đoạn thơ" {...langKhoi}>
+        <div {...chung} className="tho" role="group" aria-label="Đoạn thơ" {...langKhoi}>
           {ct(k.vanBan ?? '')}
         </div>,
       );
@@ -109,7 +111,7 @@ export const KhoiDoc: React.FC<{
       // Mô tả là NỘI DUNG THẬT, không phải thuộc tính alt của một tấm ảnh không có ở đây.
       // Nhờ vậy nó luôn được đọc, và người sáng mắt cũng đọc được để đối chiếu.
       return boc(
-        <figure id={neo}>
+        <figure {...chung}>
           <figcaption>Mô tả hình vẽ</figcaption>
           <p className="m-0">{ct(k.moTa ?? '')}</p>
         </figure>,
@@ -117,7 +119,7 @@ export const KhoiDoc: React.FC<{
 
     case 'cong-thuc':
       return boc(
-        <div className="cong-thuc" role="math" aria-label={k.docThanhLoi || k.kyHieuGoc}>
+        <div {...chung} className="cong-thuc" role="math" aria-label={k.docThanhLoi || k.kyHieuGoc}>
           <KyHieuVaLoi kyHieu={k.kyHieuGoc ?? ''} loi={k.docThanhLoi ?? ''} />
         </div>,
       );
@@ -127,7 +129,7 @@ export const KhoiDoc: React.FC<{
       if (!b) return null;
       const coDoc = (b.hangDoc?.length ?? 0) > 0;
       return boc(
-        <div>
+        <div {...chung}>
           <p className="text-base text-muc-mo mb-2">{ct(b.tomTat)}</p>
           <div className="overflow-x-auto">
             <table>
@@ -161,7 +163,7 @@ export const KhoiDoc: React.FC<{
         // Không dùng <section aria-label> ở đây: mỗi cái sẽ thành một landmark,
         // và hai bài trùng số hiệu sẽ tạo landmark trùng tên. Dùng div kèm câu dẫn ẩn —
         // nhảy tới vẫn được xướng "Bài tập 3", mà không làm loạn danh sách landmark.
-        <div id={neo} tabIndex={-1} {...langKhoi}
+        <div {...chung} tabIndex={-1} {...langKhoi}
           className="my-5 pl-4 border-l-4 border-verso-200">
           <span className="chi-doc-man-hinh">
             {k.soBaiTap ? `Bài tập ${k.soBaiTap}. ` : 'Bài tập. '}
@@ -178,7 +180,7 @@ export const KhoiDoc: React.FC<{
     case 'chu-thich': {
       const so = soTuNeo(neo);
       return boc(
-        <div role="note" id={neo} {...langKhoi} className="my-4 px-4 py-2 rounded-lg bg-giay-sau text-base">
+        <div {...chung} role="note" {...langKhoi} className="my-4 px-4 py-2 rounded-lg bg-giay-sau text-base">
           <span className="chi-doc-man-hinh">Chú thích{so ? ` ${so}` : ''}: </span>
           {ct(loiChuThich(k))}
         </div>,
@@ -190,14 +192,14 @@ export const KhoiDoc: React.FC<{
       // là một landmark, mà trang nào cũng có vài khung — danh sách landmark đầy
       // những mục trùng tên, người dùng trình đọc màn hình không dùng được nữa.
       return boc(
-        <div role="note" id={neo} {...langKhoi} className="border-l-4 border-verso-600 pl-4 my-4">
+        <div {...chung} role="note" {...langKhoi} className="border-l-4 border-verso-600 pl-4 my-4">
           <span className="chi-doc-man-hinh">Khung lưu ý: </span>
           {ct(k.vanBan ?? '')}
         </div>,
       );
 
     default:
-      return boc(<p>{k.vanBan}</p>);
+      return boc(<p {...chung}>{k.vanBan}</p>);
   }
 };
 

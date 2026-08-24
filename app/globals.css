@@ -79,6 +79,13 @@ body {
   white-space: normal;
 }
 
+/* Khối vừa nhảy tới từ hộp góp ý — nháy lên một lúc cho dễ tìm bằng mắt.
+   Không dùng màu làm dấu hiệu duy nhất: nó chỉ phụ hoạ cho việc đã cuộn tới nơi. */
+.vua-toi { outline: 3px solid var(--color-verso-600); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+  .vua-toi { transition: outline-color .3s ease; }
+}
+
 /* Liên kết bỏ qua — người dùng bàn phím bấm Tab lần đầu là gặp ngay */
 .bo-qua {
   position: absolute; left: -9999px; top: 0; z-index: 100;

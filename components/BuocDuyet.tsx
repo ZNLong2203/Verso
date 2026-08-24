@@ -10,6 +10,7 @@ import type { Khoi, Trang } from '@/lib/types';
 import { loiDocCuaKhoi } from '@/lib/loiDoc';
 import { taiTieng, LoiTieng, THONG_BAO_TIENG } from '@/lib/tiengKhach';
 import { SuaBang } from './SuaBang';
+import { HopGopY } from './HopGopY';
 
 const TinCay: React.FC<{ k: Khoi }> = ({ k }) =>
   k.doTinCay === 'cao' ? null : (
@@ -99,7 +100,9 @@ const KhoiSua: React.FC<{ trang: Trang; k: Khoi }> = ({ trang, k }) => {
     : k.vanBan;
 
   return (
-    <li className={`rounded-lg border p-3.5 ${k.daDuyet ? 'border-vien-nhat bg-white' : 'border-can-kiem-200 bg-can-kiem-50'}`}>
+    // id để hộp góp ý nhảy thẳng tới đúng khối người đọc báo sai
+    <li id={`khoi-sua-${k.id}`}
+      className={`rounded-lg border p-3.5 ${k.daDuyet ? 'border-vien-nhat bg-white' : 'border-can-kiem-200 bg-can-kiem-50'}`}>
       <div className="flex items-start gap-3">
         <label className="flex items-center gap-2 shrink-0 cursor-pointer pt-0.5">
           <input type="checkbox" checked={k.daDuyet} onChange={(e) => suaKhoi(trang.id, k.id, { daDuyet: e.target.checked })}
@@ -191,6 +194,21 @@ export const BuocDuyet: React.FC = () => {
   const tongKhoi = ban.trang.reduce((s, t) => s + t.khoi.length, 0);
   const daDuyet = tongKhoi - soChuaDuyet;
 
+  /** Nhảy tới khối người đọc báo sai.
+   *
+   *  Phải TẮT bộ lọc trước: khối bị báo thường đã duyệt rồi, mà màn này mặc định
+   *  chỉ hiện phần chưa duyệt — không tắt thì bấm xong chẳng đi đâu cả. */
+  const toiKhoi = (khoiId: string) => {
+    setChiCanKiem(false);
+    requestAnimationFrame(() => {
+      const e = document.getElementById(`khoi-sua-${khoiId}`);
+      if (!e) return;
+      e.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      e.classList.add('vua-toi');
+      setTimeout(() => e.classList.remove('vua-toi'), 2500);
+    });
+  };
+
   const xuatBan = async () => {
     setDangXuatBan(true); setLoi('');
     try {
@@ -210,6 +228,8 @@ export const BuocDuyet: React.FC = () => {
 
   return (
     <div className="max-w-3xl grid gap-5">
+      <HopGopY toiKhoi={toiKhoi} />
+
       <The lop="p-6">
         <h2 className="text-xl font-extrabold m-0">Duyệt trước khi phát hành</h2>
         <p className="text-muc-nhat mt-2 leading-relaxed">

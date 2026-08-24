@@ -176,3 +176,47 @@ export async function goBan(maChiaSe: string, maSua: string): Promise<{ daGo: bo
   await kho.delete();
   return { daGo: true };
 }
+
+/* ─────────────── Góp ý từ người đọc ─────────────── */
+
+export interface GopY {
+  id: string;
+  khoiId: string;     // phần nào bị báo, rỗng nếu góp ý chung
+  noiDung: string;
+  luc: string;
+}
+
+const TOI_DA_GOP_Y = 300;
+
+/** Nhận báo lỗi từ người đang đọc.
+ *
+ *  Đây là mắt xích còn thiếu của cả sản phẩm: học sinh khiếm thị là NGƯỜI DUY NHẤT
+ *  biết chỗ nào đọc lên nghe sai, mà lại không có đường nào nói lại. Không thu bất
+ *  cứ thông tin cá nhân nào — chỉ nội dung góp ý và phần bị báo. */
+export async function guiGopY(maChiaSe: string, khoiId: string, noiDung: string): Promise<{ daNhan: boolean }> {
+  if (!coFirebase()) throw new Error('THIEU_FIREBASE');
+  const chu = db().collection(BO_SUU_TAP).doc(maChiaSe.toUpperCase());
+  if (!(await chu.get()).exists) throw new Error('KHONG_TIM_THAY');
+
+  const kho = chu.collection('gop-y');
+  // Chặn trần để một người rảnh tay không nhấn chìm hộp thư của giáo viên.
+  if ((await kho.count().get()).data().count >= TOI_DA_GOP_Y) throw new Error('QUA_NHIEU_GOP_Y');
+
+  await kho.add({
+    khoiId: khoiId.slice(0, 80),
+    noiDung: noiDung.trim().slice(0, 500),
+    luc: new Date().toISOString(),
+  });
+  return { daNhan: true };
+}
+
+/** Đọc góp ý — chỉ chủ bản đọc, tức người có mã sửa. */
+export async function docGopY(maChiaSe: string, maSua: string): Promise<GopY[] | null> {
+  if (!coFirebase() || !maSua) return null;
+  const chu = db().collection(BO_SUU_TAP).doc(maChiaSe.toUpperCase());
+  const snap = await chu.get();
+  if (!snap.exists || (snap.data() as { maSua?: string }).maSua !== maSua) return null;
+
+  const ds = await chu.collection('gop-y').orderBy('luc', 'desc').limit(100).get();
+  return ds.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<GopY, 'id'>) }));
+}

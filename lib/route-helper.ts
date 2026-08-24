@@ -6,6 +6,10 @@ export async function xuLy<T>(fn: () => Promise<T>) {
     return NextResponse.json(await fn());
   } catch (e: unknown) {
     const msg = String((e as Error)?.message ?? e);
+    if (msg.includes('QUA_NHIEU_GOP_Y'))
+      return NextResponse.json({ loi: 'QUA_NHIEU_GOP_Y' }, { status: 429 });
+    if (msg.includes('KHONG_TIM_THAY'))
+      return NextResponse.json({ loi: 'KHONG_TIM_THAY' }, { status: 404 });
     if (msg.includes('SAI_MA_SUA'))
       return NextResponse.json({ loi: 'SAI_MA_SUA' }, { status: 403 });
     if (msg.includes('THIEU_KHOA_API') || /API_KEY_INVALID|API key not valid/i.test(msg))
