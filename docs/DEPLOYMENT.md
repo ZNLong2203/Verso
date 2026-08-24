@@ -135,3 +135,17 @@ và đó là cái bẫy bảo trì.
 | Icon/CSS 404 trên production | `output: 'standalone'` không chép `.next/static` và `public/`. Kiểm `postbuild` và `Dockerfile` |
 | Chunk JS trả 403 ở chế độ dev | Next 16 chặn origin lạ. Dùng `localhost` thay `127.0.0.1`, hoặc thêm `allowedDevOrigins` |
 | Tài liệu quá lớn | Firestore giới hạn 1MB/tài liệu, chốt chặn đặt ở 900KB. Tách thành nhiều chương |
+
+---
+
+## Máy chủ không mang khoá riêng tư
+
+Dịch vụ Cloud Run chạy bằng **danh tính của chính nó** (Application Default Credentials),
+không có `FIREBASE_CLIENT_EMAIL` hay `FIREBASE_PRIVATE_KEY` trong biến môi trường. Không
+có file khoá trên máy chủ thì cũng không có gì để rò rỉ.
+
+Biến còn lại đúng bốn cái: `GEMINI_API_KEY`, `FIREBASE_PROJECT_ID`, `VERSO_BUCKET_TIENG`,
+`APP_URL`.
+
+Chỉ những nơi triển khai **ngoài** Google Cloud — như bản trên AI Studio — mới cần khoá,
+vì ở đó không có danh tính sẵn để mượn. Xem [Đưa lên AI Studio](DUA-LEN-AI-STUDIO.md).
