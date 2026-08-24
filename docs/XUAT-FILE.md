@@ -5,8 +5,9 @@ máy đọc DAISY và trình đọc màn hình NVDA. Đưa được bản chuy�
 các em đang dùng nghĩa là **không phải học lại gì cả** — và đọc được cả khi nhà mất mạng.
 
 ```
-GET /api/tai-ve/{maChiaSe}?dang=epub    → .epub
-GET /api/tai-ve/{maChiaSe}?dang=daisy   → .zip (DAISY 3)
+GET /api/tai-ve/{maChiaSe}?dang=epub          → .epub
+GET /api/tai-ve/{maChiaSe}?dang=daisy         → .zip (DAISY 3, chỉ có chữ)
+GET /api/tai-ve/{maChiaSe}?dang=daisy-tieng   → .zip (DAISY 3 đầy đủ CÓ TIẾNG)
 ```
 
 ---

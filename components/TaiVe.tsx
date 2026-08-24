@@ -1,4 +1,5 @@
 import React from 'react';
+import { TaiVeTieng } from './TaiVeTieng';
 
 /* Không có 'use client': đây chỉ là hai đường dẫn, tải được cả khi JavaScript
    không chạy. Học sinh dùng máy cũ vẫn lấy được file. */
@@ -28,13 +29,15 @@ export const TaiVe: React.FC<{ ma: string }> = ({ ma }) => (
       Tải về để đọc khi không có mạng
     </h2>
     <p className="text-sm text-muc-mo m-0 mb-3 leading-relaxed">
-      Cả hai định dạng đều giữ nguyên mô tả hình vẽ, dạng đọc của công thức và mục lục nhảy nhanh.
+      Cả ba định dạng đều giữ nguyên mô tả hình vẽ, dạng đọc của công thức và mục lục nhảy nhanh.
     </p>
     <div className="flex flex-wrap gap-3">
       <Muc href={`/api/tai-ve/${ma}?dang=epub`} ten="EPUB 3"
         mo="Đọc bằng NVDA, Thorium, Apple Books, Google Play Sách." />
-      <Muc href={`/api/tai-ve/${ma}?dang=daisy`} ten="DAISY 3"
+      <Muc href={`/api/tai-ve/${ma}?dang=daisy`} ten="DAISY 3 — bản chữ"
         mo="Cho máy đọc sách DAISY. Nhảy được theo số trang sách giấy." />
+      <TaiVeTieng href={`/api/tai-ve/${ma}?dang=daisy-tieng`} ten="DAISY 3 — có tiếng đọc sẵn"
+        mo="Kèm giọng đọc tiếng Việt đồng bộ với chữ. Dùng được cả trên máy không có bộ đọc tiếng Việt." />
     </div>
   </section>
 );

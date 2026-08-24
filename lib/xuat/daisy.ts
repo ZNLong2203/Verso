@@ -5,8 +5,24 @@ import { taoZip, xml } from './zip';
 import { dungCay, dungNav, dungTrangCua, type Muc, type MucNav } from './noiDung';
 import { dungNeo, neoChuThich, nhanMuc, soTuNeo, loiChuThich } from '@/lib/neo';
 import { maSo } from '@/lib/chuoi';
+import { loiDocCuaKhoi, doiKyHieuSot } from '@/lib/loiDoc';
+import { giayCuaMp3, gioDaisy } from './mp3';
 
-interface Boi { neo: Map<string, string>; trangCua: Map<string, number> }
+interface Boi {
+  neo: Map<string, string>;
+  trangCua: Map<string, number>;
+  /** Chỉ có ở bản CÓ TIẾNG: khối nào ứng với đoạn SMIL nào. */
+  par?: Map<string, string>;
+}
+
+/** Một đoạn tiếng đã tổng hợp, gắn với đúng khối văn bản của nó. */
+interface DoanTieng {
+  khoiId: string;
+  par: string;
+  tep: string;
+  mp3: Buffer;
+  giay: number;
+}
 
 /** Xuất DAISY 3 dạng chỉ có chữ (ANSI/NISO Z39.86, "textNCX").
  *
@@ -42,22 +58,26 @@ function noiChuThich(s: string, trang: number): string {
 function khoiRaDtbook(k: Khoi, b: Boi): string {
   const id = b.neo.get(k.id) ?? `khoi-${k.id}`;
   const ct = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1);
+  // smilref nối khối văn bản với đoạn tiếng của nó. Thiếu nó thì máy đọc DAISY
+  // phát được tiếng nhưng không biết đang đọc tới chữ nào — mất hẳn khả năng
+  // nhảy theo câu và tô sáng theo tiếng.
+  const sr = b.par?.get(k.id) ? ` smilref="sach.smil#${b.par.get(k.id)}"` : '';
   switch (k.loai) {
     case 'van-ban':
       // Chạy cả dạng đọc qua noiChuThich: dấu chú thích vẫn còn trong đó, và
       // giữ được nó thành <noteref> nghĩa là người nghe nhảy tới lời giải nghĩa được.
-      return `<p>${ct(k.vanBanDoc || k.vanBan || '')}</p>`;
+      return `<p id="${xml(id)}"${sr}>${ct(k.vanBanDoc || k.vanBan || '')}</p>`;
 
     case 'tho':
-      return tho(k.vanBan ?? '', ct);
+      return `<div id="${xml(id)}"${sr}>` + tho(k.vanBan ?? '', ct) + `</div>`;
 
     case 'hinh-anh':
       // prodnote render="required" = lời do người làm sách thêm vào, BẮT BUỘC đọc.
       // Đúng nghĩa với mô tả hình: không có nó thì học sinh mất hẳn nội dung.
-      return `<prodnote id="${xml(id)}" render="required"><p>Mô tả hình vẽ: ${xml(k.moTa)}</p></prodnote>`;
+      return `<prodnote id="${xml(id)}"${sr} render="required"><p>Mô tả hình vẽ: ${xml(k.moTa)}</p></prodnote>`;
 
     case 'cong-thuc':
-      return `<p id="${xml(id)}" class="cong-thuc">${xml(k.docThanhLoi || k.kyHieuGoc)}</p>`;
+      return `<p id="${xml(id)}"${sr} class="cong-thuc">${xml(k.docThanhLoi || k.kyHieuGoc)}</p>`;
 
     case 'bang': {
       const b = k.bang;
@@ -65,7 +85,7 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
       const coDoc = (b.hangDoc?.length ?? 0) > 0;
       const o = (v: string, r: number, c: number) =>
         xml((coDoc ? b.hangDoc?.[r]?.[c] : '') || v);
-      return `<table id="${xml(id)}"><caption>${xml(b.tomTat)}</caption>`
+      return `<table id="${xml(id)}"${sr}><caption>${xml(b.tomTat)}</caption>`
         + `<thead><tr>${b.tieuDeCot.map((c) => `<th>${xml(c)}</th>`).join('')}</tr></thead><tbody>`
         + b.hang.map((h, r) => `<tr>${h.map((v, c) => `<td>${o(v, r, c)}</td>`).join('')}</tr>`).join('')
         + `</tbody></table>`;
@@ -74,27 +94,63 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
     case 'bai-tap': {
       const dan = k.soBaiTap ? `${nhanMuc(k)}. ` : 'Bài tập. ';
       const than = ct(k.vanBanDoc || k.vanBan || '');
-      return `<p id="${xml(id)}" class="bai-tap">${xml(dan)}${than}</p>`;
+      return `<p id="${xml(id)}"${sr} class="bai-tap">${xml(dan)}${than}</p>`;
     }
 
     case 'chu-thich': {
       // Xướng "Chú thích 1" trước lời giải nghĩa: người nghe nhảy tới đây từ
       // giữa bài, cần biết ngay mình đang nghe chú thích số mấy.
       const so = soTuNeo(id);
-      return `<note id="${xml(id)}"><p>Chú thích${so ? ` ${so}` : ''}: `
+      return `<note id="${xml(id)}"${sr}><p>Chú thích${so ? ` ${so}` : ''}: `
         + xml(loiChuThich(k)) + `</p></note>`;
     }
 
     case 'khung-luu-y':
-      return `<sidebar id="${xml(id)}" render="required"><p>${xml(k.vanBan)}</p></sidebar>`;
+      return `<sidebar id="${xml(id)}"${sr} render="required"><p>${xml(k.vanBan)}</p></sidebar>`;
 
     default:
-      return `<p>${xml(loiDoc(k))}</p>`;
+      return `<p id="${xml(id)}"${sr}>${xml(loiDoc(k))}</p>`;
   }
 }
 
-export function taoDaisy(ban: BanVerso): Buffer {
-  const boi: Boi = { neo: dungNeo(ban), trangCua: dungTrangCua(ban) };
+/** Câu mở đầu, dùng chung cho cả phần chữ lẫn phần tiếng nên hai bên không lệch. */
+function loiMoDau(ban: BanVerso): string {
+  const mon = MON_HOC_INFO[ban.monHoc] ?? MON_HOC_INFO.khac;
+  return [
+    `${mon.ten}${ban.lop ? `, lớp ${ban.lop}` : ''}. ${ban.trang.length} trang sách.`,
+    ban.nguon ? `Nguồn: ${ban.nguon}.` : '',
+    MIEN_TRU,
+  ].filter(Boolean).join(' ');
+}
+
+/** Những đoạn cần đọc thành tiếng, THEO ĐÚNG THỨ TỰ PHÁT.
+ *
+ *  Đi theo cây đề mục y như lúc dựng DTBook, không đi theo danh sách trang phẳng:
+ *  SMIL phát tuần tự, lệch thứ tự một chỗ là cả cuốn sách đọc sai mạch. */
+export function doanCanTieng(ban: BanVerso): { khoiId: string; text: string }[] {
+  const neo = dungNeo(ban);
+  const cay = dungCay(ban, neo);
+  const ra: { khoiId: string; text: string }[] = [{ khoiId: 've-ban-doc', text: doiKyHieuSot(loiMoDau(ban)) }];
+
+  const diMuc = (m: Muc) => {
+    if (m.id.startsWith('khoi-')) ra.push({ khoiId: m.id.slice(5), text: doiKyHieuSot(m.nhan) });
+    for (const k of m.khoi) {
+      const t = loiDocCuaKhoi(k).trim();
+      if (t) ra.push({ khoiId: k.id, text: t });
+    }
+    m.con.forEach(diMuc);
+  };
+  cay.forEach(diMuc);
+  return ra.filter((d) => d.text.trim().length > 1);
+}
+
+export function taoDaisy(ban: BanVerso, tieng?: DoanTieng[]): Buffer {
+  const coTieng = !!tieng?.length;
+  const boi: Boi = {
+    neo: dungNeo(ban),
+    trangCua: dungTrangCua(ban),
+    par: coTieng ? new Map(tieng!.map((d) => [d.khoiId, d.par])) : undefined,
+  };
   const cay = dungCay(ban, boi.neo);
   const mon = MON_HOC_INFO[ban.monHoc] ?? MON_HOC_INFO.khac;
   const uid = `verso-${ban.maChiaSe || ban.id}`;
@@ -112,13 +168,28 @@ export function taoDaisy(ban: BanVerso): Buffer {
     return { so, id: `trang-${maSo(so)}` };
   });
   const soTrangCuoi = dsTrang.reduce((m, t) => Math.max(m, parseInt(t.so, 10) || 0), 0);
+  const parMoDau = boi.par?.get('ve-ban-doc');
+  const srMoDau = parMoDau ? ` smilref="sach.smil#${parMoDau}"` : '';
 
   const danhSoTrang = (k: Khoi) => {
     const so = dauTrang.get(k.id);
     if (!so) return '';
-    return `<pagenum id="trang-${maSo(so)}" page="normal">${xml(so)}</pagenum>`;
+    // Gắn pagenum vào chính đoạn tiếng của khối mở đầu trang: nhảy "tới trang 71"
+    // sẽ phát từ đầu trang 71, chứ không rơi vào một mốc câm.
+    const sr = boi.par?.get(k.id) ? ` smilref="sach.smil#${boi.par.get(k.id)}"` : '';
+    return `<pagenum id="trang-${maSo(so)}"${sr} page="normal">${xml(so)}</pagenum>`;
   };
 
+  /** Đoạn tiếng đầu tiên nằm trong một mục. Cần vì có mục KHÔNG ứng với khối nào:
+   *  "Phần đầu" là mục tổng hợp dựng ra cho nội dung xuất hiện trước đề mục đầu
+   *  tiên của trang. Không bắc cầu thì nhảy vào đó là im lặng. */
+  const parDauCuaMuc = (m: Muc): string | undefined => {
+    const tuDeMuc = m.id.startsWith('khoi-') ? boi.par?.get(m.id.slice(5)) : undefined;
+    if (tuDeMuc) return tuDeMuc;
+    for (const k of m.khoi) { const x = boi.par?.get(k.id); if (x) return x; }
+    for (const c of m.con) { const x = parDauCuaMuc(c); if (x) return x; }
+    return undefined;
+  };
   const mucRaDtbook = (m: Muc): string => {
     const cap = Math.min(m.cap, 3);
     // Trang mới thường bắt đầu ĐÚNG ở một đề mục, mà đề mục thì thành <level>
@@ -126,8 +197,12 @@ export function taoDaisy(ban: BanVerso): Buffer {
     const soMo = m.id.startsWith('khoi-') ? dauTrang.get(m.id.slice(5)) : undefined;
     // pagenum phải nằm SAU thẻ h: DTBook không cho nội dung nào đứng trước đề mục
     // trong cùng một level.
-    return `<level${cap} id="${xml(m.id)}"><h${cap}>${xml(m.nhan)}</h${cap}>`
-      + (soMo ? `<pagenum id="trang-${maSo(soMo)}" page="normal">${xml(soMo)}</pagenum>` : '')
+    // Đề mục cũng cần smilref: nhảy tới một chương là phải phát đúng tiếng đọc
+    // tên chương đó, không phải im lặng cho tới đoạn văn đầu tiên.
+    const parH = parDauCuaMuc(m);
+    const srH = parH ? ` smilref="sach.smil#${parH}"` : '';
+    return `<level${cap} id="${xml(m.id)}"><h${cap}${srH}>${xml(m.nhan)}</h${cap}>`
+      + (soMo ? `<pagenum id="trang-${maSo(soMo)}"${srH} page="normal">${xml(soMo)}</pagenum>` : '')
       + m.khoi.map((k) => danhSoTrang(k) + khoiRaDtbook(k, boi)).join('\n')
       + m.con.map(mucRaDtbook).join('\n')
       + `</level${cap}>`;
@@ -148,9 +223,7 @@ export function taoDaisy(ban: BanVerso): Buffer {
 <doctitle>${xml(ban.tieuDe)}</doctitle>
 ${ban.nguoiChuyen ? `<docauthor>${xml(ban.nguoiChuyen)}</docauthor>` : ''}
 <level1 id="ve-ban-doc"><h1>Về bản đọc này</h1>
-<p>${xml(mon.ten)}${ban.lop ? `, lớp ${ban.lop}` : ''}. ${ban.trang.length} trang sách.</p>
-${ban.nguon ? `<p>Nguồn: ${xml(ban.nguon)}.</p>` : ''}
-<p>${xml(MIEN_TRU)}</p>
+<p${srMoDau}>${xml(loiMoDau(ban))}</p>
 </level1>
 </frontmatter>
 <bodymatter>
@@ -162,6 +235,37 @@ ${cay.map(mucRaDtbook).join('\n')}
   // NCX: mục lục để nhảy theo cấp, và pageList để nhảy theo số trang sách giấy.
   // navMap phải lồng nhau và theo đúng thứ tự đọc: máy đọc DAISY dùng playOrder
   // để biết "đang ở đâu", nhảy lùi số thứ tự sẽ làm nút chuyển mục chạy sai.
+  // Khi có tiếng, mọi mốc nhảy phải trỏ vào SMIL chứ không phải DTBook: máy đọc
+  // DAISY lấy chính src này làm điểm BẮT ĐẦU PHÁT. Trỏ vào chữ là nhảy xong im lặng.
+  const parTheoNeo = new Map<string, string>();
+  if (coTieng) {
+    for (const d of tieng!) {
+      const anchor = d.khoiId === 've-ban-doc' ? 've-ban-doc' : boi.neo.get(d.khoiId);
+      if (anchor) parTheoNeo.set(anchor, d.par);
+    }
+  }
+  // Mốc nhảy theo SỐ TRANG cũng phải trỏ vào tiếng. Neo trang không phải neo khối,
+  // nên phải bắc cầu riêng: trang 71 → khối mở đầu trang 71 → đoạn tiếng của nó.
+  // Thiếu bước này thì "nhảy tới trang 71" xong máy im lặng.
+  if (coTieng) {
+    for (const [khoiId, so] of dauTrang) {
+      const par = boi.par?.get(khoiId);
+      if (par) parTheoNeo.set(`trang-${maSo(so)}`, par);
+    }
+  }
+
+  if (coTieng) {
+    const di = (m: Muc) => {
+      const x = parDauCuaMuc(m);
+      if (x && !parTheoNeo.has(m.id)) parTheoNeo.set(m.id, x);
+      m.con.forEach(di);
+    };
+    cay.forEach(di);
+  }
+
+  const dich = (neoId: string) =>
+    coTieng && parTheoNeo.has(neoId) ? `sach.smil#${parTheoNeo.get(neoId)}` : `sach.xml#${neoId}`;
+
   let thuTu = 0;
   const raDiem = (ds: MucNav[], cap: number): string =>
     ds.map((m) => {
@@ -169,7 +273,7 @@ ${cay.map(mucRaDtbook).join('\n')}
       const c = Math.min(cap, 6);
       return `<navPoint id="np-${n}" playOrder="${n}" class="level${c}">`
         + `<navLabel><text>${xml(m.nhan)}</text></navLabel>`
-        + `<content src="sach.xml#${xml(m.id)}"/>`
+        + `<content src="${xml(dich(m.id))}"/>`
         + (m.con.length ? raDiem(m.con, cap + 1) : '')
         + `</navPoint>`;
     }).join('\n');
@@ -196,9 +300,33 @@ ${navMap}
 </navMap>
 <pageList id="ds-trang">
 ${dsTrang.map((t, i) => `<pageTarget id="pt-${i + 1}" type="normal" value="${parseInt(t.so, 10) || i + 1}" playOrder="${thuTu + i + 1}">`
-  + `<navLabel><text>${xml(t.so)}</text></navLabel><content src="sach.xml#${xml(t.id)}"/></pageTarget>`).join('\n')}
+  + `<navLabel><text>${xml(t.so)}</text></navLabel><content src="${xml(dich(t.id))}"/></pageTarget>`).join('\n')}
 </pageList>
 </ncx>`;
+
+  const tongGiay = (tieng ?? []).reduce((a, d) => a + d.giay, 0);
+
+  /* SMIL nối chữ với tiếng. Mỗi <par> ghép MỘT khối văn bản với MỘT tệp tiếng của
+     riêng nó, nên không cần clipBegin/clipEnd — máy phát trọn tệp rồi sang par sau.
+     Nhờ vậy độ dài đo được sai lệch bao nhiêu cũng không làm trôi phần đồng bộ. */
+  const smil = !coTieng ? '' : `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE smil PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">
+<smil xmlns="http://www.w3.org/2001/SMIL20/">
+<head>
+<meta name="dtb:uid" content="${xml(uid)}"/>
+<meta name="dtb:totalElapsedTime" content="0:00:00"/>
+<meta name="dtb:generator" content="Verso"/>
+</head>
+<body>
+<seq id="chuoi-chinh" dur="${tongGiay.toFixed(3)}s">
+${tieng!.map((d) => {
+  const anchor = d.khoiId === 've-ban-doc' ? 've-ban-doc' : (boi.neo.get(d.khoiId) ?? `khoi-${d.khoiId}`);
+  return `<par id="${xml(d.par)}"><text src="sach.xml#${xml(anchor)}"/>`
+    + `<audio src="${xml(d.tep)}" clipBegin="0:00:00.000" clipEnd="${gioDaisy(d.giay)}"/></par>`;
+}).join('\n')}
+</seq>
+</body>
+</smil>`;
 
   const opf = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE package PUBLIC "+//ISBN 0-9673008-1-9//DTD OEB 1.2 Package//EN" "http://openebook.org/dtds/oeb-1.2/oebpkg12.dtd">
@@ -215,22 +343,27 @@ ${ban.nguon ? `<dc:Source>${xml(ban.nguon)}</dc:Source>` : ''}
 <dc:Rights>${xml(MIEN_TRU)}</dc:Rights>
 </dc-metadata>
 <x-metadata>
-<meta name="dtb:multimediaType" content="textNCX"/>
-<meta name="dtb:multimediaContent" content="text"/>
-<meta name="dtb:totalTime" content="0:00:00"/>
+<meta name="dtb:multimediaType" content="${coTieng ? 'audioFullText' : 'textNCX'}"/>
+<meta name="dtb:multimediaContent" content="${coTieng ? 'audio,text' : 'text'}"/>
+<meta name="dtb:totalTime" content="${coTieng ? gioDaisy(tongGiay) : '0:00:00'}"/>
 </x-metadata>
 </metadata>
 <manifest>
 <item id="opf" href="package.opf" media-type="text/xml"/>
 <item id="sach" href="sach.xml" media-type="application/x-dtbook+xml"/>
 <item id="ncx" href="navigation.ncx" media-type="application/x-dtbncx+xml"/>
+${coTieng ? '<item id="smil" href="sach.smil" media-type="application/smil"/>' : ''}
+${coTieng ? tieng!.map((d, i) => `<item id="am${i + 1}" href="${xml(d.tep)}" media-type="audio/mpeg"/>`).join('\n') : ''}
 </manifest>
-<spine><itemref idref="sach"/></spine>
+<spine><itemref idref="${coTieng ? 'smil' : 'sach'}"/></spine>
 </package>`;
 
   return taoZip([
     { ten: 'package.opf', noiDung: opf },
     { ten: 'sach.xml', noiDung: dtbook },
     { ten: 'navigation.ncx', noiDung: ncx },
+    ...(coTieng ? [{ ten: 'sach.smil', noiDung: smil }] : []),
+    // MP3 đã nén rồi, nén lại chỉ tốn thời gian mà không nhỏ đi.
+    ...(tieng ?? []).map((d) => ({ ten: d.tep, noiDung: d.mp3, khongNen: true })),
   ]);
 }
