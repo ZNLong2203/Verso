@@ -8,6 +8,7 @@ import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 /** Mọi thứ bộ dựng cần biết ngoài bản thân khối. */
 interface Boi {
+  anh: Map<string, Buffer>;
   neo: Map<string, string>;
   trangCua: Map<string, number>;
   /** Ngôn ngữ của từng khối, tra được cả cho đề mục — Muc không giữ lại Khoi gốc. */
@@ -30,7 +31,9 @@ h1,h2,h3,h4 { line-height: 1.3; }
 .tho { white-space: pre-wrap; margin: 1em 0 1em 1.5em; }
 .cong-thuc { margin: 1em 0; padding: 0.6em 0.9em; background: #f3f0e8; border-radius: 6px; }
 figure { margin: 1em 0; padding: 0.8em 1em; background: #f3f0e8; border-radius: 6px; }
-figcaption { font-weight: bold; font-size: 0.9em; text-transform: uppercase; letter-spacing: .04em; }
+figure img { display: block; max-width: 100%; height: auto; margin: 0 auto 0.8em; background: #fff; }
+figcaption .nhan-hinh { display: block; font-weight: bold; font-size: 0.9em; text-transform: uppercase; letter-spacing: .04em; }
+figcaption p { margin: .4em 0 0; font-weight: normal; text-transform: none; letter-spacing: 0; }
 .bai-tap { margin: 1.2em 0; padding-left: 1em; border-left: 4px solid #8a7a5c; }
 aside { margin: 1em 0; padding: 0.6em 1em; border-left: 4px solid #b9ac8e; font-size: 0.95em; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; }
@@ -79,7 +82,15 @@ function khoiRaXhtml(k: Khoi, b: Boi): string {
 
     case 'hinh-anh':
       // Mô tả là nội dung thật, không phải thuộc tính alt của một tấm ảnh vắng mặt.
-      return `<figure id="${xml(id)}"><figcaption>Mô tả hình vẽ</figcaption><p${lg}>${ct(k.moTa ?? '')}</p></figure>`;
+      // alt="" là cố ý: mô tả nằm ngay dưới dưới dạng chữ thật, đặt alt nữa là
+      // trình đọc màn hình đọc hai lần cùng một nội dung.
+      const anh = k.maHinh && b.anh.has(k.maHinh)
+        ? `<img src="hinh/${xml(k.maHinh)}.jpg" alt=""/>` : '';
+      // figcaption đứng CUỐI và ôm cả phần mô tả: nó phải là con đầu hoặc cuối
+      // của figure, kẹp giữa <img> và <p> là XHTML không hợp lệ.
+      return `<figure id="${xml(id)}">${anh}<figcaption>`
+        + `<span class="nhan-hinh">Mô tả hình vẽ</span>`
+        + `<p${lg}>${ct(k.moTa ?? '')}</p></figcaption></figure>`;
 
     case 'cong-thuc':
       return `<div id="${xml(id)}" class="cong-thuc" role="math" aria-label="${xml(k.docThanhLoi || k.kyHieuGoc)}">`
@@ -142,10 +153,10 @@ function mucRaXhtml(m: Muc, b: Boi, lech = 1): string {
     + `</section>`;
 }
 
-export function taoEpub(ban: BanVerso): Buffer {
+export function taoEpub(ban: BanVerso, anh: Map<string, Buffer> = new Map()): Buffer {
   const nnuCua = new Map<string, Nnu>();
   for (const t of ban.trang) for (const x of t.khoi) nnuCua.set(x.id, x.ngonNgu === 'en' ? 'en' : 'vi');
-  const boi: Boi = { neo: dungNeo(ban), trangCua: dungTrangCua(ban), nnuCua };
+  const boi: Boi = { anh, neo: dungNeo(ban), trangCua: dungTrangCua(ban), nnuCua };
   const cay = dungCay(ban, boi.neo);
   const mon = MON_HOC_INFO[ban.monHoc] ?? MON_HOC_INFO.khac;
   const uid = `urn:verso:${ban.maChiaSe || ban.id}`;
@@ -202,6 +213,7 @@ ${ban.nguoiChuyen ? `<dc:contributor>${xml(ban.nguoiChuyen)}</dc:contributor>` :
 <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
 <item id="noidung" href="noi-dung.xhtml" media-type="application/xhtml+xml"/>
 <item id="css" href="verso.css" media-type="text/css"/>
+${[...anh.keys()].map((m) => `<item id="h${m.slice(0, 8)}" href="hinh/${xml(m)}.jpg" media-type="image/jpeg"/>`).join('\n')}
 </manifest>
 <spine><itemref idref="noidung"/></spine>
 </package>`;
@@ -217,5 +229,7 @@ ${ban.nguoiChuyen ? `<dc:contributor>${xml(ban.nguoiChuyen)}</dc:contributor>` :
     { ten: 'EPUB/nav.xhtml', noiDung: nav },
     { ten: 'EPUB/noi-dung.xhtml', noiDung: than },
     { ten: 'EPUB/verso.css', noiDung: CSS },
+    // JPEG đã nén rồi, nén lại chỉ tốn thời gian mà không nhỏ đi.
+    ...[...anh].map(([m, d]) => ({ ten: `EPUB/hinh/${m}.jpg`, noiDung: d, khongNen: true })),
   ]);
 }

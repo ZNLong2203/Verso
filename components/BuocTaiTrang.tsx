@@ -3,9 +3,24 @@
 import React from 'react';
 import { Nut, The, Icon, Nhan, ThanhTienDo } from './ui';
 import { useVerso } from '@/lib/store';
-import { nenAnh, anhNho } from '@/lib/anh';
+import { nenAnh, anhNho, catHinh } from '@/lib/anh';
 import { soTrangPdf, docKhoangTrang, anhTuPdf, TOI_DA_MOI_LAN } from '@/lib/pdf';
 import { THONG_BAO_LOI } from '@/lib/loi';
+import type { KetQuaDocTrang } from '@/lib/types';
+
+/** Cắt mọi hình trên trang ra khỏi ảnh gốc, ngay tại máy giáo viên.
+ *
+ *  Cắt ở đây chứ không ở máy chủ: ảnh trang gốc vốn đã nằm sẵn trong trình duyệt,
+ *  gửi đi rồi gửi về chỉ tốn băng thông của một người đang chờ. */
+async function catCacHinh(kq: KetQuaDocTrang, anhTrang: string): Promise<KetQuaDocTrang> {
+  const khoi = await Promise.all((kq.khoi ?? []).map(async (k) => {
+    const kh = k.khungHinh;
+    if (k.loai !== 'hinh-anh' || !Array.isArray(kh) || kh.length !== 4) return k;
+    const anh = await catHinh(anhTrang, kh as [number, number, number, number]);
+    return anh ? { ...k, anhHinh: anh } : k;
+  }));
+  return { ...kq, khoi };
+}
 
 export const BuocTaiTrang: React.FC = () => {
   const { ban, themTrang, thayTrang, xoaTrang, doiThuTuTrang, datBuoc } = useVerso();
@@ -62,7 +77,7 @@ export const BuocTaiTrang: React.FC = () => {
         });
         const kq = await r.json();
         if (kq.loi) { setLoi((l) => [...l, `${ds[i].name}: ${THONG_BAO_LOI[kq.loi] ?? kq.loi}`]); }
-        else { themTrang(kq, await anhNho(a.dataUrl)); }
+        else { themTrang(await catCacHinh(kq, a.dataUrl), await anhNho(a.dataUrl)); }
       } catch {
         setLoi((l) => [...l, `${ds[i].name}: không đọc được tệp này`]);
       }
@@ -113,7 +128,7 @@ export const BuocTaiTrang: React.FC = () => {
       });
       const kq = await r.json();
       if (kq.loi) setLoi([`${f.name}: ${THONG_BAO_LOI[kq.loi] ?? kq.loi}`]);
-      else thayTrang(id, kq, await anhNho(a.dataUrl));
+      else thayTrang(id, await catCacHinh(kq, a.dataUrl), await anhNho(a.dataUrl));
     } catch {
       setLoi([`${f.name}: không đọc được tệp này`]);
     }

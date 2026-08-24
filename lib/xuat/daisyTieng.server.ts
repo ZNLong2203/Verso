@@ -3,6 +3,7 @@ import type { BanVerso } from '@/lib/types';
 import { tieng } from '@/lib/tieng.server';
 import { giayCuaMp3 } from './mp3';
 import { doanCanTieng, taoDaisy } from './daisy';
+import { layAnhHinh } from './anhHinh.server';
 
 /** Dựng DAISY 3 ĐẦY ĐỦ CÓ TIẾNG (audioFullText).
  *
@@ -42,6 +43,9 @@ export async function taoDaisyCoTieng(ban: BanVerso): Promise<Buffer> {
     }
   };
 
-  await Promise.all(Array.from({ length: Math.min(SONG_SONG, ds.length) }, thoLam));
-  return taoDaisy(ban, ra);
+  const [, anh] = await Promise.all([
+    Promise.all(Array.from({ length: Math.min(SONG_SONG, ds.length) }, thoLam)),
+    layAnhHinh(ban),
+  ]);
+  return taoDaisy(ban, ra, anh);
 }

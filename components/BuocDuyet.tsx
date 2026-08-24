@@ -130,8 +130,21 @@ const KhoiSua: React.FC<{ trang: Trang; k: Khoi }> = ({ trang, k }) => {
           {moRong && (
             <div className="mt-3 pt-3 border-t border-vien-nhat">
               {k.loai === 'hinh-anh' && (
-                <OSua nhan="Mô tả hình — học sinh chỉ biết hình này qua đoạn văn dưới đây" dong={5}
-                  gt={k.moTa ?? ''} doi={(v) => sua({ moTa: v })} />
+                <>
+                  {/* Không có hình bên cạnh thì giáo viên chỉ có thể TIN lời mô tả,
+                      chứ không đối chiếu được — mà đây đúng là chỗ Gemini dễ sai nhất. */}
+                  {(k.maHinh || k.anhHinh) && (
+                    <figure className="m-0 mb-3">
+                      <img src={k.maHinh ? `/api/hinh/${k.maHinh}` : k.anhHinh} alt=""
+                        className="block max-h-64 w-auto max-w-full rounded border border-vien bg-white" />
+                      <figcaption className="text-xs text-muc-mo mt-1">
+                        Hình cắt từ trang sách — đối chiếu với mô tả bên dưới
+                      </figcaption>
+                    </figure>
+                  )}
+                  <OSua nhan="Mô tả hình — học sinh chỉ biết hình này qua đoạn văn dưới đây" dong={5}
+                    gt={k.moTa ?? ''} doi={(v) => sua({ moTa: v })} />
+                </>
               )}
               {k.loai === 'cong-thuc' && (
                 <>

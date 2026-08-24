@@ -44,6 +44,11 @@ export function chuanHoaKhoi(tho: KhoiTho, i: number): Khoi {
     thuocVe: tho.thuocVe || undefined,
     soChuThich: tho.soChuThich || undefined,
     ngonNgu: tho.ngonNgu === 'en' ? 'en' : undefined,
+    anhHinh: (tho as { anhHinh?: string }).anhHinh || undefined,
+    khungHinh: Array.isArray(tho.khungHinh) && tho.khungHinh.length === 4
+      && tho.khungHinh.every((n) => Number.isFinite(n))
+      ? (tho.khungHinh.map(Number) as [number, number, number, number])
+      : undefined,
     doTinCay,
     ghiChu: tho.ghiChu || undefined,
     // Hình vẽ và công thức LUÔN phải qua mắt giáo viên, dù model có tự tin đến đâu.

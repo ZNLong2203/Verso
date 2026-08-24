@@ -42,17 +42,16 @@ export default async function TrangDoc({ params }: Props) {
     <div className="min-h-screen bg-giay">
       <div className="max-w-3xl mx-auto px-5 py-8">
 
-        {/* Đường ra: vào bản đọc từ thư viện xong không có cách nào quay lại,
-            người dùng bàn phím và trình đọc màn hình phải bấm Back của trình duyệt. */}
-        <p className="m-0 mb-4">
-          <a href="/thu-vien"
-            className="inline-flex items-center gap-1.5 min-h-[44px] px-2 -mx-2 rounded
-                       text-base font-bold text-verso-700 underline underline-offset-2 hover:bg-verso-50">
-            <span aria-hidden="true">‹</span> Về thư viện bản đọc
-          </a>
-        </p>
-
         <header className="pb-6 mb-2 border-b-2 border-vien">
+          {/* Nằm TRONG header: mọi nội dung phải thuộc một landmark, nếu không
+              người dùng trình đọc màn hình duyệt theo vùng sẽ bỏ sót nó. */}
+          <p className="m-0 mb-4">
+            <a href="/thu-vien"
+              className="inline-flex items-center gap-1.5 min-h-[44px] px-2 -mx-2 rounded
+                         text-base font-bold text-verso-700 underline underline-offset-2 hover:bg-verso-50">
+              <span aria-hidden="true">‹</span> Về thư viện bản đọc
+            </a>
+          </p>
           <p className="text-sm font-bold uppercase tracking-wider text-verso-700">
             {mon.ten}{ban.lop ? ` · Lớp ${ban.lop}` : ''}
           </p>

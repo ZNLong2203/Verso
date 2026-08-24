@@ -129,7 +129,10 @@ body {
 .ban-doc th { background: var(--color-giay-sau); font-weight: 700; }
 
 .ban-doc figure { margin: 1.5em 0; padding: 1.1em 1.3em; background: var(--color-verso-50); border-left: 4px solid var(--color-verso-600); border-radius: 0 6px 6px 0; }
-.ban-doc figcaption { font-size: .82em; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--color-verso-700); margin-bottom: .5em; }
+/* figcaption giờ ôm cả phần mô tả (nó phải là con đầu hoặc cuối của figure),
+   nên chỉ NHÃN mới viết hoa, còn mô tả giữ nguyên chữ thường như văn xuôi. */
+.ban-doc figcaption > span { display: block; font-size: .82em; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--color-verso-700); margin-bottom: .5em; }
+.ban-doc figcaption > p { font-size: 1em; font-weight: 400; letter-spacing: 0; text-transform: none; color: inherit; }
 
 .ban-doc .cong-thuc { margin: 1.2em 0; padding: .9em 1.2em; background: var(--color-giay-sau); border-radius: 6px; text-align: center; font-size: 1.1em; }
 

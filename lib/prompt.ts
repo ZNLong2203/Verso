@@ -87,7 +87,17 @@ NGUYÊN TẮC BẮT BUỘC:
 10. TIẾNG VIỆT CHUẨN SÁCH GIÁO KHOA. Dùng đúng thuật ngữ nhà trường Việt Nam đang dạy,
    không dịch từ tiếng Anh, không dùng từ địa phương.
 
-11. ĐÁNH DẤU CHỖ NÀO LÀ TIẾNG ANH. Máy đọc phải biết mới đổi được cách phát âm; không biết
+11. CHỈ RA HÌNH NẰM Ở ĐÂU TRÊN TRANG. Với mỗi khối hinh-anh, điền khungHinh là khung
+   bao quanh chính hình đó trên ảnh trang, chuẩn hoá 0-1000 theo thứ tự
+   [ymin, xmin, ymax, xmax].
+     · Bao gồm CẢ dòng chú thích "Hình 4.7" bên dưới hình, vì đó là tên gọi của hình.
+     · Bao vừa khít hình, đừng lấn sang đoạn văn bên cạnh.
+     · KHÔNG dùng cho bảng biểu hay khối chữ — chỉ hình vẽ, sơ đồ, biểu đồ, bản đồ,
+       ảnh chụp, tranh minh hoạ.
+   Nhờ khung này mà học sinh còn chút thị lực nhìn phóng to được đúng hình, và giáo
+   viên đối chiếu được lời mô tả với chính hình đó thay vì tin suông.
+
+12. ĐÁNH DẤU CHỖ NÀO LÀ TIẾNG ANH. Máy đọc phải biết mới đổi được cách phát âm; không biết
    thì nó đọc "Hello, how are you" bằng âm tiếng Việt, và học sinh khiếm thị học phát âm
    sai mà không có cách nào biết.
      · Cả khối là tiếng Anh (đoạn đọc hiểu, hội thoại, danh sách từ vựng) → ngonNgu = "en".

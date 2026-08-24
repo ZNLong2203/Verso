@@ -50,6 +50,15 @@ export interface Khoi {
   /** Mô tả hình vẽ, viết như giáo viên giảng cho học sinh khiếm thị. */
   moTa?: string;
 
+  /** Khung bao hình trên trang gốc: [ymin, xmin, ymax, xmax], chuẩn hoá 0–1000.
+   *  Dùng để cắt đúng phần hình ra khỏi ảnh trang. */
+  khungHinh?: [number, number, number, number];
+
+  /** Ảnh hình đã cắt. Trong bản nháp là dataURL; sau khi phát hành là mã tệp đã
+   *  lưu — ảnh không nhét vào tài liệu Firestore được, một tài liệu chỉ chứa 1 MB. */
+  anhHinh?: string;
+  maHinh?: string;
+
   /** Dạng đọc thành tiếng Việt của công thức.
    *  Ví dụ: "x mũ hai cộng hai x trừ ba bằng không". */
   docThanhLoi?: string;
@@ -135,6 +144,7 @@ export interface KhoiTho {
   ghiChu: string;
   soChuThich: string;
   ngonNgu: string;
+  khungHinh: number[] | null;
 }
 
 export interface KetQuaDocTrang {

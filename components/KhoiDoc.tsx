@@ -107,15 +107,29 @@ export const KhoiDoc: React.FC<{
         </div>,
       );
 
-    case 'hinh-anh':
+    case 'hinh-anh': {
       // Mô tả là NỘI DUNG THẬT, không phải thuộc tính alt của một tấm ảnh không có ở đây.
       // Nhờ vậy nó luôn được đọc, và người sáng mắt cũng đọc được để đối chiếu.
+      const nguonAnh = k.maHinh ? `/api/hinh/${k.maHinh}` : k.anhHinh;
       return boc(
         <figure {...chung}>
-          <figcaption>Mô tả hình vẽ</figcaption>
-          <p className="m-0">{ct(k.moTa ?? '')}</p>
+          {nguonAnh && (
+            // alt="" là CỐ Ý: mô tả nằm ngay dưới dưới dạng chữ thật, đặt alt nữa
+            // là trình đọc màn hình đọc hai lần cùng một nội dung. Ảnh ở đây phục vụ
+            // học sinh NHÌN KÉM — phóng to lên vẫn xem được — và giáo viên đối chiếu.
+            <img src={nguonAnh} alt="" loading="lazy"
+              className="block max-w-full h-auto mx-auto mb-3 rounded border border-vien bg-white" />
+          )}
+          {/* figcaption phải là con ĐẦU hoặc CUỐI của figure — kẹp giữa <img> và
+              <p> là XHTML không hợp lệ, trình duyệt bỏ qua nhưng EPUB thì từ chối.
+              Để nó ở cuối và ôm trọn phần mô tả: đó đúng là lời chú của hình. */}
+          <figcaption>
+            <span className="block">Mô tả hình vẽ</span>
+            <p className="m-0 mt-1">{ct(k.moTa ?? '')}</p>
+          </figcaption>
         </figure>,
       );
+    }
 
     case 'cong-thuc':
       return boc(

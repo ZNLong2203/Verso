@@ -1,7 +1,7 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
 import { GoogleAuth } from 'google-auth-library';
-import { Storage } from '@google-cloud/storage';
+import { thungLuu } from './luuTru.server';
 import { GIONG_DOC, GIONG_DOC_EN, THUNG_TIENG } from './constants';
 import { chiaNnu, type Nnu } from './nnu';
 
@@ -41,21 +41,6 @@ function auth(): GoogleAuth {
     ...(DU_AN ? { projectId: DU_AN } : {}),
   });
   return _auth;
-}
-
-let _thung: ReturnType<Storage['bucket']> | null = null;
-function thung() {
-  if (_thung) return _thung;
-  const email = process.env.FIREBASE_CLIENT_EMAIL;
-  const khoa = (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
-  // Có khoá thì dùng khoá. Không có thì để SDK tự dò danh tính sẵn có của máy chủ
-  // (Cloud Run). Thiếu bước này, chạy ngoài Google Cloud là kho giọng im lặng ngừng
-  // hoạt động: vẫn đọc được, nhưng MỖI LƯỢT NGHE lại tổng hợp lại và tính tiền lại.
-  _thung = new Storage({
-    projectId: DU_AN || undefined,
-    ...(email && khoa ? { credentials: { client_email: email, private_key: khoa } } : {}),
-  }).bucket(THUNG_TIENG);
-  return _thung;
 }
 
 /** Cắt theo BYTE ở ranh giới câu. Cắt giữa câu làm giọng đọc ngắt sai chỗ,
@@ -145,7 +130,7 @@ export async function tieng(
   giong = GIONG_DOC,
 ): Promise<{ mp3: Buffer; tuCache: boolean }> {
   const ma = maNoiDung(`${ngonNgu}:${text}`, giong);
-  const tep = thung().file(`${ma}.mp3`);
+  const tep = thungLuu().file(`${ma}.mp3`);
 
   try {
     const [co] = await tep.exists();

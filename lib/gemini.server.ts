@@ -135,6 +135,11 @@ const SCHEMA_TRANG = {
             type: Type.STRING,
             description: 'CHỈ dùng cho loai="hinh-anh". Mô tả hình đủ chi tiết để học sinh khiếm thị làm được bài tập liên quan. Rỗng với loại khác.',
           },
+          khungHinh: {
+            type: Type.ARRAY,
+            items: { type: Type.INTEGER },
+            description: 'CHỈ dùng cho loai="hinh-anh": khung bao quanh hình TRÊN ẢNH TRANG, chuẩn hoá 0-1000, thứ tự [ymin, xmin, ymax, xmax]. Bao gồm cả dòng chú thích "Hình x.y" nếu có. Mảng rỗng với loại khác.',
+          },
           kyHieuGoc: {
             type: Type.STRING,
             description: 'CHỈ dùng cho loai="cong-thuc". Công thức viết như trên sách. Rỗng với loại khác.',
@@ -171,7 +176,7 @@ const SCHEMA_TRANG = {
           doTinCay: { type: Type.STRING, enum: ['cao', 'trung-binh', 'thap'] },
           ghiChu: { type: Type.STRING, description: 'Nếu doTinCay không phải "cao", nói rõ chỗ nào chưa chắc và vì sao. Rỗng nếu chắc.' },
         },
-        required: ['loai', 'thuTu', 'vanBan', 'moTa', 'kyHieuGoc', 'docThanhLoi', 'bang', 'capTieuDe', 'soBaiTap', 'thuocVe', 'soChuThich', 'ngonNgu', 'doTinCay', 'ghiChu'],
+        required: ['loai', 'thuTu', 'vanBan', 'moTa', 'kyHieuGoc', 'docThanhLoi', 'bang', 'capTieuDe', 'soBaiTap', 'thuocVe', 'soChuThich', 'ngonNgu', 'khungHinh', 'doTinCay', 'ghiChu'],
       },
     },
     anhKhongRo: { type: Type.BOOLEAN, description: 'true nếu ảnh mờ/nghiêng/thiếu sáng khiến không đọc chắc được.' },

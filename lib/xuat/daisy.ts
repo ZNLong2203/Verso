@@ -10,6 +10,7 @@ import { giayCuaMp3, gioDaisy } from './mp3';
 import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 interface Boi {
+  anh: Map<string, Buffer>;
   neo: Map<string, string>;
   trangCua: Map<string, number>;
   /** Chỉ có ở bản CÓ TIẾNG: khối nào ứng với đoạn SMIL nào. */
@@ -84,6 +85,14 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
     case 'hinh-anh':
       // prodnote render="required" = lời do người làm sách thêm vào, BẮT BUỘC đọc.
       // Đúng nghĩa với mô tả hình: không có nó thì học sinh mất hẳn nội dung.
+      // <imggroup> là cấu trúc DTBook dành đúng cho "một hình kèm lời mô tả":
+      // máy đọc hiểu prodnote là lời người làm sách thêm vào cho hình bên cạnh.
+      if (k.maHinh && b.anh.has(k.maHinh)) {
+        return `<imggroup id="${xml(id)}"${sr}${lg}>`
+          + `<img id="a-${xml(id)}" src="hinh/${xml(k.maHinh)}.jpg" alt=""/>`
+          + `<prodnote render="required"><p>Mô tả hình vẽ: ${xml(k.moTa)}</p></prodnote>`
+          + `</imggroup>`;
+      }
       return `<prodnote id="${xml(id)}"${sr}${lg} render="required"><p>Mô tả hình vẽ: ${xml(k.moTa)}</p></prodnote>`;
 
     case 'cong-thuc':
@@ -161,11 +170,12 @@ export function doanCanTieng(ban: BanVerso): { khoiId: string; text: string; nnu
   return ra.filter((d) => d.text.trim().length > 1);
 }
 
-export function taoDaisy(ban: BanVerso, tieng?: DoanTieng[]): Buffer {
+export function taoDaisy(ban: BanVerso, tieng?: DoanTieng[], anh: Map<string, Buffer> = new Map()): Buffer {
   const coTieng = !!tieng?.length;
   const nnuKhoi = new Map<string, Nnu>();
   for (const t of ban.trang) for (const x of t.khoi) nnuKhoi.set(x.id, x.ngonNgu === 'en' ? 'en' : 'vi');
   const boi: Boi = {
+    anh,
     neo: dungNeo(ban),
     trangCua: dungTrangCua(ban),
     nnuCua: nnuKhoi,
@@ -379,6 +389,7 @@ ${ban.nguon ? `<dc:Source>${xml(ban.nguon)}</dc:Source>` : ''}
 <item id="opf" href="package.opf" media-type="text/xml"/>
 <item id="sach" href="sach.xml" media-type="application/x-dtbook+xml"/>
 <item id="ncx" href="navigation.ncx" media-type="application/x-dtbncx+xml"/>
+${[...anh.keys()].map((m) => `<item id="h${m.slice(0, 8)}" href="hinh/${xml(m)}.jpg" media-type="image/jpeg"/>`).join('\n')}
 ${coTieng ? '<item id="smil" href="sach.smil" media-type="application/smil"/>' : ''}
 ${coTieng ? tieng!.map((d, i) => `<item id="am${i + 1}" href="${xml(d.tep)}" media-type="audio/mpeg"/>`).join('\n') : ''}
 </manifest>
@@ -392,5 +403,6 @@ ${coTieng ? tieng!.map((d, i) => `<item id="am${i + 1}" href="${xml(d.tep)}" med
     ...(coTieng ? [{ ten: 'sach.smil', noiDung: smil }] : []),
     // MP3 đã nén rồi, nén lại chỉ tốn thời gian mà không nhỏ đi.
     ...(tieng ?? []).map((d) => ({ ten: d.tep, noiDung: d.mp3, khongNen: true })),
+    ...[...anh].map(([m, d]) => ({ ten: `hinh/${m}.jpg`, noiDung: d, khongNen: true })),
   ]);
 }

@@ -2,6 +2,8 @@ import 'server-only';
 import { db, coFirebase, BO_SUU_TAP } from './firebase.server';
 import type { BanVerso, MonHoc } from './types';
 import { boDau } from './chuoi';
+import { thungLuu } from './luuTru.server';
+import { createHash } from 'node:crypto';
 
 export { boDau };
 
@@ -82,10 +84,41 @@ const moNoiDung = (chuoi: string): BanVerso['trang'] => {
  *  Không dùng chính mã chia sẻ làm chìa: mã đó nằm trong đường dẫn cả lớp đang giữ,
  *  ai cũng đọc được. Lấy nó làm chìa nghĩa là bất kỳ ai có link đều sửa đè được sách
  *  của người khác — mà học sinh khiếm thị thì không có cách nào phát hiện bản đã bị đổi. */
+/** Đưa ảnh hình đã cắt lên kho, đổi dataURL thành mã tệp.
+ *
+ *  Bắt buộc phải tách ra khỏi tài liệu: một tài liệu Firestore chỉ chứa 1 MB, mà
+ *  một trang sách Toán có thể có bảy hình. Khoá theo mã băm nội dung nên phát hành
+ *  lại nhiều lần cũng chỉ tải lên một lần. */
+async function luuAnhHinh(ban: BanVerso): Promise<BanVerso> {
+  const trang = await Promise.all(ban.trang.map(async (t) => ({
+    ...t,
+    khoi: await Promise.all(t.khoi.map(async (k) => {
+      if (k.loai !== 'hinh-anh' || !k.anhHinh?.startsWith('data:')) return k;
+      const than = Buffer.from(k.anhHinh.split(',')[1] ?? '', 'base64');
+      if (!than.length) return { ...k, anhHinh: undefined };
+      const ma = createHash('sha256').update(than).digest('hex').slice(0, 32);
+      try {
+        const tep = thungLuu().file(`hinh/${ma}.jpg`);
+        if (!(await tep.exists())[0]) {
+          await tep.save(than, {
+            contentType: 'image/jpeg',
+            metadata: { cacheControl: 'public, max-age=31536000, immutable' },
+          });
+        }
+        return { ...k, anhHinh: undefined, maHinh: ma };
+      } catch {
+        // Không lưu được ảnh thì vẫn phát hành: mô tả bằng lời mới là nội dung chính.
+        return { ...k, anhHinh: undefined };
+      }
+    })),
+  })));
+  return { ...ban, trang };
+}
+
 export async function xuatBan(ban: BanVerso, maSuaGui?: string): Promise<{ maChiaSe: string; maSua: string }> {
   const maChiaSe = ban.maChiaSe || taoMaChiaSe();
   const ngayXuatBan = new Date().toISOString();
-  const sach = bocAnhGoc({ ...ban, maChiaSe, daXuatBan: true, ngayCapNhat: ngayXuatBan });
+  const sach = bocAnhGoc({ ...(await luuAnhHinh(ban)), maChiaSe, daXuatBan: true, ngayCapNhat: ngayXuatBan });
 
   const kho = db().collection(BO_SUU_TAP).doc(maChiaSe);
   const cu = await kho.get();

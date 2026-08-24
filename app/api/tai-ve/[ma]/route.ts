@@ -3,6 +3,7 @@ import { docBanDaXuatBan } from '@/lib/kho.server';
 import { taoEpub } from '@/lib/xuat/epub';
 import { taoDaisy } from '@/lib/xuat/daisy';
 import { taoDaisyCoTieng } from '@/lib/xuat/daisyTieng.server';
+import { layAnhHinh } from '@/lib/xuat/anhHinh.server';
 import { boDau } from '@/lib/kho.server';
 import type { BanVerso } from '@/lib/types';
 
@@ -18,8 +19,8 @@ export const maxDuration = 300;
  *  học lại gì cả. */
 
 const DINH_DANG = {
-  epub: { tao: async (b: BanVerso) => taoEpub(b), duoi: 'epub', kieu: 'application/epub+zip', hau: '' },
-  daisy: { tao: async (b: BanVerso) => taoDaisy(b), duoi: 'zip', kieu: 'application/zip', hau: '-daisy' },
+  epub: { tao: async (b: BanVerso) => taoEpub(b, await layAnhHinh(b)), duoi: 'epub', kieu: 'application/epub+zip', hau: '' },
+  daisy: { tao: async (b: BanVerso) => taoDaisy(b, undefined, await layAnhHinh(b)), duoi: 'zip', kieu: 'application/zip', hau: '-daisy' },
   // Bản có tiếng phải tổng hợp giọng cho từng đoạn nên chậm hơn nhiều lần.
   'daisy-tieng': { tao: taoDaisyCoTieng, duoi: 'zip', kieu: 'application/zip', hau: '-daisy-co-tieng' },
 } as const;
