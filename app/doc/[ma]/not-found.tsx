@@ -1,3 +1,12 @@
+/* Vì sao thư mục này KHÔNG có loading.tsx.
+ *
+ *  loading.tsx bật chế độ stream cho route, mà stream thì mã trạng thái đã gửi đi
+ *  trước khi máy chủ kịp biết bản đọc có tồn tại hay không — notFound() vẫn hiện
+ *  đúng trang này nhưng trả về 200. Trang đọc là thứ người ta chia sẻ bằng đường
+ *  link; link sai hoặc bản đã gỡ phải trả 404 thật.
+ *
+ *  Đo được: có loading.tsx → 200, bỏ đi → 404. /thu-vien thì giữ được loading.tsx
+ *  vì nó không có nhánh notFound nào. */
 import Link from 'next/link';
 
 export default function KhongThay() {
