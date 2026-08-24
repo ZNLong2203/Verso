@@ -23,8 +23,27 @@ const KY_HIEU: [RegExp, string][] = [
 
 export function doiKyHieuSot(s: string): string {
   let r = s;
+  // Dấu chú thích KHÔNG đọc thành tiếng. Người nghe đang theo mạch câu, chen vào
+  // "chú thích một" giữa chừng là cắt mạch — mà lời giải nghĩa vốn nằm ngay phía
+  // dưới, đọc tuần tự là gặp. Dấu vẫn còn trên màn hình và vẫn là liên kết bấm được.
+  r = r.replace(/\s*\[chú thích \d+\]/g, '');
   for (const [re, thay] of KY_HIEU) r = r.replace(re, thay);
-  return r.replace(/\s{2,}/g, ' ').trim();
+  return donDauCau(r);
+}
+
+/** Dọn dấu câu thừa trong lời đọc.
+ *
+ *  Bộ dựng chèn ". " sau mỗi khối để chữ không dính nhau, nên chỗ nào vốn đã kết
+ *  thúc bằng dấu chấm thì thành ".." — máy đọc ngắt hai lần, nghe như vấp. Nhiều
+ *  chỗ như thế liên tiếp thì cả đoạn nghe như đang đọc từng dấu câu một. */
+export function donDauCau(s: string): string {
+  return s
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([,.;:!?])/g, '$1')      // " ." → "."
+    .replace(/([,.;:!?])\1+/g, '$1')       // ".." → "."
+    .replace(/([.!?])\s*[,;:]/g, '$1')     // ". ," → "."
+    .replace(/([,;:])\s*([.!?])/g, '$2')   // ", ." → "."
+    .trim();
 }
 
 /** Lời đọc của MỘT khối, tính thẳng từ dữ liệu.

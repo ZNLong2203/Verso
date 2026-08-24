@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { doiKyHieuSot } from '@/lib/loiDoc';
+import { doiKyHieuSot, donDauCau } from '@/lib/loiDoc';
 import { taiTieng, taiTruoc, LoiTieng, THONG_BAO_TIENG } from '@/lib/tiengKhach';
 import { ghiDangNghe } from '@/lib/dangNghe';
 
@@ -43,6 +43,10 @@ function layLoiDoc(el: Element, nnuGoc: 'vi' | 'en' = 'vi'): string {
     // Tuyệt đối KHÔNG áp cho vùng chứa: <div role="group" aria-label="Đoạn thơ">
     // chỉ được ĐẶT TÊN cho khổ thơ, nội dung bên trong vẫn phải đọc. Áp nhầm là
     // nuốt trọn cả bài thơ, chỉ còn đọc hai chữ "Đoạn thơ".
+    // Dấu chú thích thì bỏ hẳn, không đọc: nó cắt ngang mạch câu, mà lời giải
+    // nghĩa nằm ngay phía dưới nên đọc tuần tự là gặp.
+    if (e.tagName === 'A' && (e.getAttribute('href') ?? '').startsWith('#chu-thich')) return;
+
     const nhan = e.getAttribute('aria-label');
     const vai = e.getAttribute('role');
     if (nhan && (e.tagName === 'A' || e.tagName === 'BUTTON' || vai === 'math' || vai === 'img')) {
@@ -57,10 +61,14 @@ function layLoiDoc(el: Element, nnuGoc: 'vi' | 'en' = 'vi'): string {
     if (doi) ra += `[/${nnuCon}]`;
     // FIGCAPTION và ô bảng cũng là ranh giới — thiếu chúng thì chữ dính liền:
     // "Mô tả hình vẽHình 4.17"
-    if (/^(P|DIV|LI|TR|TD|TH|H1|H2|H3|H4|FIGURE|FIGCAPTION|CAPTION|ASIDE|SECTION)$/.test(e.tagName)) ra += '. ';
+    // Chỉ chèn dấu chấm khi phần vừa đọc CHƯA tự kết thúc — chèn bừa thì thành
+    // ".." và máy đọc ngắt hai lần, nghe như vấp ở từng dấu câu.
+    if (/^(P|DIV|LI|TR|TD|TH|H1|H2|H3|H4|FIGURE|FIGCAPTION|CAPTION|ASIDE|SECTION)$/.test(e.tagName)) {
+      ra += /[.!?;:,]\s*$/.test(ra) ? ' ' : '. ';
+    }
   };
   di(el, nnuGoc);
-  return doiKyHieuSot(ra.replace(/\s+/g, ' ').replace(/\.\s*\./g, '.').trim());
+  return doiKyHieuSot(donDauCau(ra));
 }
 
 

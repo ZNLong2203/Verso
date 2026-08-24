@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { boDau, maSo } from '@/lib/chuoi';
 import { chiaNnu, boMocNnu } from '@/lib/nnu';
+import { doiKyHieuSot, donDauCau } from '@/lib/loiDoc';
 
 test('boDau: bỏ dấu để tìm kiếm khớp được', () => {
   assert.equal(boDau('Tam giác'), 'tam giac');
@@ -44,4 +45,22 @@ test('chiaNnu: tiếng Việt xen trong khối tiếng Anh', () => {
 
 test('boMocNnu: bỏ sạch dấu, giữ nguyên chữ', () => {
   assert.equal(boMocNnu('Đọc: [en]Hello[/en] nhé.'), 'Đọc: Hello nhé.');
+});
+
+test('doiKyHieuSot: không đọc dấu chú thích thành tiếng', () => {
+  // "chú thích một" chen giữa câu là cắt mạch người nghe; lời giải nghĩa nằm ngay
+  // phía dưới nên đọc tuần tự là gặp.
+  assert.equal(
+    doiKyHieuSot('Cho tam giác ABC [chú thích 1] vuông tại A.'),
+    'Cho tam giác ABC vuông tại A.',
+  );
+  assert.equal(doiKyHieuSot('Phù sa [chú thích 12] đỏ.'), 'Phù sa đỏ.');
+});
+
+test('donDauCau: bỏ dấu câu chồng nhau do bộ dựng chèn thêm', () => {
+  assert.equal(donDauCau('Chú thích 1..'), 'Chú thích 1.');
+  assert.equal(donDauCau('Xong rồi . Tiếp theo'), 'Xong rồi. Tiếp theo');
+  assert.equal(donDauCau('Một câu. , Câu sau'), 'Một câu. Câu sau');
+  assert.equal(donDauCau('Dấu phẩy , rồi chấm .'), 'Dấu phẩy, rồi chấm.');
+  assert.equal(donDauCau('Bình thường, không đổi.'), 'Bình thường, không đổi.');
 });

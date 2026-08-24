@@ -105,19 +105,23 @@ export default async function ThuVien({ searchParams }: Props) {
           <ul className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3 m-0 p-0 list-none">
             {ds.map((b) => (
               <li key={b.maChiaSe}>
+                {/* flex-col + mt-auto: tiêu đề dài ngắn khác nhau vẫn cho dòng số
+                    liệu nằm cùng một độ cao, nếu không cả hàng thẻ trông xô lệch. */}
                 <a href={`/doc/${b.maChiaSe}`}
-                  className="block h-full p-4 rounded-xl bg-white border border-vien hover:border-verso-600 no-underline text-muc transition-colors">
+                  className="flex flex-col h-full p-4 rounded-xl bg-white border border-vien hover:border-verso-600 no-underline text-muc transition-colors">
                   <p className="text-xs font-bold uppercase tracking-wider text-verso-700 m-0">
                     {MON_HOC_INFO[b.monHoc]?.ten ?? 'Khác'}{b.lop ? ` · Lớp ${b.lop}` : ''}
                   </p>
                   <p className="font-doc font-bold text-lg leading-snug mt-1.5 mb-2">{b.tieuDe}</p>
-                  <p className="text-sm text-muc-mo m-0">
-                    {b.soTrang} trang · {b.soKhoi} phần
-                    {b.soHinh > 0 && <> · <b className="text-muc-nhat">{b.soHinh} hình mô tả</b></>}
-                  </p>
-                  {b.nguoiChuyen && (
-                    <p className="text-xs text-muc-mo mt-2 mb-0">Người chuyển: {b.nguoiChuyen}</p>
-                  )}
+                  <div className="mt-auto pt-2">
+                    <p className="text-sm text-muc-mo m-0">
+                      {b.soTrang} trang · {b.soKhoi} phần
+                      {b.soHinh > 0 && <> · <b className="text-muc-nhat">{b.soHinh} hình mô tả</b></>}
+                    </p>
+                    {b.nguoiChuyen && (
+                      <p className="text-xs text-muc-mo mt-1.5 mb-0">Người chuyển: {b.nguoiChuyen}</p>
+                    )}
+                  </div>
                 </a>
               </li>
             ))}
