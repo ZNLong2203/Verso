@@ -1,4 +1,5 @@
 import type { Khoi } from './types';
+import { loiChuThich } from './neo';
 
 /** Lưới an toàn: đổi ký hiệu còn sót sang tiếng Việt.
  *
@@ -32,10 +33,13 @@ export function doiKyHieuSot(s: string): string {
  *  nên không đi qua DOM được. Phải khớp với những gì KhoiDoc dựng ra. */
 export function loiDocCuaKhoi(k: Khoi): string {
   const doi = (s?: string) => doiKyHieuSot(s ?? '');
+  /** Câu dẫn ("Mô tả hình vẽ.", "Bài tập 3.") luôn là tiếng Việt, kể cả khi khối
+   *  là tiếng Anh — bọc lại để nó không bị đọc bằng giọng Anh. */
+  const dan = (t: string) => (k.ngonNgu === 'en' ? `[vi]${t}[/vi]` : t);
 
   switch (k.loai) {
     case 'hinh-anh':
-      return doi(`Mô tả hình vẽ. ${k.moTa ?? ''}`);
+      return doi(`${dan('Mô tả hình vẽ.')} ${k.moTa ?? ''}`);
 
     case 'cong-thuc':
       // Trang thật đưa docThanhLoi cho trình đọc màn hình, ký hiệu bị aria-hidden
@@ -52,10 +56,10 @@ export function loiDocCuaKhoi(k: Khoi): string {
     }
 
     case 'chu-thich':
-      return doi(`Chú thích${k.thuocVe ? ` cho từ ${k.thuocVe}` : ''}. ${k.vanBan ?? ''}`);
+      return doi(`${dan('Chú thích.')} ${loiChuThich(k)}`);
 
     case 'bai-tap':
-      return doi(`Bài tập${k.soBaiTap ? ` ${k.soBaiTap}` : ''}. ${k.vanBanDoc || k.vanBan || ''}`);
+      return doi(`${dan(`Bài tập${k.soBaiTap ? ` ${k.soBaiTap}` : ''}.`)} ${k.vanBanDoc || k.vanBan || ''}`);
 
     default:
       return doi(k.vanBanDoc || k.vanBan);

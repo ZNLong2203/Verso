@@ -1,5 +1,6 @@
 import type { BanVerso, Khoi } from './types';
 import { maSo, boDau } from './chuoi';
+import { boMocNnu } from './nnu';
 
 /** Neo (id) để nhảy tới từng khối — phải DUY NHẤT trong cả tài liệu.
  *
@@ -66,6 +67,8 @@ export function loiChuThich(k: Khoi): string {
   const than = (k.vanBan ?? '').trim();
   const tu = (k.thuocVe ?? '').trim();
   if (!tu) return than;
-  const daCo = boDau(than).replace(/^[\s(]*\d+[)\s]*/, '').startsWith(boDau(tu));
+  // Bỏ dấu ngôn ngữ trước khi so: "[en]neighbourhood[/en]: cách viết…" vẫn là đã
+  // có sẵn từ được chú thích ở đầu, ghép nữa thành "neighbourhood: neighbourhood:".
+  const daCo = boDau(boMocNnu(than)).replace(/^[\s(]*\d+[)\s]*/, '').startsWith(boDau(boMocNnu(tu)));
   return daCo ? than : `${tu}: ${than}`;
 }

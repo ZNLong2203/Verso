@@ -24,14 +24,15 @@ export class LoiTieng extends Error {
 }
 
 /** Tải một đoạn. Đã tải rồi thì trả ngay, không gọi lại máy chủ. */
-export async function taiTieng(text: string): Promise<string> {
-  const co = CACHE.get(text);
+export async function taiTieng(text: string, nnu: 'vi' | 'en' = 'vi'): Promise<string> {
+  const khoa = `${nnu}:${text}`;
+  const co = CACHE.get(khoa);
   if (co) return co;
 
   const r = await fetch('/api/doc-tieng', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, nnu }),
   });
   if (!r.ok) {
     let ma = 'LOI_TIENG';
@@ -39,13 +40,13 @@ export async function taiTieng(text: string): Promise<string> {
     throw new LoiTieng(ma);
   }
   const url = URL.createObjectURL(await r.blob());
-  ghiCache(text, url);
+  ghiCache(khoa, url);
   return url;
 }
 
 /** Tải sẵn đoạn sau trong lúc đoạn trước đang phát — nhờ vậy chỉ đoạn đầu phải chờ. */
-export function taiTruoc(text?: string) {
-  if (text && text.trim() && !CACHE.has(text)) taiTieng(text).catch(() => {});
+export function taiTruoc(text?: string, nnu: 'vi' | 'en' = 'vi') {
+  if (text && text.trim() && !CACHE.has(`${nnu}:${text}`)) taiTieng(text, nnu).catch(() => {});
 }
 
 export const THONG_BAO_TIENG: Record<string, string> = {

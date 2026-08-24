@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Khoi } from '@/lib/types';
 import { neoChuThich, soTuNeo, loiChuThich } from '@/lib/neo';
+import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 /* Không có 'use client' — bộ dựng này chạy được ở máy chủ, nên trang học sinh
    là HTML thuần. Trình đọc màn hình đọc được ngay cả khi JavaScript không tải. */
@@ -28,6 +29,19 @@ function noiChuThich(text: string, trang: number, coLien: boolean): React.ReactN
   });
 }
 
+/** Dựng văn bản có xen tiếng Anh, kèm cả liên kết chú thích.
+ *
+ *  Thuộc tính lang là thứ trình đọc màn hình dùng để ĐỔI BỘ PHÁT ÂM. Thiếu nó,
+ *  NVDA đọc "Hello, how are you" bằng âm tiếng Việt — học sinh học phát âm sai
+ *  mà không có cách nào biết. Đây là WCAG 3.1.2 Ngôn ngữ của từng phần, mức AA. */
+function chuCoNnu(text: string, goc: Nnu, trang: number, coLien: boolean): React.ReactNode[] {
+  return chiaNnu(text, goc).map((d, i) =>
+    d.nnu === goc
+      ? <React.Fragment key={i}>{noiChuThich(d.text, trang, coLien)}</React.Fragment>
+      : <span key={i} lang={maNnu(d.nnu)}>{noiChuThich(d.text, trang, coLien)}</span>,
+  );
+}
+
 /** Hiện ký hiệu cho người sáng mắt, đưa dạng đọc cho trình đọc màn hình.
  *  aria-hidden trên phần ký hiệu là bắt buộc — nếu không, trình đọc sẽ đọc CẢ HAI. */
 const KyHieuVaLoi: React.FC<{ kyHieu: string; loi: string; lop?: string }> = ({ kyHieu, loi, lop }) => (
@@ -49,9 +63,12 @@ export const KhoiDoc: React.FC<{
    *  nếu không người dùng trình đọc màn hình mất phương hướng khi nhảy theo cấp. */
   lechCap?: number;
 }> = ({ khoi: k, neo, trang, hienCoDuyet, lechCap = 1 }) => {
+  const goc: Nnu = k.ngonNgu === 'en' ? 'en' : 'vi';
+  /** Cả khối là tiếng Anh thì đánh dấu ở chính thẻ bao, đoạn xen thì đánh dấu bên trong. */
+  const langKhoi = goc === 'en' ? { lang: maNnu('en') } : {};
   /** ct = bản đọc được (có liên kết) · ctNhin = bản chỉ để nhìn (không tab vào được) */
-  const ct = (t: string) => noiChuThich(t, trang, true);
-  const ctNhin = (t: string) => noiChuThich(t, trang, false);
+  const ct = (t: string) => chuCoNnu(t, goc, trang, true);
+  const ctNhin = (t: string) => chuCoNnu(t, goc, trang, false);
   const canKiem = hienCoDuyet && !k.daDuyet && k.doTinCay !== 'cao';
   const boc = (con: React.ReactNode) =>
     canKiem ? (
@@ -67,23 +84,23 @@ export const KhoiDoc: React.FC<{
     case 'tieu-de': {
       const cap = Math.min(Math.max((k.capTieuDe || 2) + lechCap, 1), 6);
       const The = `h${cap}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-      return boc(<The id={neo}>{k.vanBan}</The>);
+      return boc(<The id={neo} {...langKhoi}>{ct(k.vanBan ?? '')}</The>);
     }
 
     case 'van-ban':
       return boc(
         k.vanBanDoc
-          ? <p>
+          ? <p {...langKhoi}>
               <span aria-hidden="true">{ctNhin(k.vanBan ?? '')}</span>
               <span className="chi-doc-man-hinh">{ct(k.vanBanDoc)}</span>
             </p>
-          : <p>{ct(k.vanBan ?? '')}</p>,
+          : <p {...langKhoi}>{ct(k.vanBan ?? '')}</p>,
       );
 
     case 'tho':
       // white-space: pre-wrap giữ nguyên từng dòng thơ và khoảng cách giữa các khổ
       return boc(
-        <div className="tho" role="group" aria-label="Đoạn thơ">
+        <div className="tho" role="group" aria-label="Đoạn thơ" {...langKhoi}>
           {ct(k.vanBan ?? '')}
         </div>,
       );
@@ -94,7 +111,7 @@ export const KhoiDoc: React.FC<{
       return boc(
         <figure id={neo}>
           <figcaption>Mô tả hình vẽ</figcaption>
-          <p className="m-0">{k.moTa}</p>
+          <p className="m-0">{ct(k.moTa ?? '')}</p>
         </figure>,
       );
 
@@ -111,12 +128,12 @@ export const KhoiDoc: React.FC<{
       const coDoc = (b.hangDoc?.length ?? 0) > 0;
       return boc(
         <div>
-          <p className="text-sm text-muc-mo mb-2">{b.tomTat}</p>
+          <p className="text-sm text-muc-mo mb-2">{ct(b.tomTat)}</p>
           <div className="overflow-x-auto">
             <table>
               <caption className="chi-doc-man-hinh">{b.tomTat}</caption>
               <thead>
-                <tr>{b.tieuDeCot.map((c, i) => <th key={i} scope="col">{c}</th>)}</tr>
+                <tr>{b.tieuDeCot.map((c, i) => <th key={i} scope="col">{ct(c)}</th>)}</tr>
               </thead>
               <tbody>
                 {b.hang.map((hang, r) => (
@@ -125,7 +142,7 @@ export const KhoiDoc: React.FC<{
                       const doc = coDoc ? b.hangDoc?.[r]?.[c] : undefined;
                       const noiDung = doc && doc !== o
                         ? <KyHieuVaLoi kyHieu={o} loi={doc} />
-                        : o;
+                        : ct(o);
                       return c === 0
                         ? <th key={c} scope="row">{noiDung}</th>
                         : <td key={c}>{noiDung}</td>;
@@ -144,7 +161,7 @@ export const KhoiDoc: React.FC<{
         // Không dùng <section aria-label> ở đây: mỗi cái sẽ thành một landmark,
         // và hai bài trùng số hiệu sẽ tạo landmark trùng tên. Dùng div kèm câu dẫn ẩn —
         // nhảy tới vẫn được xướng "Bài tập 3", mà không làm loạn danh sách landmark.
-        <div id={neo} tabIndex={-1}
+        <div id={neo} tabIndex={-1} {...langKhoi}
           className="my-5 pl-4 border-l-4 border-verso-200">
           <span className="chi-doc-man-hinh">
             {k.soBaiTap ? `Bài tập ${k.soBaiTap}. ` : 'Bài tập. '}
@@ -161,9 +178,9 @@ export const KhoiDoc: React.FC<{
     case 'chu-thich': {
       const so = soTuNeo(neo);
       return boc(
-        <aside id={neo}>
+        <aside id={neo} {...langKhoi}>
           <span className="chi-doc-man-hinh">Chú thích{so ? ` ${so}` : ''}: </span>
-          {loiChuThich(k)}
+          {ct(loiChuThich(k))}
         </aside>,
       );
     }
@@ -173,9 +190,9 @@ export const KhoiDoc: React.FC<{
       // là một landmark, mà trang nào cũng có vài khung — danh sách landmark đầy
       // những mục trùng tên, người dùng trình đọc màn hình không dùng được nữa.
       return boc(
-        <div role="note" id={neo} className="border-l-4 border-verso-600 pl-4 my-4">
+        <div role="note" id={neo} {...langKhoi} className="border-l-4 border-verso-600 pl-4 my-4">
           <span className="chi-doc-man-hinh">Khung lưu ý: </span>
-          {k.vanBan}
+          {ct(k.vanBan ?? '')}
         </div>,
       );
 

@@ -183,6 +183,12 @@ export const BuocTaiTrang: React.FC = () => {
                        hover:bg-verso-50 disabled:opacity-50 disabled:no-underline">
             Thử trang mẫu Ngữ văn 9
           </button>
+          <span aria-hidden="true" className="text-muc-mo">·</span>
+          <button type="button" disabled={dangChay} onClick={() => dungMau('tieng-anh-6', 'Trang mẫu Tiếng Anh 6')}
+            className="text-sm font-bold text-verso-700 underline underline-offset-2 min-h-[44px] px-2 rounded
+                       hover:bg-verso-50 disabled:opacity-50 disabled:no-underline">
+            Thử trang mẫu Tiếng Anh 6
+          </button>
         </div>
 
         {dangTach && (

@@ -72,6 +72,15 @@ export interface Khoi {
    *  với lời giải nghĩa ở chân trang. Thiếu nó thì bấm vào dấu chú thích không đi đâu cả. */
   soChuThich?: string;
 
+  /** Ngôn ngữ CHÍNH của khối: 'vi' hoặc 'en'. Mặc định 'vi'.
+   *
+   *  Phải có vì hai lẽ, cả hai đều nghiêm trọng như nhau:
+   *  - Trình đọc màn hình đổi bộ phát âm theo thuộc tính lang. Thiếu nó, NVDA đọc
+   *    câu tiếng Anh bằng âm tiếng Việt (WCAG 3.1.2 Ngôn ngữ của từng phần, mức AA).
+   *  - Giọng đọc của Verso cũng phải đổi theo, nếu không thì đúng lại lỗi cũ nhưng
+   *    ngược chiều: đọc tiếng Anh bằng giọng Việt. */
+  ngonNgu?: 'vi' | 'en';
+
   doTinCay: DoTinCay;
   ghiChu?: string;      // vì sao chưa chắc
   daDuyet: boolean;     // giáo viên đã xác nhận
@@ -123,6 +132,7 @@ export interface KhoiTho {
   doTinCay: string;
   ghiChu: string;
   soChuThich: string;
+  ngonNgu: string;
 }
 
 export interface KetQuaDocTrang {

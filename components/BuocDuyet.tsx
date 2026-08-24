@@ -42,7 +42,7 @@ const NutNgheThu: React.FC<{ k: Khoi }> = ({ k }) => {
     setLoi('');
     setTrangThai('tai');
     try {
-      const nguon = await taiTieng(noiDoc);
+      const nguon = await taiTieng(noiDoc, k.ngonNgu === 'en' ? 'en' : 'vi');
       const a = may.current ?? new Audio();
       may.current = a;
       a.src = nguon;

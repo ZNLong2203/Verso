@@ -2,7 +2,8 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { GoogleAuth } from 'google-auth-library';
 import { Storage } from '@google-cloud/storage';
-import { GIONG_DOC, THUNG_TIENG } from './constants';
+import { GIONG_DOC, GIONG_DOC_EN, THUNG_TIENG } from './constants';
+import { chiaNnu, type Nnu } from './nnu';
 
 /** Sinh giọng đọc tiếng Việt ở MÁY CHỦ.
  *
@@ -78,14 +79,17 @@ export function catTheoByte(s: string, tran = BYTE_TOI_DA): string[] {
   });
 }
 
-async function motLuot(text: string, giong: string): Promise<Buffer> {
+const giongCua = (n: Nnu) => (n === 'en' ? GIONG_DOC_EN : GIONG_DOC);
+const maCua = (n: Nnu) => (n === 'en' ? 'en-US' : 'vi-VN');
+
+async function motLuot(text: string, giong: string, ma = 'vi-VN'): Promise<Buffer> {
   const client = await auth().getClient();
   const r = await client.request<{ audioContent: string }>({
     url: 'https://texttospeech.googleapis.com/v1/text:synthesize',
     method: 'POST',
     data: {
       input: { text },
-      voice: { languageCode: 'vi-VN', name: giong },
+      voice: { languageCode: ma, name: giong },
       // Chirp 3 HD không nhận pitch. Tốc độ để nguyên 1.0 và cho người nghe tự
       // đổi bằng playbackRate ở trình duyệt — nhờ vậy một tệp đã lưu dùng được
       // cho mọi tốc độ, không phải tổng hợp lại.
@@ -109,8 +113,17 @@ async function thuLai<T>(viec: () => Promise<T>, lanToiDa = 3): Promise<T> {
   throw cuoi;
 }
 
+/** Đổi số này mỗi khi CÁCH đọc thay đổi — đổi giọng, đổi luật tách ngôn ngữ, sửa
+ *  bảng ký hiệu. Không đổi thì tệp cũ vẫn được phát tiếp: đã gặp thật, những đoạn
+ *  sinh ra trước khi có phần tách ngôn ngữ vẫn đọc "[en]" thành lời, và chúng sống
+ *  sót qua mọi lần deploy vì mã băm không hề biết luật đã khác. */
+const DOI_TIENG = 2;
+
 export const maNoiDung = (text: string, giong: string) =>
-  createHash('sha256').update(`${giong}\n${text}`, 'utf8').digest('hex').slice(0, 32);
+  createHash('sha256')
+    .update(`v${DOI_TIENG}|${giong}|${GIONG_DOC_EN}\n${text}`, 'utf8')
+    .digest('hex')
+    .slice(0, 32);
 
 /** Trả về MP3 của một đoạn, ưu tiên lấy từ chỗ đã lưu.
  *
@@ -118,8 +131,12 @@ export const maNoiDung = (text: string, giong: string) =>
  *  2.500 ký tự, mà tổng hợp lại cho từng người nghe thì đắt gấp nhiều lần chuyển
  *  đổi trang đó. Lưu theo mã nội dung nghĩa là mỗi khối chỉ tổng hợp MỘT lần,
  *  bao nhiêu học sinh nghe cũng vậy. */
-export async function tieng(text: string, giong = GIONG_DOC): Promise<{ mp3: Buffer; tuCache: boolean }> {
-  const ma = maNoiDung(text, giong);
+export async function tieng(
+  text: string,
+  ngonNgu: Nnu = 'vi',
+  giong = GIONG_DOC,
+): Promise<{ mp3: Buffer; tuCache: boolean }> {
+  const ma = maNoiDung(`${ngonNgu}:${text}`, giong);
   const tep = thung().file(`${ma}.mp3`);
 
   try {
@@ -130,9 +147,15 @@ export async function tieng(text: string, giong = GIONG_DOC): Promise<{ mp3: Buf
     }
   } catch { /* chỗ lưu hỏng thì vẫn tổng hợp được, chỉ là tốn tiền hơn */ }
 
-  const manh = catTheoByte(text);
+  // Tách theo ngôn ngữ TRƯỚC khi cắt theo byte: sách Tiếng Anh trộn hai thứ tiếng
+  // ngay trong một câu, mà một giọng đọc cả câu thì sai ở nửa này hoặc nửa kia.
+  // (Đã thử thẻ SSML <lang> — Cloud TTS nhận nhưng không đổi phát âm, xem lib/nnu.ts.)
   const phan: Buffer[] = [];
-  for (const m of manh) phan.push(await thuLai(() => motLuot(m, giong)));
+  for (const doan of chiaNnu(text, ngonNgu)) {
+    for (const m of catTheoByte(doan.text)) {
+      phan.push(await thuLai(() => motLuot(m, giongCua(doan.nnu), maCua(doan.nnu))));
+    }
+  }
   // Nối trực tiếp được: mỗi khung MP3 tự chứa, máy phát nào cũng đọc liền mạch.
   const mp3 = Buffer.concat(phan);
 

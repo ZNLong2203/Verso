@@ -31,7 +31,7 @@ export async function taoDaisyCoTieng(ban: BanVerso): Promise<Buffer> {
     for (;;) {
       const i = ke++;
       if (i >= ds.length) return;
-      const { mp3 } = await tieng(ds[i].text);
+      const { mp3 } = await tieng(ds[i].text, ds[i].nnu);
       ra[i] = {
         khoiId: ds[i].khoiId,
         par: `par-${i + 1}`,

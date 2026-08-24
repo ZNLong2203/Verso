@@ -42,5 +42,11 @@ export const STORAGE_KEY = 'verso:v1';
  *  chỉ cần sửa đúng dòng này; tệp đã lưu khoá theo tên giọng nên không lẫn nhau. */
 export const GIONG_DOC = 'vi-VN-Chirp3-HD-Achernar';
 
+/** Giọng cho phần tiếng Anh trong sách Tiếng Anh.
+ *
+ *  Cùng "nhân vật" Achernar với giọng Việt, nên chuyển qua lại giữa hai thứ tiếng
+ *  nghe như MỘT người đang đọc, không phải hai người thay phiên. */
+export const GIONG_DOC_EN = 'en-US-Chirp3-HD-Achernar';
+
 /** Chỗ lưu giọng đã tổng hợp, khoá theo mã nội dung. */
 export const THUNG_TIENG = process.env.VERSO_BUCKET_TIENG || 'verso-43e8b-tieng';

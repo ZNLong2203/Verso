@@ -4,6 +4,7 @@ import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 import { taoZip, xml } from './zip';
 import { dungCay, dungNav, dungTrangCua, type Muc, type MucNav } from './noiDung';
 import { dungNeo, neoChuThich, soTuNeo, loiChuThich } from '@/lib/neo';
+import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 /** Mọi thứ bộ dựng cần biết ngoài bản thân khối. */
 interface Boi { neo: Map<string, string>; trangCua: Map<string, number> }
@@ -42,32 +43,38 @@ const capDoi = (kyHieu: string, loi: string) =>
  *  coLien = false cho bản chỉ để NHÌN (đã aria-hidden): liên kết nằm trong vùng
  *  aria-hidden thì người dùng bàn phím vẫn tab vào được một thứ trình đọc màn
  *  hình không hề xướng. */
-function noiChuThich(s: string, trang: number, coLien = true): string {
-  return s.split(/(\[chú thích \d+\])/g).map((p) => {
+function noiChuThich(s: string, trang: number, coLien = true, goc: Nnu = 'vi'): string {
+  const mot = (t: string) => t.split(/(\[chú thích \d+\])/g).map((p) => {
     const m = p.match(/^\[chú thích (\d+)\]$/);
     if (!m) return xml(p);
     return coLien
       ? `<a href="#${neoChuThich(trang, m[1])}" epub:type="noteref" aria-label="Chú thích ${m[1]}"><sup>[${m[1]}]</sup></a>`
       : `<sup>[${m[1]}]</sup>`;
   }).join('');
+  // xml:lang trên đoạn xen: trình đọc màn hình đổi bộ phát âm theo chính thuộc tính này.
+  return chiaNnu(s, goc).map((d) =>
+    d.nnu === goc ? mot(d.text) : `<span xml:lang="${maNnu(d.nnu)}" lang="${maNnu(d.nnu)}">${mot(d.text)}</span>`,
+  ).join('');
 }
 
 function khoiRaXhtml(k: Khoi, b: Boi): string {
   const id = b.neo.get(k.id) ?? `khoi-${k.id}`;
-  const ct = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1);
-  const ctNhin = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1, false);
+  const goc: Nnu = k.ngonNgu === 'en' ? 'en' : 'vi';
+  const lg = goc === 'en' ? ` xml:lang="${maNnu('en')}" lang="${maNnu('en')}"` : '';
+  const ct = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1, true, goc);
+  const ctNhin = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1, false, goc);
   switch (k.loai) {
     case 'van-ban':
       return k.vanBanDoc
-        ? `<p><span aria-hidden="true">${ctNhin(k.vanBan ?? '')}</span><span class="chi-doc-man-hinh">${ct(k.vanBanDoc)}</span></p>`
-        : `<p>${ct(k.vanBan ?? '')}</p>`;
+        ? `<p${lg}><span aria-hidden="true">${ctNhin(k.vanBan ?? '')}</span><span class="chi-doc-man-hinh">${ct(k.vanBanDoc)}</span></p>`
+        : `<p${lg}>${ct(k.vanBan ?? '')}</p>`;
 
     case 'tho':
-      return `<div class="tho" role="group" aria-label="Đoạn thơ">${ct(k.vanBan ?? '')}</div>`;
+      return `<div class="tho" role="group" aria-label="Đoạn thơ"${lg}>${ct(k.vanBan ?? '')}</div>`;
 
     case 'hinh-anh':
       // Mô tả là nội dung thật, không phải thuộc tính alt của một tấm ảnh vắng mặt.
-      return `<figure id="${xml(id)}"><figcaption>Mô tả hình vẽ</figcaption><p>${xml(k.moTa)}</p></figure>`;
+      return `<figure id="${xml(id)}"><figcaption>Mô tả hình vẽ</figcaption><p${lg}>${ct(k.moTa ?? '')}</p></figure>`;
 
     case 'cong-thuc':
       return `<div id="${xml(id)}" class="cong-thuc" role="math" aria-label="${xml(k.docThanhLoi || k.kyHieuGoc)}">`
@@ -79,10 +86,10 @@ function khoiRaXhtml(k: Khoi, b: Boi): string {
       const coDoc = (b.hangDoc?.length ?? 0) > 0;
       const o = (v: string, r: number, c: number) => {
         const d = coDoc ? b.hangDoc?.[r]?.[c] : undefined;
-        return d && d !== v ? capDoi(v, d) : xml(v);
+        return d && d !== v ? capDoi(v, d) : ct(v);
       };
-      return `<p class="tom-tat">${xml(b.tomTat)}</p><table><caption class="chi-doc-man-hinh">${xml(b.tomTat)}</caption>`
-        + `<thead><tr>${b.tieuDeCot.map((c) => `<th scope="col">${xml(c)}</th>`).join('')}</tr></thead><tbody>`
+      return `<p class="tom-tat"${lg}>${ct(b.tomTat)}</p><table${lg}><caption class="chi-doc-man-hinh">${ct(b.tomTat)}</caption>`
+        + `<thead><tr>${b.tieuDeCot.map((c) => `<th scope="col">${ct(c)}</th>`).join('')}</tr></thead><tbody>`
         + b.hang.map((h, r) => `<tr>${h.map((v, c) =>
             c === 0 ? `<th scope="row">${o(v, r, c)}</th>` : `<td>${o(v, r, c)}</td>`).join('')}</tr>`).join('')
         + `</tbody></table>`;
@@ -93,18 +100,18 @@ function khoiRaXhtml(k: Khoi, b: Boi): string {
       const than = k.vanBanDoc
         ? `<span aria-hidden="true">${ctNhin(k.vanBan ?? '')}</span><span class="chi-doc-man-hinh">${ct(k.vanBanDoc)}</span>`
         : ct(k.vanBan ?? '');
-      return `<div class="bai-tap" id="${xml(id)}"><span class="chi-doc-man-hinh">${xml(dan)}</span>${than}</div>`;
+      return `<div class="bai-tap" id="${xml(id)}"${lg}><span class="chi-doc-man-hinh">${xml(dan)}</span>${than}</div>`;
     }
 
     case 'chu-thich': {
       const so = soTuNeo(id);
-      return `<aside epub:type="footnote" id="${xml(id)}">`
+      return `<aside epub:type="footnote" id="${xml(id)}"${lg}>`
         + `<span class="chi-doc-man-hinh">Chú thích${so ? ` ${so}` : ''}: </span>`
-        + xml(loiChuThich(k)) + `</aside>`;
+        + ct(loiChuThich(k)) + `</aside>`;
     }
 
     case 'khung-luu-y':
-      return `<aside id="${xml(id)}" aria-label="Khung lưu ý">${xml(k.vanBan)}</aside>`;
+      return `<aside id="${xml(id)}"${lg} aria-label="Khung lưu ý">${ct(k.vanBan ?? '')}</aside>`;
 
     default:
       return `<p>${xml(k.vanBan)}</p>`;

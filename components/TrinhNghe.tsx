@@ -20,10 +20,15 @@ import { taiTieng, taiTruoc, LoiTieng, THONG_BAO_TIENG } from '@/lib/tiengKhach'
  * khiếm thị không có cách nào biết mình đang nghe sai.
  */
 
-/** Lấy lời đọc của một phần tử, đi đúng cách trình đọc màn hình đi. */
-function layLoiDoc(el: Element): string {
+/** Lấy lời đọc của một phần tử, đi đúng cách trình đọc màn hình đi.
+ *
+ *  Chỗ nào đổi sang tiếng Anh thì bọc lại bằng [en]…[/en] để máy chủ tổng hợp
+ *  bằng giọng Anh. Lấy ngay từ thuộc tính lang trong DOM chứ không đoán lại:
+ *  đó đúng là thứ trình đọc màn hình dùng để đổi bộ phát âm, nên hai bên không
+ *  bao giờ lệch nhau. */
+function layLoiDoc(el: Element, nnuGoc: 'vi' | 'en' = 'vi'): string {
   let ra = '';
-  const di = (n: Node) => {
+  const di = (n: Node, nnu: 'vi' | 'en') => {
     if (n.nodeType === Node.TEXT_NODE) { ra += n.textContent ?? ''; return; }
     if (n.nodeType !== Node.ELEMENT_NODE) return;
     const e = n as Element;
@@ -43,12 +48,17 @@ function layLoiDoc(el: Element): string {
       ra += ` ${nhan}. `;
       return;
     }
-    for (const con of Array.from(e.childNodes)) di(con);
+    const lg = (e.getAttribute('lang') || '').toLowerCase();
+    const nnuCon: 'vi' | 'en' = lg.startsWith('en') ? 'en' : lg.startsWith('vi') ? 'vi' : nnu;
+    const doi = nnuCon !== nnu;
+    if (doi) ra += `[${nnuCon}]`;
+    for (const con of Array.from(e.childNodes)) di(con, nnuCon);
+    if (doi) ra += `[/${nnuCon}]`;
     // FIGCAPTION và ô bảng cũng là ranh giới — thiếu chúng thì chữ dính liền:
     // "Mô tả hình vẽHình 4.17"
     if (/^(P|DIV|LI|TR|TD|TH|H1|H2|H3|H4|FIGURE|FIGCAPTION|CAPTION|ASIDE|SECTION)$/.test(e.tagName)) ra += '. ';
   };
-  di(el);
+  di(el, nnuGoc);
   return doiKyHieuSot(ra.replace(/\s+/g, ' ').replace(/\.\s*\./g, '.').trim());
 }
 

@@ -62,6 +62,57 @@ một lượt nghe trọn tài liệu tốn gấp ba lần tiền chuyển đổ
 
 ---
 
+## Sách Tiếng Anh: hai thứ tiếng trong một câu
+
+Sách Tiếng Anh của Việt Nam **trộn hai thứ tiếng ngay trong một câu**: lệnh bài bằng
+tiếng Việt, đoạn hội thoại bằng tiếng Anh. Một giọng đọc cả câu là sai ở nửa này hoặc
+nửa kia — đúng lại lỗi cũ nhưng ngược chiều.
+
+Và đây **không chỉ là chuyện giọng đọc của Verso**: trình đọc màn hình đổi bộ phát âm
+theo thuộc tính `lang`. Thiếu nó, NVDA đọc "Hello, how are you" bằng âm tiếng Việt —
+học sinh học phát âm sai mà không có cách nào biết. Đó là **WCAG 3.1.2 Ngôn ngữ của
+từng phần, mức AA**.
+
+### Đã thử thẻ SSML `<lang>` — không dùng được
+
+Cloud TTS **nhận** `<lang xml:lang="en-US">` mà không báo lỗi, nhưng **không đổi cách
+phát âm**. Đo bằng thời lượng: cùng một câu trộn, có thẻ và không thẻ đều ra đúng
+**5,69 giây**, không lệch một phần nghìn giây. Trong khi cùng câu tiếng Anh đó đọc bằng
+giọng Anh thật chỉ mất 1,85 giây so với 2,42 giây bằng giọng Việt.
+
+Nên phải **tách thật rồi tổng hợp từng đoạn bằng giọng của nó** (`lib/nnu.ts`), rồi nối
+lại — chỗ này dùng luôn cách nối MP3 đã có sẵn cho phần cắt theo byte.
+
+### Đánh dấu ở đâu
+
+| Cấp | Cách đánh dấu | Ai dùng |
+|---|---|---|
+| Cả khối | `Khoi.ngonNgu = "en"` | `lang` / `xml:lang` trên thẻ bao |
+| Đoạn xen trong câu | `[en] … [/en]` trong văn bản | `<span lang="en-US">` |
+| Từng ô bảng | `[en] … [/en]` trong từng ô | `<span>` trong ô |
+
+Ô bảng phải đánh dấu riêng vì **bảng từ vựng là thứ hay gặp nhất ở môn Tiếng Anh**:
+cột từ tiếng Anh, cột nghĩa tiếng Việt, ngay cạnh nhau trong một hàng.
+
+Trình nghe **đọc thuộc tính `lang` ngay từ DOM** chứ không đoán lại — đó đúng là thứ
+trình đọc màn hình dùng, nên hai bên không bao giờ lệch nhau.
+
+Câu dẫn của Verso ("Mô tả hình vẽ.", "Bài tập 3.") luôn là tiếng Việt, kể cả trong khối
+tiếng Anh, nên được bọc `[vi] … [/vi]`.
+
+### Giọng tiếng Anh
+
+`en-US-Chirp3-HD-Achernar` — cùng "nhân vật" Achernar với giọng Việt, nên chuyển qua
+lại nghe như **một người song ngữ**, không phải hai người thay phiên.
+
+### Đổi cách đọc thì phải đổi luôn mã cache
+
+`DOI_TIENG` trong `lib/tieng.server.ts` nằm trong mã băm. Không có nó, những đoạn sinh
+ra **trước** khi có phần tách ngôn ngữ vẫn đọc "[en]" thành lời và sống sót qua mọi lần
+deploy — đã gặp thật, một câu 95 ký tự phát ra 29 giây thay vì 9 giây.
+
+---
+
 ## Nút nghe là công cụ tự kiểm
 
 Trình nghe đọc **đúng thứ trình đọc màn hình đọc**, không phải thứ hiện trên màn

@@ -86,6 +86,21 @@ NGUYÊN TẮC BẮT BUỘC:
 
 10. TIẾNG VIỆT CHUẨN SÁCH GIÁO KHOA. Dùng đúng thuật ngữ nhà trường Việt Nam đang dạy,
    không dịch từ tiếng Anh, không dùng từ địa phương.
+
+11. ĐÁNH DẤU CHỖ NÀO LÀ TIẾNG ANH. Máy đọc phải biết mới đổi được cách phát âm; không biết
+   thì nó đọc "Hello, how are you" bằng âm tiếng Việt, và học sinh khiếm thị học phát âm
+   sai mà không có cách nào biết.
+     · Cả khối là tiếng Anh (đoạn đọc hiểu, hội thoại, danh sách từ vựng) → ngonNgu = "en".
+     · Câu tiếng Việt có XEN tiếng Anh → ngonNgu = "vi", và bọc phần tiếng Anh trong
+       vanBan bằng [en] … [/en].
+       Ví dụ: "Đọc đoạn hội thoại sau: [en]Hello, how are you today?[/en] rồi trả lời."
+     · Khối tiếng Anh có xen tiếng Việt → ngonNgu = "en", bọc phần tiếng Việt bằng [vi] … [/vi].
+     · Tên riêng, từ mượn đã quen trong tiếng Việt (internet, video, ki-lô-mét) thì KHÔNG bọc.
+       Chỉ bọc khi cả cụm đúng là tiếng Anh và phải phát âm theo tiếng Anh.
+     · Nếu có vanBanDoc thì bọc y hệt trong vanBanDoc.
+     · TRONG BẢNG cũng phải bọc. Bảng từ vựng là thứ hay gặp nhất ở môn Tiếng Anh:
+       cột từ là tiếng Anh, cột nghĩa là tiếng Việt. Bọc từng ô một, cả ở tieuDeCot,
+       hang và hangDoc. Ví dụ hang: ["[en]neighbourhood[/en]", "khu phố, xóm giềng"].
 `.trim();
 
 /** Hướng dẫn riêng theo môn. Đây là chỗ tạo ra khác biệt so với một công cụ OCR chung chung. */
@@ -144,6 +159,9 @@ MÔN ĐỊA LÝ — chú ý riêng:
 MÔN TIẾNG ANH — chú ý riêng:
 - Giữ NGUYÊN phần tiếng Anh, không dịch. Học sinh cần đúng văn bản gốc để học.
 - Phần hướng dẫn tiếng Việt thì giữ tiếng Việt.
+- ĐÁNH DẤU NGÔN NGỮ cho từng khối và từng đoạn xen — xem nguyên tắc 10. Đây là việc
+  quan trọng nhất của môn này: không đánh dấu thì máy đọc tiếng Anh bằng âm tiếng Việt,
+  học sinh học phát âm sai mà không biết.
 - Hình minh hoạ trong bài tập nói/viết: mô tả đủ chi tiết để học sinh làm được bài.`,
 
   'gdcd': `

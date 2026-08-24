@@ -7,6 +7,7 @@ import { dungNeo, neoChuThich, nhanMuc, soTuNeo, loiChuThich } from '@/lib/neo';
 import { maSo } from '@/lib/chuoi';
 import { loiDocCuaKhoi, doiKyHieuSot } from '@/lib/loiDoc';
 import { giayCuaMp3, gioDaisy } from './mp3';
+import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 interface Boi {
   neo: Map<string, string>;
@@ -48,33 +49,40 @@ function tho(s: string, ct: (t: string) => string): string {
 
 /** "[chú thích 3]" thành <noteref> — máy đọc DAISY xướng đây là dấu chú thích
  *  và cho phép nhảy tới lời giải nghĩa rồi quay lại đúng chỗ đang đọc. */
-function noiChuThich(s: string, trang: number): string {
-  return s.split(/(\[chú thích \d+\])/g).map((p) => {
+function noiChuThich(s: string, trang: number, goc: Nnu = 'vi'): string {
+  const mot = (t: string) => t.split(/(\[chú thích \d+\])/g).map((p) => {
     const m = p.match(/^\[chú thích (\d+)\]$/);
     return m ? `<noteref idref="#${neoChuThich(trang, m[1])}" class="chu-thich">${m[1]}</noteref>` : xml(p);
   }).join('');
+  // Đoạn xen tiếng Anh phải mang xml:lang, nếu không máy đọc phát âm bằng tiếng Việt.
+  return chiaNnu(s, goc).map((d) =>
+    d.nnu === goc ? mot(d.text) : `<span xml:lang="${maNnu(d.nnu)}">${mot(d.text)}</span>`,
+  ).join('');
 }
 
 function khoiRaDtbook(k: Khoi, b: Boi): string {
   const id = b.neo.get(k.id) ?? `khoi-${k.id}`;
-  const ct = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1);
+  const ct = (t: string) => noiChuThich(t, b.trangCua.get(k.id) ?? 1, goc);
   // smilref nối khối văn bản với đoạn tiếng của nó. Thiếu nó thì máy đọc DAISY
   // phát được tiếng nhưng không biết đang đọc tới chữ nào — mất hẳn khả năng
   // nhảy theo câu và tô sáng theo tiếng.
   const sr = b.par?.get(k.id) ? ` smilref="sach.smil#${b.par.get(k.id)}"` : '';
+  const goc: Nnu = k.ngonNgu === 'en' ? 'en' : 'vi';
+  // xml:lang là thứ máy đọc DAISY dùng để đổi bộ phát âm ở bản chỉ có chữ.
+  const lg = goc === 'en' ? ` xml:lang="${maNnu('en')}"` : '';
   switch (k.loai) {
     case 'van-ban':
       // Chạy cả dạng đọc qua noiChuThich: dấu chú thích vẫn còn trong đó, và
       // giữ được nó thành <noteref> nghĩa là người nghe nhảy tới lời giải nghĩa được.
-      return `<p id="${xml(id)}"${sr}>${ct(k.vanBanDoc || k.vanBan || '')}</p>`;
+      return `<p id="${xml(id)}"${sr}${lg}>${ct(k.vanBanDoc || k.vanBan || '')}</p>`;
 
     case 'tho':
-      return `<div id="${xml(id)}"${sr}>` + tho(k.vanBan ?? '', ct) + `</div>`;
+      return `<div id="${xml(id)}"${sr}${lg}>` + tho(k.vanBan ?? '', ct) + `</div>`;
 
     case 'hinh-anh':
       // prodnote render="required" = lời do người làm sách thêm vào, BẮT BUỘC đọc.
       // Đúng nghĩa với mô tả hình: không có nó thì học sinh mất hẳn nội dung.
-      return `<prodnote id="${xml(id)}"${sr} render="required"><p>Mô tả hình vẽ: ${xml(k.moTa)}</p></prodnote>`;
+      return `<prodnote id="${xml(id)}"${sr}${lg} render="required"><p>Mô tả hình vẽ: ${xml(k.moTa)}</p></prodnote>`;
 
     case 'cong-thuc':
       return `<p id="${xml(id)}"${sr} class="cong-thuc">${xml(k.docThanhLoi || k.kyHieuGoc)}</p>`;
@@ -84,9 +92,9 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
       if (!b) return '';
       const coDoc = (b.hangDoc?.length ?? 0) > 0;
       const o = (v: string, r: number, c: number) =>
-        xml((coDoc ? b.hangDoc?.[r]?.[c] : '') || v);
-      return `<table id="${xml(id)}"${sr}><caption>${xml(b.tomTat)}</caption>`
-        + `<thead><tr>${b.tieuDeCot.map((c) => `<th>${xml(c)}</th>`).join('')}</tr></thead><tbody>`
+        ct((coDoc ? b.hangDoc?.[r]?.[c] : '') || v);
+      return `<table id="${xml(id)}"${sr}${lg}><caption>${ct(b.tomTat)}</caption>`
+        + `<thead><tr>${b.tieuDeCot.map((c) => `<th>${ct(c)}</th>`).join('')}</tr></thead><tbody>`
         + b.hang.map((h, r) => `<tr>${h.map((v, c) => `<td>${o(v, r, c)}</td>`).join('')}</tr>`).join('')
         + `</tbody></table>`;
     }
@@ -94,19 +102,19 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
     case 'bai-tap': {
       const dan = k.soBaiTap ? `${nhanMuc(k)}. ` : 'Bài tập. ';
       const than = ct(k.vanBanDoc || k.vanBan || '');
-      return `<p id="${xml(id)}"${sr} class="bai-tap">${xml(dan)}${than}</p>`;
+      return `<p id="${xml(id)}"${sr}${lg} class="bai-tap">${xml(dan)}${than}</p>`;
     }
 
     case 'chu-thich': {
       // Xướng "Chú thích 1" trước lời giải nghĩa: người nghe nhảy tới đây từ
       // giữa bài, cần biết ngay mình đang nghe chú thích số mấy.
       const so = soTuNeo(id);
-      return `<note id="${xml(id)}"${sr}><p>Chú thích${so ? ` ${so}` : ''}: `
-        + xml(loiChuThich(k)) + `</p></note>`;
+      return `<note id="${xml(id)}"${sr}${lg}><p>Chú thích${so ? ` ${so}` : ''}: `
+        + ct(loiChuThich(k)) + `</p></note>`;
     }
 
     case 'khung-luu-y':
-      return `<sidebar id="${xml(id)}"${sr} render="required"><p>${xml(k.vanBan)}</p></sidebar>`;
+      return `<sidebar id="${xml(id)}"${sr}${lg} render="required"><p>${xml(k.vanBan)}</p></sidebar>`;
 
     default:
       return `<p id="${xml(id)}"${sr}>${xml(loiDoc(k))}</p>`;
@@ -127,16 +135,23 @@ function loiMoDau(ban: BanVerso): string {
  *
  *  Đi theo cây đề mục y như lúc dựng DTBook, không đi theo danh sách trang phẳng:
  *  SMIL phát tuần tự, lệch thứ tự một chỗ là cả cuốn sách đọc sai mạch. */
-export function doanCanTieng(ban: BanVerso): { khoiId: string; text: string }[] {
+export function doanCanTieng(ban: BanVerso): { khoiId: string; text: string; nnu: 'vi' | 'en' }[] {
   const neo = dungNeo(ban);
   const cay = dungCay(ban, neo);
-  const ra: { khoiId: string; text: string }[] = [{ khoiId: 've-ban-doc', text: doiKyHieuSot(loiMoDau(ban)) }];
+  // Đề mục cũng có thể là tiếng Anh. Muc không giữ lại Khoi gốc nên tra bảng riêng.
+  const nnuCua = new Map<string, 'vi' | 'en'>();
+  for (const t of ban.trang) for (const k of t.khoi) nnuCua.set(k.id, k.ngonNgu === 'en' ? 'en' : 'vi');
+  const ra: { khoiId: string; text: string; nnu: 'vi' | 'en' }[] =
+    [{ khoiId: 've-ban-doc', text: doiKyHieuSot(loiMoDau(ban)), nnu: 'vi' }];
 
   const diMuc = (m: Muc) => {
-    if (m.id.startsWith('khoi-')) ra.push({ khoiId: m.id.slice(5), text: doiKyHieuSot(m.nhan) });
+    if (m.id.startsWith('khoi-')) {
+      const id = m.id.slice(5);
+      ra.push({ khoiId: id, text: doiKyHieuSot(m.nhan), nnu: nnuCua.get(id) ?? 'vi' });
+    }
     for (const k of m.khoi) {
       const t = loiDocCuaKhoi(k).trim();
-      if (t) ra.push({ khoiId: k.id, text: t });
+      if (t) ra.push({ khoiId: k.id, text: t, nnu: k.ngonNgu === 'en' ? 'en' : 'vi' });
     }
     m.con.forEach(diMuc);
   };
