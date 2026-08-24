@@ -80,3 +80,9 @@ test('loiChuThich: không ghép lại từ đã có sẵn, kể cả khi có d�
     '[en]neighbourhood[/en]: cách viết Anh-Anh.',
   );
 });
+
+test('nhanMuc: câu dẫn không ghép thành "Bài tập Luyện tập 2"', () => {
+  // Câu dẫn ẩn của Verso dùng chung nhanMuc với mục lục, nếu không hai chỗ nói khác nhau.
+  assert.equal(nhanMuc(k({ loai: 'bai-tap', soBaiTap: 'Luyện tập 2' })), 'Luyện tập 2');
+  assert.equal(nhanMuc(k({ loai: 'bai-tap', soBaiTap: '2' })), 'Bài 2');
+});

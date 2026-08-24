@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Khoi } from '@/lib/types';
-import { neoChuThich, soTuNeo, loiChuThich, thanBaiTap } from '@/lib/neo';
+import { neoChuThich, soTuNeo, loiChuThich, thanBaiTap, nhanMuc } from '@/lib/neo';
 import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 /* Không có 'use client' — bộ dựng này chạy được ở máy chủ, nên trang học sinh
@@ -130,7 +130,9 @@ export const KhoiDoc: React.FC<{
       const coDoc = (b.hangDoc?.length ?? 0) > 0;
       return boc(
         <div {...chung}>
-          <p className="text-base text-muc-mo mb-2">{ct(b.tomTat)}</p>
+          {/* aria-hidden vì <caption> bên dưới đã mang đúng câu này cho trình đọc
+              màn hình. Để cả hai là người nghe nghe tóm tắt bảng hai lần liền. */}
+          <p aria-hidden="true" className="text-base text-muc-mo mb-2">{ct(b.tomTat)}</p>
           <div className="overflow-x-auto">
             <table>
               <caption className="chi-doc-man-hinh">{b.tomTat}</caption>
@@ -166,7 +168,9 @@ export const KhoiDoc: React.FC<{
         <div {...chung} tabIndex={-1} {...langKhoi}
           className="my-5 pl-4 border-l-4 border-verso-200">
           <span className="chi-doc-man-hinh">
-            {k.soBaiTap ? `Bài tập ${k.soBaiTap}. ` : 'Bài tập. '}
+            {/* nhanMuc chứ không ghép tay: số hiệu "Luyện tập 2" đã tự đọc
+                thành tên rồi, ghép nữa thành "Bài tập Luyện tập 2". */}
+            {`${nhanMuc(k)}. `}
           </span>
           {k.vanBanDoc ? (
             <>

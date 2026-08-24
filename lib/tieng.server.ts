@@ -161,6 +161,9 @@ export async function tieng(
   const phan: Buffer[] = [];
   for (const doan of chiaNnu(text, ngonNgu)) {
     for (const m of catTheoByte(doan.text)) {
+      // Lưới an toàn cuối: không bao giờ gửi đi một mảnh không có chữ nào.
+      // Cloud TTS đọc mảnh "." thành lời "dấu chấm" — 1,25 giây tiếng thừa.
+      if (!/[0-9A-Za-zÀ-ỹ]/.test(m)) continue;
       phan.push(await thuLai(() => motLuot(m, giongCua(doan.nnu), maCua(doan.nnu))));
     }
   }

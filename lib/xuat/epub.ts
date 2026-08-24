@@ -3,7 +3,7 @@ import type { BanVerso, Khoi } from '@/lib/types';
 import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 import { taoZip, xml } from './zip';
 import { dungCay, dungNav, dungTrangCua, type Muc, type MucNav } from './noiDung';
-import { dungNeo, neoChuThich, soTuNeo, loiChuThich, thanBaiTap } from '@/lib/neo';
+import { dungNeo, neoChuThich, soTuNeo, loiChuThich, thanBaiTap, nhanMuc } from '@/lib/neo';
 import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 /** Mọi thứ bộ dựng cần biết ngoài bản thân khối. */
@@ -93,7 +93,8 @@ function khoiRaXhtml(k: Khoi, b: Boi): string {
         const d = coDoc ? b.hangDoc?.[r]?.[c] : undefined;
         return d && d !== v ? capDoi(v, d) : ct(v);
       };
-      return `<p class="tom-tat"${lg}>${ct(b.tomTat)}</p><table${lg}><caption class="chi-doc-man-hinh">${ct(b.tomTat)}</caption>`
+      return `<p class="tom-tat" aria-hidden="true"${lg}>${ct(b.tomTat)}</p>`
+        + `<table${lg}><caption class="chi-doc-man-hinh">${ct(b.tomTat)}</caption>`
         + `<thead><tr>${b.tieuDeCot.map((c) => `<th scope="col">${ct(c)}</th>`).join('')}</tr></thead><tbody>`
         + b.hang.map((h, r) => `<tr>${h.map((v, c) =>
             c === 0 ? `<th scope="row">${o(v, r, c)}</th>` : `<td>${o(v, r, c)}</td>`).join('')}</tr>`).join('')
@@ -101,7 +102,7 @@ function khoiRaXhtml(k: Khoi, b: Boi): string {
     }
 
     case 'bai-tap': {
-      const dan = k.soBaiTap ? `Bài tập ${k.soBaiTap}. ` : 'Bài tập. ';
+      const dan = `${nhanMuc(k)}. `;
       const than = k.vanBanDoc
         ? `<span aria-hidden="true">${ctNhin(k.vanBan ?? '')}</span><span class="chi-doc-man-hinh">${ct(thanBaiTap(k))}</span>`
         : ct(thanBaiTap(k));

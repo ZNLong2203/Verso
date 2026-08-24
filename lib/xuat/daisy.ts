@@ -102,7 +102,7 @@ function khoiRaDtbook(k: Khoi, b: Boi): string {
     }
 
     case 'bai-tap': {
-      const dan = k.soBaiTap ? `${nhanMuc(k)}. ` : 'Bài tập. ';
+      const dan = `${nhanMuc(k)}. `;
       const than = ct(thanBaiTap(k));
       return `<p id="${xml(id)}"${sr}${lg} class="bai-tap">${xml(dan)}${than}</p>`;
     }

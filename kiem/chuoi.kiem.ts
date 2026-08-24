@@ -64,3 +64,23 @@ test('donDauCau: bỏ dấu câu chồng nhau do bộ dựng chèn thêm', () =>
   assert.equal(donDauCau('Dấu phẩy , rồi chấm .'), 'Dấu phẩy, rồi chấm.');
   assert.equal(donDauCau('Bình thường, không đổi.'), 'Bình thường, không đổi.');
 });
+
+test('chiaNnu: mảnh chỉ có dấu câu phải dính vào mảnh khác, không đứng riêng', () => {
+  // Đứng riêng là Cloud TTS đọc nó thành lời: mảnh "." ra 1,25 giây tiếng
+  // "dấu chấm", dài hơn cả từ "yên bình". Đây là lỗi người dùng nghe thấy thật.
+  for (const [vao, goc] of [
+    ['Chú ý cách phát âm từ [en]neighbourhood[/en].', 'vi'],
+    ['Bảng từ: [en]Word[/en]: [en]peaceful[/en], nghĩa là yên bình.', 'vi'],
+    ['[en]Hello[/en]. Rồi trả lời.', 'vi'],
+    ['. [en]Bắt đầu bằng dấu chấm[/en]', 'vi'],
+  ] as const) {
+    for (const d of chiaNnu(vao, goc)) {
+      assert.match(d.text, /[0-9A-Za-zÀ-ỹ]/, `mảnh ${JSON.stringify(d.text)} không có chữ nào`);
+    }
+  }
+});
+
+test('chiaNnu: gộp dấu câu vào rồi vẫn không mất chữ nào', () => {
+  const vao = 'Bảng từ: [en]Word[/en]: [en]peaceful[/en], nghĩa là yên bình.';
+  assert.equal(chiaNnu(vao, 'vi').map((d) => d.text).join(''), boMocNnu(vao));
+});
