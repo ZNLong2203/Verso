@@ -14,6 +14,8 @@ interface Boi {
   trangCua: Map<string, number>;
   /** Chỉ có ở bản CÓ TIẾNG: khối nào ứng với đoạn SMIL nào. */
   par?: Map<string, string>;
+  /** Ngôn ngữ của từng khối, tra được cả cho đề mục — Muc không giữ lại Khoi gốc. */
+  nnuCua: Map<string, Nnu>;
 }
 
 /** Một đoạn tiếng đã tổng hợp, gắn với đúng khối văn bản của nó. */
@@ -161,9 +163,12 @@ export function doanCanTieng(ban: BanVerso): { khoiId: string; text: string; nnu
 
 export function taoDaisy(ban: BanVerso, tieng?: DoanTieng[]): Buffer {
   const coTieng = !!tieng?.length;
+  const nnuKhoi = new Map<string, Nnu>();
+  for (const t of ban.trang) for (const x of t.khoi) nnuKhoi.set(x.id, x.ngonNgu === 'en' ? 'en' : 'vi');
   const boi: Boi = {
     neo: dungNeo(ban),
     trangCua: dungTrangCua(ban),
+    nnuCua: nnuKhoi,
     par: coTieng ? new Map(tieng!.map((d) => [d.khoiId, d.par])) : undefined,
   };
   const cay = dungCay(ban, boi.neo);
@@ -216,7 +221,14 @@ export function taoDaisy(ban: BanVerso, tieng?: DoanTieng[]): Buffer {
     // tên chương đó, không phải im lặng cho tới đoạn văn đầu tiên.
     const parH = parDauCuaMuc(m);
     const srH = parH ? ` smilref="sach.smil#${parH}"` : '';
-    return `<level${cap} id="${xml(m.id)}"><h${cap}${srH}>${xml(m.nhan)}</h${cap}>`
+    const gocH: Nnu = (m.id.startsWith('khoi-') ? boi.nnuCua.get(m.id.slice(5)) : undefined) ?? 'vi';
+    const lgH = gocH === 'en' ? ` xml:lang="${maNnu('en')}"` : '';
+    const nhanH = chiaNnu(m.nhan, gocH).map((d) =>
+      d.nnu === gocH ? xml(d.text) : `<span xml:lang="${maNnu(d.nnu)}">${xml(d.text)}</span>`,
+    ).join('');
+    // Đánh dấu trên chính thẻ h, không phải trên <level>: level bọc cả phần thân,
+    // mà thân thường vẫn là tiếng Việt.
+    return `<level${cap} id="${xml(m.id)}"><h${cap}${srH}${lgH}>${nhanH}</h${cap}>`
       + (soMo ? `<pagenum id="trang-${maSo(soMo)}"${srH} page="normal">${xml(soMo)}</pagenum>` : '')
       + m.khoi.map((k) => danhSoTrang(k) + khoiRaDtbook(k, boi)).join('\n')
       + m.con.map(mucRaDtbook).join('\n')

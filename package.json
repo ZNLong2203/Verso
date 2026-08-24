@@ -12,7 +12,8 @@
     "build": "next build",
     "postbuild": "cp -R .next/static .next/standalone/.next/ && cp -R public .next/standalone/ || true",
     "start": "node .next/standalone/server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --conditions=react-server --experimental-strip-types --import ./kiem/dangKy.mjs kiem/*.kiem.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "^8.0.1",

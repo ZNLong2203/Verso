@@ -7,7 +7,12 @@ import { dungNeo, neoChuThich, soTuNeo, loiChuThich, thanBaiTap } from '@/lib/ne
 import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 /** Mọi thứ bộ dựng cần biết ngoài bản thân khối. */
-interface Boi { neo: Map<string, string>; trangCua: Map<string, number> }
+interface Boi {
+  neo: Map<string, string>;
+  trangCua: Map<string, number>;
+  /** Ngôn ngữ của từng khối, tra được cả cho đề mục — Muc không giữ lại Khoi gốc. */
+  nnuCua: Map<string, Nnu>;
+}
 
 /** Xuất EPUB 3.
  *
@@ -120,14 +125,26 @@ function khoiRaXhtml(k: Khoi, b: Boi): string {
 
 function mucRaXhtml(m: Muc, b: Boi, lech = 1): string {
   const cap = Math.min(m.cap + lech, 6);
-  return `<section id="${xml(m.id)}"><h${cap}>${xml(m.nhan)}</h${cap}>`
+  // Đề mục dựng qua đường riêng nên rất dễ quên đánh dấu ngôn ngữ. Quên là trình
+  // đọc màn hình đọc "Unit 5. Our Neighbourhood" bằng âm tiếng Việt.
+  const goc: Nnu = (m.id.startsWith('khoi-') ? b.nnuCua.get(m.id.slice(5)) : undefined) ?? 'vi';
+  // Đánh dấu trên CHÍNH thẻ đề mục, không phải trên <section>: section bọc cả phần
+  // thân, mà thân thì thường vẫn là tiếng Việt — đánh dấu ở ngoài là cả chương bị
+  // đọc bằng giọng Anh do kế thừa.
+  const lg = goc === 'en' ? ` xml:lang="${maNnu('en')}" lang="${maNnu('en')}"` : '';
+  const nhan = chiaNnu(m.nhan, goc).map((d) =>
+    d.nnu === goc ? xml(d.text) : `<span xml:lang="${maNnu(d.nnu)}" lang="${maNnu(d.nnu)}">${xml(d.text)}</span>`,
+  ).join('');
+  return `<section id="${xml(m.id)}"><h${cap}${lg}>${nhan}</h${cap}>`
     + m.khoi.map((k) => khoiRaXhtml(k, b)).join('\n')
     + m.con.map((c) => mucRaXhtml(c, b, lech)).join('\n')
     + `</section>`;
 }
 
 export function taoEpub(ban: BanVerso): Buffer {
-  const boi: Boi = { neo: dungNeo(ban), trangCua: dungTrangCua(ban) };
+  const nnuCua = new Map<string, Nnu>();
+  for (const t of ban.trang) for (const x of t.khoi) nnuCua.set(x.id, x.ngonNgu === 'en' ? 'en' : 'vi');
+  const boi: Boi = { neo: dungNeo(ban), trangCua: dungTrangCua(ban), nnuCua };
   const cay = dungCay(ban, boi.neo);
   const mon = MON_HOC_INFO[ban.monHoc] ?? MON_HOC_INFO.khac;
   const uid = `urn:verso:${ban.maChiaSe || ban.id}`;

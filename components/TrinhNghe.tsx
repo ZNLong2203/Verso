@@ -63,7 +63,10 @@ function layLoiDoc(el: Element, nnuGoc: 'vi' | 'en' = 'vi'): string {
 }
 
 
-export const TrinhNghe: React.FC = () => {
+/** Khoá ghi chỗ đang nghe dở, riêng cho từng bản đọc. */
+const khoaViTri = (ma: string) => `verso:cho-nghe:${ma}`;
+
+export const TrinhNghe: React.FC<{ ma?: string }> = ({ ma }) => {
   // null = chưa dựng xong ở trình duyệt. Nếu khởi tạo bằng false, HTML máy chủ sẽ
   // chứa câu "không đọc được" — và người dùng trình đọc màn hình có thể nghe đúng
   // câu sai đó trước khi JavaScript kịp chạy.
@@ -76,6 +79,8 @@ export const TrinhNghe: React.FC = () => {
   const [tocDo, setTocDo] = React.useState(1);
   const [loi, setLoi] = React.useState('');
   const [thongBao, setThongBao] = React.useState('');
+  /** Chỗ nghe dở lần trước, để mời nghe tiếp thay vì bắt nghe lại từ đầu. */
+  const [choDo, setChoDo] = React.useState(0);
 
   const khoi = React.useRef<Element[]>([]);
   const loiDoc = React.useRef<string[]>([]);
@@ -99,6 +104,13 @@ export const TrinhNghe: React.FC = () => {
     const a = new Audio();
     a.preload = 'auto';
     may.current = a;
+    // Sách dài mấy chục phần: bắt nghe lại từ đầu mỗi lần mở là bỏ cả buổi học trước.
+    if (ma) {
+      try {
+        const n = Number(localStorage.getItem(khoaViTri(ma)));
+        if (Number.isInteger(n) && n > 0) setChoDo(n);
+      } catch { /* trình duyệt chặn localStorage thì thôi */ }
+    }
     setSanSang(true);
     return () => { a.pause(); a.src = ''; };
   }, []);
@@ -134,6 +146,7 @@ export const TrinhNghe: React.FC = () => {
       if (!conCuaToi()) return;
       setViTri(i);
       toSang(i);
+      if (ma) { try { localStorage.setItem(khoaViTri(ma), String(i)); } catch { /* bỏ qua */ } }
       let nguon: string;
       try {
         setDangTai(true);
@@ -171,7 +184,19 @@ export const TrinhNghe: React.FC = () => {
   const dungHan = () => {
     phien.current++;          // mọi lượt đang chạy tự thoát
     may.current?.pause();
+    setChoDo(viTri);          // dừng ở đâu, lần sau mời nghe tiếp từ đó
     donDep('Đã dừng.');
+  };
+
+  /** Mũi tên chỉ ăn khi tiêu điểm đang Ở TRONG cụm nút.
+   *
+   *  Không bắt phím ở cấp cả trang: NVDA và VoiceOver dùng chính mũi tên để đi
+   *  từng dòng trong chế độ đọc. Cướp phím đó là làm hỏng đúng cách người khiếm
+   *  thị đọc trang — đổi một tiện ích nhỏ lấy một thứ họ không thể thiếu. */
+  const phimTrongCum = (e: React.KeyboardEvent) => {
+    if (!dangDoc) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); docTu(Math.min(viTri + 1, tong - 1)); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); docTu(Math.max(viTri - 1, 0)); }
   };
 
   const tamDungTiep = () => {
@@ -188,14 +213,15 @@ export const TrinhNghe: React.FC = () => {
 
   return (
     <div className="grid gap-2">
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex flex-wrap items-center gap-2.5"
+        role="group" aria-label="Điều khiển nghe" onKeyDown={phimTrongCum}>
         {!dangDoc ? (
           <button onClick={() => docTu(0)}
             className="inline-flex items-center gap-2 px-5 py-3 min-h-[44px] rounded-lg bg-verso-700 text-white font-bold">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M8 5v14l11-7z" />
             </svg>
-            Nghe cả trang
+            {choDo > 0 ? 'Nghe lại từ đầu' : 'Nghe cả trang'}
           </button>
         ) : (
           <>
@@ -207,8 +233,13 @@ export const TrinhNghe: React.FC = () => {
               className="inline-flex items-center gap-2 px-4 py-3 min-h-[44px] rounded-lg border-2 border-vien bg-white font-bold">
               Dừng
             </button>
-            <button onClick={() => docTu(Math.min(viTri + 1, tong - 1))}
-              className="px-4 py-3 min-h-[44px] rounded-lg border-2 border-vien bg-white font-bold">
+            {/* Nghe lại chỗ vừa nghe là thao tác chính lúc học, không phải thao tác phụ. */}
+            <button onClick={() => docTu(Math.max(viTri - 1, 0))} disabled={viTri === 0}
+              className="px-4 py-3 min-h-[44px] rounded-lg border-2 border-vien bg-white font-bold disabled:opacity-40">
+              ‹ Phần trước
+            </button>
+            <button onClick={() => docTu(Math.min(viTri + 1, tong - 1))} disabled={viTri >= tong - 1}
+              className="px-4 py-3 min-h-[44px] rounded-lg border-2 border-vien bg-white font-bold disabled:opacity-40">
               Phần sau ›
             </button>
             {/* Không đặt aria-live ở đây: số phần đổi liên tục, trình đọc màn hình
@@ -231,6 +262,22 @@ export const TrinhNghe: React.FC = () => {
           </select>
         </label>
       </div>
+
+      {!dangDoc && choDo > 0 && (
+        <p className="text-base m-0">
+          <button onClick={() => docTu(choDo)}
+            className="font-bold text-verso-700 underline underline-offset-2 min-h-[44px] px-2 -mx-2 rounded hover:bg-verso-50">
+            Nghe tiếp từ phần {choDo + 1}
+          </button>
+          <span className="text-muc-mo"> — chỗ bạn nghe dở lần trước.</span>
+        </p>
+      )}
+
+      {dangDoc && (
+        <p className="text-sm text-muc-mo m-0">
+          Đang ở trong cụm nút: bấm mũi tên trái/phải để lùi hoặc sang phần khác.
+        </p>
+      )}
 
       {/* Vùng thông báo: chỉ những chuyển biến người nghe cần biết, không phải
           từng bước tiến độ. */}

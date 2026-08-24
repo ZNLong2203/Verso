@@ -58,7 +58,7 @@ export default async function TrangDoc({ params }: Props) {
             màn hình đọc, nên cũng là công cụ tự kiểm chất lượng bản chuyển đổi. */}
         <section aria-label="Nghe bản đọc"
           className="my-5 p-4 rounded-lg bg-verso-50 border border-verso-200">
-          <TrinhNghe />
+          <TrinhNghe ma={ma} />
         </section>
 
         <TaiVe ma={ma} />
