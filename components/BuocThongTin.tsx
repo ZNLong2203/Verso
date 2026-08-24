@@ -3,14 +3,31 @@
 import React from 'react';
 import { Nut, O, The } from './ui';
 import { useVerso, MON_HOC_DS } from '@/lib/store';
-import { MON_HOC_INFO } from '@/lib/constants';
+import { MON_HOC_INFO, MA_XEM_THU } from '@/lib/constants';
 
 export const BuocThongTin: React.FC = () => {
   const { ban, suaBan, datBuoc } = useVerso();
   const duNoiDung = ban.tieuDe.trim().length > 2 && ban.nguoiChuyen.trim().length > 1;
 
   return (
-    <The lop="p-6 max-w-2xl">
+    <div className="max-w-2xl grid gap-5">
+      {/* Chưa làm gì đã bắt nhập liệu thì người ta không biết mình đang nhập cho cái
+          gì. Cho nghe kết quả trước, hỏi sau — và đây là bản chuyển đổi thật, không
+          phải màn dựng sẵn. */}
+      <section aria-labelledby="xem-thu" className="p-5 rounded-xl bg-verso-50 border border-verso-200">
+        <h2 id="xem-thu" className="text-base font-extrabold m-0">Chưa cần làm gì — nghe thử trước đã</h2>
+        <p className="text-base text-muc-nhat mt-1.5 mb-3 leading-relaxed">
+          Một trang Toán 9 đã chuyển xong: hình vẽ được mô tả thành lời, công thức đọc
+          được, bảng duỗi thẳng. Mở lên bấm <b>Nghe cả trang</b>.
+        </p>
+        <a href={`/doc/${MA_XEM_THU}`}
+          className="inline-flex items-center gap-2 px-5 min-h-[44px] rounded-lg bg-verso-700 text-white font-bold no-underline">
+          Nghe thử một trang đã chuyển xong
+          <span aria-hidden="true">›</span>
+        </a>
+      </section>
+
+      <The lop="p-6">
       <h2 className="text-xl font-extrabold m-0">Tài liệu này là gì?</h2>
       <p className="text-muc-nhat mt-2 mb-6 leading-relaxed">
         Thông tin ở đây đi kèm bản đọc để học sinh và thầy cô khác biết đang đọc phần nào của
@@ -64,6 +81,7 @@ export const BuocThongTin: React.FC = () => {
           <span className="text-sm text-muc-mo">Cần điền tên tài liệu và người chuyển đổi</span>
         )}
       </div>
-    </The>
+      </The>
+    </div>
   );
 };

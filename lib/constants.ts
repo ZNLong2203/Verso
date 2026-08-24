@@ -50,3 +50,11 @@ export const GIONG_DOC_EN = 'en-US-Chirp3-HD-Achernar';
 
 /** Chỗ lưu giọng đã tổng hợp, khoá theo mã nội dung. */
 export const THUNG_TIENG = process.env.VERSO_BUCKET_TIENG || 'verso-43e8b-tieng';
+
+/** Bản đọc dùng làm ví dụ ở màn đầu.
+ *
+ *  Người mở Verso lần đầu gặp ngay một cái form hỏi tên tài liệu — chưa thấy sản
+ *  phẩm làm được gì mà đã phải nhập liệu. Muốn nghe được kết quả phải đi hết tám
+ *  thao tác và chờ Gemini đọc xong một trang. Đường tắt này cho họ nghe trước,
+ *  hỏi sau. Đây là bản chuyển đổi THẬT, không phải màn dựng sẵn. */
+export const MA_XEM_THU = 'ZDFZ9VWQ';
