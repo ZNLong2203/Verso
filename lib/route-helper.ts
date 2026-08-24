@@ -14,6 +14,10 @@ export async function xuLy<T>(fn: () => Promise<T>) {
       return NextResponse.json({ loi: 'SAI_MA_SUA' }, { status: 403 });
     if (msg.includes('THIEU_KHOA_API') || /API_KEY_INVALID|API key not valid/i.test(msg))
       return NextResponse.json({ loi: 'THIEU_KHOA_API' }, { status: 503 });
+    // Nói đúng chuyện đang xảy ra: model quá tải là chuyện của Google, không phải
+    // lỗi ảnh hay lỗi khoá — báo chung chung thì giáo viên đi sửa nhầm chỗ.
+    if (/UNAVAILABLE|high demand|overloaded|503/i.test(msg))
+      return NextResponse.json({ loi: 'MODEL_QUA_TAI' }, { status: 503 });
     if (/RESOURCE_EXHAUSTED|quota|rate limit|429/i.test(msg))
       return NextResponse.json({ loi: 'HET_QUOTA' }, { status: 429 });
     const qualon = msg.match(/QUA_LON:(\d+)/);

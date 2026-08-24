@@ -9,6 +9,7 @@ export const THONG_BAO_LOI: Record<string, string> = {
   KHONG_PHAI_ANH: 'Tệp này không phải ảnh. Hãy chọn ảnh JPG, PNG hoặc tệp PDF.',
   THIEU_KHOA_API: 'Máy chủ chưa được cấp khoá Gemini hợp lệ. Người cài đặt cần kiểm tra lại.',
   THIEU_FIREBASE: 'Máy chủ chưa cấu hình nơi lưu trữ, nên chưa xuất bản được.',
+  MODEL_QUA_TAI: 'Máy đọc của Google đang quá tải. Đây là chuyện tạm thời — chờ vài phút rồi tải lại trang này.',
   HET_QUOTA: 'Hôm nay đã dùng hết lượt đọc miễn phí. Thử lại sau nhé.',
   BI_CHAN: 'Nội dung trang này chưa xử lý được. Thử chụp lại hoặc bỏ qua trang này.',
   QUA_LON: 'Tài liệu quá lớn để lưu trong một bản. Hãy tách thành nhiều chương nhỏ hơn.',

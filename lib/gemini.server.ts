@@ -28,7 +28,14 @@ const LOI_THAT = /API_KEY|PERMISSION|UNAUTHENTICATED|SAFETY|PROHIBITED|INVALID_A
 
 const nghi = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function thuLai<T>(viec: () => Promise<T>, lanToiDa = 3): Promise<T> {
+/** Tổng thời gian chịu đựng cho MỘT trang, tính cả thử lại và đổi model.
+ *
+ *  Có trần này vì đã đo được chuyện thật: lúc model chính quá tải, một yêu cầu
+ *  chạy 198 giây rồi mới xong, một yêu cầu khác 408 giây rồi hỏng. Người dùng
+ *  ngồi nhìn vòng xoay bảy phút còn tệ hơn là được báo hỏng sớm và thử lại. */
+const HAN_CHOT_MS = 75_000;
+
+async function thuLai<T>(viec: () => Promise<T>, hetHan: number, lanToiDa = 3): Promise<T> {
   let loiCuoi: unknown;
   for (let lan = 0; lan < lanToiDa; lan++) {
     try {
@@ -37,6 +44,8 @@ async function thuLai<T>(viec: () => Promise<T>, lanToiDa = 3): Promise<T> {
       loiCuoi = e;
       const msg = String((e as Error)?.message ?? e);
       if (LOI_THAT.test(msg) || !LOI_TAM_THOI.test(msg)) throw e;
+      // Hết giờ thì dừng ngay, đừng thử tiếp cho quá hạn thêm nữa.
+      if (Date.now() >= hetHan) throw e;
       if (lan < lanToiDa - 1) {
         // Lùi dần kèm nhiễu ngẫu nhiên, tránh nhiều trang cùng thử lại một lúc
         await nghi(800 * 2 ** lan + Math.random() * 400);
@@ -59,16 +68,28 @@ function ghiSoToken(viec: string, model: string, res: any) {
 }
 
 async function goiModel(params: any, viec = 'goi'): Promise<any> {
+  const hetHan = Date.now() + HAN_CHOT_MS;
   try {
-    const r = await thuLai(() => client().models.generateContent({ ...params, model: MODEL_CHINH }));
+    // Chỉ thử hai lần ở model chính: quá tải thì thử lại lần ba cũng vô ích, mà
+    // mỗi lần lại kéo dài thêm thời gian chờ của người dùng.
+    const r = await thuLai(() => client().models.generateContent({ ...params, model: MODEL_CHINH }), hetHan, 2);
     ghiSoToken(viec, MODEL_CHINH, r);
     return r;
   } catch (e: any) {
     const msg = String(e?.message || e);
-    // Tài khoản chưa mở model mới thì lùi về model ổn định, thay vì để cả app chết.
-    if (/not found|NOT_FOUND|not supported|permission|404|400/i.test(msg)) {
-      const r = await thuLai(() => client().models.generateContent({ ...params, model: MODEL_DU_PHONG }));
-      ghiSoToken(viec, MODEL_DU_PHONG, r);
+    // Hai lý do phải lùi về model ổn định, và lý do thứ hai mới hay xảy ra:
+    //  1. Tài khoản chưa mở model mới.
+    //  2. Model chính ĐANG QUÁ TẢI. Đo được thật: 503 "high demand" kéo dài, thử
+    //     lại cùng model đó chỉ tốn thêm phút chờ rồi vẫn hỏng, trong khi model
+    //     dự phòng lúc đó vẫn rảnh.
+    const doiDuoc = /not found|NOT_FOUND|not supported|permission|404|400/i.test(msg)
+      || LOI_TAM_THOI.test(msg);
+    if (doiDuoc && Date.now() < hetHan) {
+      const r = await thuLai(
+        () => client().models.generateContent({ ...params, model: MODEL_DU_PHONG }),
+        hetHan, 2,
+      );
+      ghiSoToken(`${viec}/du-phong`, MODEL_DU_PHONG, r);
       return r;
     }
     throw e;
