@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import { Be_Vietnam_Pro, Noto_Serif } from 'next/font/google';
 import './globals.css';
 
+/** Địa chỉ dùng khi nơi triển khai không cấp APP_URL. */
+const MIEN_MAC_DINH = 'https://verso-262579043496.asia-southeast1.run.app';
+
 const beVietnam = Be_Vietnam_Pro({
   subsets: ['latin', 'vietnamese'], weight: ['400', '500', '600', '700', '800'],
   variable: '--font-be-vietnam', display: 'swap',
@@ -18,7 +21,11 @@ export const metadata: Metadata = {
     'Biến trang sách giáo khoa Việt Nam thành bản mà học sinh khiếm thị nghe được: ' +
     'mô tả hình vẽ, đọc công thức thành tiếng Việt, duỗi bảng biểu.',
   applicationName: 'Verso',
-  metadataBase: new URL('https://verso-262579043496.asia-southeast1.run.app'),
+  // Ưu tiên địa chỉ do nơi triển khai cấp, nhưng KHÔNG tin nó có sẵn:
+  // new URL(undefined) ném lỗi, và ném ở đây là vỡ cả trang chứ không phải
+  // hỏng mỗi thẻ og. Không đọc từ req.url được — trên Cloud Run đó là địa chỉ
+  // nội bộ 0.0.0.0:8080, đã dính một lần với mã QR.
+  metadataBase: new URL(process.env.APP_URL?.trim() || MIEN_MAC_DINH),
   icons: {
     icon: [
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
