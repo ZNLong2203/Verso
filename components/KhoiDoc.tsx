@@ -21,7 +21,7 @@ function noiChuThich(text: string, trang: number, coLien: boolean): React.ReactN
     return (
       <a key={i} href={`#${neoChuThich(trang, m[1])}`}
         className="text-verso-700 no-underline inline-grid place-items-center min-w-[24px] min-h-[24px] align-middle"
-        aria-label={`Chú thích ${m[1]}, nhảy tới phần giải nghĩa`}>
+        aria-label={`Chú thích ${m[1]}`}>
         <sup>[{m[1]}]</sup>
       </a>
     );

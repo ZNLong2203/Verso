@@ -34,3 +34,13 @@ export const MIEN_TRU =
   'theo Điều 25a Luật Sở hữu trí tuệ và Nghị định 17/2023/NĐ-CP.';
 
 export const STORAGE_KEY = 'verso:v1';
+
+/** Giọng đọc tiếng Việt.
+ *
+ *  Chirp 3 HD là bậc cao nhất của Cloud Text-to-Speech, và vi-VN có 30 giọng
+ *  riêng cho tiếng Việt — không phải giọng đa ngữ đọc kèm tiếng Việt. Đổi giọng
+ *  chỉ cần sửa đúng dòng này; tệp đã lưu khoá theo tên giọng nên không lẫn nhau. */
+export const GIONG_DOC = 'vi-VN-Chirp3-HD-Achernar';
+
+/** Chỗ lưu giọng đã tổng hợp, khoá theo mã nội dung. */
+export const THUNG_TIENG = process.env.VERSO_BUCKET_TIENG || 'verso-43e8b-tieng';

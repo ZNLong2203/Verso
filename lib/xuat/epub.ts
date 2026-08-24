@@ -47,7 +47,7 @@ function noiChuThich(s: string, trang: number, coLien = true): string {
     const m = p.match(/^\[chú thích (\d+)\]$/);
     if (!m) return xml(p);
     return coLien
-      ? `<a href="#${neoChuThich(trang, m[1])}" epub:type="noteref" aria-label="Chú thích ${m[1]}, nhảy tới phần giải nghĩa"><sup>[${m[1]}]</sup></a>`
+      ? `<a href="#${neoChuThich(trang, m[1])}" epub:type="noteref" aria-label="Chú thích ${m[1]}"><sup>[${m[1]}]</sup></a>`
       : `<sup>[${m[1]}]</sup>`;
   }).join('');
 }

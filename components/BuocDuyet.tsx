@@ -7,7 +7,8 @@ import { nhanMuc } from '@/lib/neo';
 import { LOAI_KHOI_INFO } from '@/lib/constants';
 import { THONG_BAO_LOI } from '@/lib/loi';
 import type { Khoi, Trang } from '@/lib/types';
-import { loiDocCuaKhoi, docTo, coGiongDoc } from '@/lib/loiDoc';
+import { loiDocCuaKhoi } from '@/lib/loiDoc';
+import { taiTieng, LoiTieng, THONG_BAO_TIENG } from '@/lib/tiengKhach';
 import { SuaBang } from './SuaBang';
 
 const TinCay: React.FC<{ k: Khoi }> = ({ k }) =>
@@ -22,33 +23,54 @@ const TinCay: React.FC<{ k: Khoi }> = ({ k }) =>
  *  Đây là lỗ hổng chất lượng lớn nhất trước đây: giáo viên duyệt mô tả hình bằng MẮT,
  *  nhưng thứ học sinh nhận là ÂM THANH. Đọc thấy trôi chảy không có nghĩa nghe lên trôi chảy —
  *  nhất là với công thức, nơi một dấu đọc sai làm hỏng cả bài. */
+/** Nghe thử ĐÚNG giọng học sinh sẽ nghe.
+ *
+ *  Dùng chung endpoint với trang đọc, nên nghe ở đây khớp một-một với thứ phát ra
+ *  cho học sinh — nếu không thì việc "nghe thử để kiểm" mất hết ý nghĩa. */
 const NutNgheThu: React.FC<{ k: Khoi }> = ({ k }) => {
-  const [dangDoc, setDangDoc] = React.useState(false);
-  const dung = React.useRef<(() => void) | null>(null);
+  const [trangThai, setTrangThai] = React.useState<'nghi' | 'tai' | 'doc'>('nghi');
+  const [loi, setLoi] = React.useState('');
+  const may = React.useRef<HTMLAudioElement | null>(null);
 
-  React.useEffect(() => () => dung.current?.(), []);
+  React.useEffect(() => () => { may.current?.pause(); }, []);
 
-  if (!coGiongDoc()) return null;
-  const loi = loiDocCuaKhoi(k);
-  if (!loi.trim()) return null;
+  const noiDoc = loiDocCuaKhoi(k);
+  if (!noiDoc.trim()) return null;
 
-  const bam = () => {
-    if (dangDoc) { dung.current?.(); setDangDoc(false); return; }
-    setDangDoc(true);
-    dung.current = docTo(loi, () => setDangDoc(false));
+  const bam = async () => {
+    if (trangThai !== 'nghi') { may.current?.pause(); setTrangThai('nghi'); return; }
+    setLoi('');
+    setTrangThai('tai');
+    try {
+      const nguon = await taiTieng(noiDoc);
+      const a = may.current ?? new Audio();
+      may.current = a;
+      a.src = nguon;
+      a.onended = () => setTrangThai('nghi');
+      a.onerror = () => { setLoi(THONG_BAO_TIENG.LOI_TIENG); setTrangThai('nghi'); };
+      await a.play();
+      setTrangThai('doc');
+    } catch (e) {
+      setLoi(THONG_BAO_TIENG[(e as LoiTieng)?.ma] ?? THONG_BAO_TIENG.LOI_TIENG);
+      setTrangThai('nghi');
+    }
   };
 
+  const dangChay = trangThai !== 'nghi';
   return (
-    <button onClick={bam}
-      aria-label={dangDoc ? 'Dừng nghe thử' : 'Nghe thử phần này như học sinh sẽ nghe'}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-bold border transition-colors ${
-        dangDoc ? 'bg-verso-700 border-verso-700 text-white' : 'bg-white border-vien text-verso-700 hover:border-verso-600'
-      }`}>
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        {dangDoc ? <rect x="6" y="6" width="12" height="12" rx="1" /> : <path d="M8 5v14l11-7z" />}
-      </svg>
-      {dangDoc ? 'Dừng' : 'Nghe thử'}
-    </button>
+    <>
+      <button onClick={bam}
+        aria-label={dangChay ? 'Dừng nghe thử' : 'Nghe thử phần này như học sinh sẽ nghe'}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-bold border transition-colors ${
+          dangChay ? 'bg-verso-700 border-verso-700 text-white' : 'bg-white border-vien text-verso-700 hover:border-verso-600'
+        }`}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          {dangChay ? <rect x="6" y="6" width="12" height="12" rx="1" /> : <path d="M8 5v14l11-7z" />}
+        </svg>
+        {trangThai === 'tai' ? 'Đang tạo…' : dangChay ? 'Dừng' : 'Nghe thử'}
+      </button>
+      {loi && <span role="alert" className="text-xs font-semibold text-loi-700">{loi}</span>}
+    </>
   );
 };
 

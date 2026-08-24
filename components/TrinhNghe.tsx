@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { doiKyHieuSot, chiaDoan, giongViet } from '@/lib/loiDoc';
+import { doiKyHieuSot } from '@/lib/loiDoc';
+import { taiTieng, taiTruoc, LoiTieng, THONG_BAO_TIENG } from '@/lib/tiengKhach';
 
 /**
  * Trình nghe cho trang đọc.
@@ -12,6 +13,11 @@ import { doiKyHieuSot, chiaDoan, giongViet } from '@/lib/loiDoc';
  *
  * Nhờ vậy nút nghe cũng là công cụ tự kiểm: nghe thấy "căn bậc hai của hai trên hai"
  * nghĩa là NVDA cũng sẽ nghe thấy đúng như thế.
+ *
+ * Giọng do MÁY CHỦ sinh (Cloud Text-to-Speech, giọng vi-VN Chirp 3 HD) chứ không
+ * phải Web Speech API của trình duyệt. Lý do ở lib/tieng.server.ts: máy không có
+ * giọng vi-VN thì trình duyệt đọc tiếng Việt bằng giọng tiếng Anh, và học sinh
+ * khiếm thị không có cách nào biết mình đang nghe sai.
  */
 
 /** Lấy lời đọc của một phần tử, đi đúng cách trình đọc màn hình đi. */
@@ -23,6 +29,20 @@ function layLoiDoc(el: Element): string {
     const e = n as Element;
     if (e.getAttribute('aria-hidden') === 'true') return;   // ký hiệu dành cho mắt
     if (e.tagName === 'SCRIPT' || e.tagName === 'STYLE') return;
+    // aria-label THAY nội dung, nhưng CHỈ ở những phần tử lấy tên từ chính nội dung
+    // của mình: liên kết, nút, công thức, hình. Thiếu bước này thì dấu chú thích
+    // "[1]" bị đọc thành một chữ "một" trơ trọi giữa câu, trong khi NVDA đọc
+    // "Chú thích 1" — nút nghe hết còn kiểm được gì.
+    //
+    // Tuyệt đối KHÔNG áp cho vùng chứa: <div role="group" aria-label="Đoạn thơ">
+    // chỉ được ĐẶT TÊN cho khổ thơ, nội dung bên trong vẫn phải đọc. Áp nhầm là
+    // nuốt trọn cả bài thơ, chỉ còn đọc hai chữ "Đoạn thơ".
+    const nhan = e.getAttribute('aria-label');
+    const vai = e.getAttribute('role');
+    if (nhan && (e.tagName === 'A' || e.tagName === 'BUTTON' || vai === 'math' || vai === 'img')) {
+      ra += ` ${nhan}. `;
+      return;
+    }
     for (const con of Array.from(e.childNodes)) di(con);
     // FIGCAPTION và ô bảng cũng là ranh giới — thiếu chúng thì chữ dính liền:
     // "Mô tả hình vẽHình 4.17"
@@ -34,37 +54,47 @@ function layLoiDoc(el: Element): string {
 
 
 export const TrinhNghe: React.FC = () => {
-  // null = chưa kiểm (đang dựng ở máy chủ). Nếu khởi tạo bằng false, HTML máy chủ sẽ
-  // chứa câu "trình duyệt không hỗ trợ" — và người dùng trình đọc màn hình có thể nghe
-  // đúng câu sai đó trước khi JavaScript kịp chạy.
-  const [coGiong, setCoGiong] = React.useState<boolean | null>(null);
+  // null = chưa dựng xong ở trình duyệt. Nếu khởi tạo bằng false, HTML máy chủ sẽ
+  // chứa câu "không đọc được" — và người dùng trình đọc màn hình có thể nghe đúng
+  // câu sai đó trước khi JavaScript kịp chạy.
+  const [sanSang, setSanSang] = React.useState<boolean | null>(null);
+  const [dangTai, setDangTai] = React.useState(false);
   const [dangDoc, setDangDoc] = React.useState(false);
   const [tamDung, setTamDung] = React.useState(false);
   const [viTri, setViTri] = React.useState(0);
   const [tong, setTong] = React.useState(0);
   const [tocDo, setTocDo] = React.useState(1);
+  const [loi, setLoi] = React.useState('');
+  const [thongBao, setThongBao] = React.useState('');
 
   const khoi = React.useRef<Element[]>([]);
-  const dung = React.useRef(false);
-  const giong = React.useRef<SpeechSynthesisVoice | null>(null);
+  const loiDoc = React.useRef<string[]>([]);
+  const may = React.useRef<HTMLAudioElement | null>(null);
+  /** Số hiệu lượt đọc. Cờ boolean không đủ: bấm "Phần sau" là dừng lượt cũ rồi mở
+   *  lượt mới ngay, cờ bị bật lại false trước khi vòng cũ kịp thấy — hai vòng chạy
+   *  song song và phát chồng hai giọng. Mỗi lượt giữ số của mình và tự thoát khi
+   *  thấy số hiện tại đã khác. */
+  const phien = React.useRef(0);
 
   React.useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    setCoGiong(true);
-
-    const napGiong = () => { giong.current = giongViet(); };
-    napGiong();
-    window.speechSynthesis.onvoiceschanged = napGiong;
-
     const goc = document.getElementById('noi-dung');
     if (goc) {
-      khoi.current = Array.from(goc.querySelectorAll('article > *')).filter(
-        (e) => layLoiDoc(e).length > 1,
-      );
-      setTong(khoi.current.length);
+      const ds = Array.from(goc.querySelectorAll('article > *'))
+        .map((e) => [e, layLoiDoc(e)] as const)
+        .filter(([, t]) => t.length > 1);
+      khoi.current = ds.map(([e]) => e);
+      loiDoc.current = ds.map(([, t]) => t);
+      setTong(ds.length);
     }
-    return () => { window.speechSynthesis.cancel(); };
+    const a = new Audio();
+    a.preload = 'auto';
+    may.current = a;
+    setSanSang(true);
+    return () => { a.pause(); a.src = ''; };
   }, []);
+
+  // Đổi tốc độ ngay giữa lúc đang phát, không phải tổng hợp lại tệp nào.
+  React.useEffect(() => { if (may.current) may.current.playbackRate = tocDo; }, [tocDo]);
 
   const toSang = (i: number) => {
     khoi.current.forEach((e) => e.classList.remove('dang-nghe'));
@@ -74,105 +104,131 @@ export const TrinhNghe: React.FC = () => {
     e.scrollIntoView({ block: 'center', behavior: 'smooth' });
   };
 
-  const docTu = React.useCallback((batDau: number) => {
-    if (!khoi.current.length) return;
-    dung.current = false;
-    setDangDoc(true); setTamDung(false);
-    window.speechSynthesis.cancel();
+  const donDep = (bao = '') => {
+    khoi.current.forEach((e) => e.classList.remove('dang-nghe'));
+    setDangDoc(false); setTamDung(false); setDangTai(false); setViTri(0);
+    setThongBao(bao);
+  };
 
-    let i = batDau;
-    const doc1 = () => {
-      if (dung.current || i >= khoi.current.length) {
-        khoi.current.forEach((e) => e.classList.remove('dang-nghe'));
-        setDangDoc(false); setViTri(0);
-        return;
-      }
+  const docTu = React.useCallback(async (batDau: number) => {
+    const a = may.current;
+    if (!a || !loiDoc.current.length) return;
+    const toi = ++phien.current;
+    const conCuaToi = () => phien.current === toi;
+    a.pause();
+    setLoi('');
+    setDangDoc(true); setTamDung(false);
+    setThongBao('Đang tạo giọng đọc, chờ một chút.');
+
+    for (let i = batDau; i < loiDoc.current.length; i++) {
+      if (!conCuaToi()) return;
       setViTri(i);
       toSang(i);
-      const doan = chiaDoan(layLoiDoc(khoi.current[i]));
-      let j = 0;
-      const noi = () => {
-        if (dung.current) return;
-        if (j >= doan.length) { i++; doc1(); return; }
-        const u = new SpeechSynthesisUtterance(doan[j++]);
-        u.lang = 'vi-VN';
-        if (giong.current) u.voice = giong.current;
-        u.rate = tocDo;
-        u.onend = noi;
-        u.onerror = noi;
-        window.speechSynthesis.speak(u);
-      };
-      noi();
-    };
-    doc1();
+      let nguon: string;
+      try {
+        setDangTai(true);
+        nguon = await taiTieng(loiDoc.current[i]);
+      } catch (e) {
+        if (!conCuaToi()) return;
+        setDangTai(false);
+        setLoi(THONG_BAO_TIENG[(e as LoiTieng).ma] ?? THONG_BAO_TIENG.LOI_TIENG);
+        donDep();
+        return;
+      }
+      if (!conCuaToi()) return;
+      setDangTai(false);
+      if (i === batDau) setThongBao('Bắt đầu đọc.');
+
+      // Nạp sẵn đoạn sau trong lúc đoạn này đang phát: chỉ đoạn đầu phải chờ.
+      taiTruoc(loiDoc.current[i + 1]);
+
+      a.src = nguon;
+      a.playbackRate = tocDo;
+      try {
+        await new Promise<void>((xong, hong) => {
+          a.onended = () => xong();
+          a.onerror = () => hong(new Error('phat-hong'));
+          a.play().catch(hong);
+        });
+      } catch {
+        if (conCuaToi()) { setLoi(THONG_BAO_TIENG.LOI_TIENG); donDep(); }
+        return;
+      }
+    }
+    if (conCuaToi()) donDep('Đã đọc hết trang.');
   }, [tocDo]);
 
   const dungHan = () => {
-    dung.current = true;
-    window.speechSynthesis.cancel();
-    khoi.current.forEach((e) => e.classList.remove('dang-nghe'));
-    setDangDoc(false); setTamDung(false); setViTri(0);
+    phien.current++;          // mọi lượt đang chạy tự thoát
+    may.current?.pause();
+    donDep('Đã dừng.');
   };
 
   const tamDungTiep = () => {
-    if (tamDung) { window.speechSynthesis.resume(); setTamDung(false); }
-    else { window.speechSynthesis.pause(); setTamDung(true); }
+    const a = may.current;
+    if (!a) return;
+    if (tamDung) { a.play().catch(() => {}); setTamDung(false); setThongBao('Đọc tiếp.'); }
+    else { a.pause(); setTamDung(true); setThongBao('Đã tạm dừng.'); }
   };
 
-  // Chưa kiểm xong: giữ chỗ trung tính, không khẳng định điều gì.
-  if (coGiong === null) {
+  // Chưa dựng xong: giữ chỗ trung tính, không khẳng định điều gì.
+  if (sanSang === null) {
     return <p className="text-sm text-muc-mo m-0">Đang chuẩn bị phần nghe…</p>;
   }
 
-  if (!coGiong) {
-    return (
-      <p className="text-sm text-muc-mo m-0">
-        Trình duyệt này chưa đọc được tiếng Việt. Hãy dùng Chrome, hoặc bật trình đọc màn hình
-        sẵn có của máy (NVDA, VoiceOver, TalkBack).
-      </p>
-    );
-  }
-
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      {!dangDoc ? (
-        <button onClick={() => docTu(0)}
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-verso-700 text-white font-bold">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-          Nghe cả trang
-        </button>
-      ) : (
-        <>
-          <button onClick={tamDungTiep}
-            className="inline-flex items-center gap-2 px-4 py-3 rounded-lg bg-verso-700 text-white font-bold">
-            {tamDung ? 'Đọc tiếp' : 'Tạm dừng'}
+    <div className="grid gap-2">
+      <div className="flex flex-wrap items-center gap-2.5">
+        {!dangDoc ? (
+          <button onClick={() => docTu(0)}
+            className="inline-flex items-center gap-2 px-5 py-3 min-h-[44px] rounded-lg bg-verso-700 text-white font-bold">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            Nghe cả trang
           </button>
-          <button onClick={dungHan}
-            className="inline-flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-vien bg-white font-bold">
-            Dừng
-          </button>
-          <button onClick={() => docTu(Math.min(viTri + 1, tong - 1))}
-            className="px-4 py-3 rounded-lg border-2 border-vien bg-white font-bold">
-            Phần sau ›
-          </button>
-          <span className="text-sm text-muc-mo tabular-nums" role="status" aria-live="polite">
-            phần {viTri + 1}/{tong}
-          </span>
-        </>
-      )}
+        ) : (
+          <>
+            <button onClick={tamDungTiep} disabled={dangTai}
+              className="inline-flex items-center gap-2 px-4 py-3 min-h-[44px] rounded-lg bg-verso-700 text-white font-bold disabled:opacity-50">
+              {tamDung ? 'Đọc tiếp' : 'Tạm dừng'}
+            </button>
+            <button onClick={dungHan}
+              className="inline-flex items-center gap-2 px-4 py-3 min-h-[44px] rounded-lg border-2 border-vien bg-white font-bold">
+              Dừng
+            </button>
+            <button onClick={() => docTu(Math.min(viTri + 1, tong - 1))}
+              className="px-4 py-3 min-h-[44px] rounded-lg border-2 border-vien bg-white font-bold">
+              Phần sau ›
+            </button>
+            {/* Không đặt aria-live ở đây: số phần đổi liên tục, trình đọc màn hình
+                sẽ xướng đè lên chính giọng đang đọc. Chỉ những chuyển biến đáng
+                báo mới đi vào vùng thông báo bên dưới. */}
+            <span className="text-sm text-muc-mo tabular-nums">
+              {dangTai ? 'đang tạo giọng đọc…' : `phần ${viTri + 1}/${tong}`}
+            </span>
+          </>
+        )}
 
-      <label className="flex items-center gap-2 text-sm ml-1">
-        <span className="text-muc-mo">Tốc độ</span>
-        <select value={tocDo} onChange={(e) => setTocDo(Number(e.target.value))}
-          className="px-3 py-2.5 min-h-[44px] rounded border-2 border-vien bg-white text-sm">
-          <option value={0.75}>Chậm</option>
-          <option value={1}>Bình thường</option>
-          <option value={1.25}>Nhanh</option>
-          <option value={1.5}>Rất nhanh</option>
-        </select>
-      </label>
+        <label className="flex items-center gap-2 text-sm ml-1">
+          <span className="text-muc-mo">Tốc độ</span>
+          <select value={tocDo} onChange={(e) => setTocDo(Number(e.target.value))}
+            className="px-3 py-2.5 min-h-[44px] rounded border-2 border-vien bg-white text-sm">
+            <option value={0.75}>Chậm</option>
+            <option value={1}>Bình thường</option>
+            <option value={1.25}>Nhanh</option>
+            <option value={1.5}>Rất nhanh</option>
+          </select>
+        </label>
+      </div>
+
+      {/* Vùng thông báo: chỉ những chuyển biến người nghe cần biết, không phải
+          từng bước tiến độ. */}
+      <p role="status" aria-live="polite" className="chi-doc-man-hinh">{thongBao}</p>
+
+      {loi && (
+        <p role="alert" className="text-sm font-semibold text-loi-700 m-0">{loi}</p>
+      )}
     </div>
   );
 };

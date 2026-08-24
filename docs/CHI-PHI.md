@@ -62,6 +62,34 @@ người. Đó mới là chi phí thật mà Verso cắt đi — tiền gọi mo
 
 ---
 
+## Giọng đọc
+
+Giọng do **Cloud Text-to-Speech** sinh ở máy chủ, giọng `vi-VN-Chirp3-HD-Achernar`
+(bậc cao nhất, **$30**/triệu ký tự, **1 triệu ký tự miễn phí mỗi tháng**).
+
+Đo trên tài liệu mẫu 2 trang: **28 khối, 3.125 ký tự** lời đọc → **1.563 ký tự một trang**.
+
+| | Tiền |
+|---|---|
+| Một trang sách | $0,047 ≈ **1.219 đ** |
+| Cả cuốn SGK 123 trang | $5,77 ≈ **150.000 đ** |
+| Hạn mức miễn phí hằng tháng | ≈ **640 trang** |
+
+Con số này là **một lần cho cả tài liệu**, không phải mỗi lượt nghe: mỗi đoạn được
+lưu theo mã băm của chính nội dung (`lib/tieng.server.ts`), nên bao nhiêu học sinh
+nghe cũng chỉ tổng hợp đúng một lần. Đo trên bản chạy thật: lần đầu **3,0 giây**,
+lần sau **0,3 giây** và không tốn thêm gì.
+
+Không có cache thì đây là khoản đắt nhất của cả dự án — một lượt nghe trọn tài liệu
+tốn gấp ba lần tiền chuyển đổi chính tài liệu đó.
+
+Tốc độ đọc đổi bằng `playbackRate` ở trình duyệt, **không** tổng hợp lại — một tệp
+đã lưu phục vụ được cả bốn mức tốc độ.
+
+**Cộng cả hai khoản:** một trang ≈ **1.620 đ**, cả cuốn SGK 123 trang ≈ **199.000 đ**.
+
+---
+
 ## Những khoản khác
 
 **Cloud Run** — dự án đặt `min-instances = 0`, không ai dùng thì không tính tiền. Ở mức
@@ -73,6 +101,9 @@ Hạn mức miễn phí thừa sức cho quy mô này.
 
 **Tách PDF** chạy ngay trên máy giáo viên bằng pdf.js — **không tốn gì**, và tệp sách
 không rời khỏi máy họ.
+
+**Kho giọng đã tổng hợp** nằm ở Cloud Storage, mỗi trang khoảng 300 KB. Cả cuốn SGK
+chưa tới 40 MB — nằm gọn trong hạn mức miễn phí.
 
 ---
 
