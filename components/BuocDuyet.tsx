@@ -123,9 +123,13 @@ const KhoiSua: React.FC<{ trang: Trang; k: Khoi }> = ({ trang, k }) => {
             <p className="text-xs text-can-kiem-700 mt-1.5 mb-0 font-semibold">⚠ {k.ghiChu}</p>
           )}
 
-          <p className={`text-sm mt-2 mb-0 leading-relaxed ${moRong ? '' : 'line-clamp-3'} ${k.loai === 'tho' ? 'whitespace-pre-wrap italic' : ''}`}>
-            {xemNhanh}
-          </p>
+          {/* Chỉ hiện khi ĐANG THU GỌN. Mở ra rồi thì ô sửa ngay dưới đã mang đúng
+              chữ này — để cả hai là bắt người ta đọc cùng một câu hai lần chồng nhau. */}
+          {!moRong && (
+            <p className={`text-sm mt-2 mb-0 leading-relaxed line-clamp-3 ${k.loai === 'tho' ? 'whitespace-pre-wrap italic' : ''}`}>
+              {xemNhanh}
+            </p>
+          )}
 
           {moRong && (
             <div className="mt-3 pt-3 border-t border-vien-nhat">
