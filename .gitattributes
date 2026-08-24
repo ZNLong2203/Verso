@@ -1,0 +1,11 @@
+# Ảnh là NHỊ PHÂN, không phải văn bản.
+#
+# Không thừa: một công cụ đồng bộ đã đọc mấy tệp này như UTF-8, thay mọi byte
+# không hợp lệ bằng ký tự U+FFFD rồi commit đè lên. Tệp phình 75% và hỏng vĩnh
+# viễn — dấu hiệu nhận ra là đầu tệp thành "ef bf bd 50 4e 47" thay vì "89 50 4e 47".
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.mp3 binary
+*.pdf binary
+*.woff2 binary
