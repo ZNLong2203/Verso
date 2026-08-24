@@ -2,8 +2,16 @@ import type { Metadata, Viewport } from 'next';
 import { Be_Vietnam_Pro, Noto_Serif } from 'next/font/google';
 import './globals.css';
 
-/** Địa chỉ dùng khi nơi triển khai không cấp APP_URL. */
-const MIEN_MAC_DINH = 'https://verso-262579043496.asia-southeast1.run.app';
+/** Địa chỉ công khai chính thức của Verso.
+ *
+ *  Ghi cứng, KHÔNG đọc từ biến môi trường. Trang chủ là trang dựng sẵn lúc build,
+ *  nên địa chỉ nào có mặt lúc đó sẽ bị nướng thẳng vào thẻ og:image. Một lần build
+ *  xem thử của AI Studio đặt APP_URL thành host tạm dạng ais-dev-….run.app, và
+ *  trang chủ đi quảng cáo ảnh chia sẻ nằm trên một máy chủ sẽ biến mất.
+ *
+ *  Cũng không lấy được từ req.url: trên Cloud Run đó là 0.0.0.0:8080 của chính
+ *  container — đã dính một lần với mã QR trỏ vào hư không. */
+const MIEN_CHINH = 'https://verso-zkare.ai.studio';
 
 const beVietnam = Be_Vietnam_Pro({
   subsets: ['latin', 'vietnamese'], weight: ['400', '500', '600', '700', '800'],
@@ -21,11 +29,7 @@ export const metadata: Metadata = {
     'Biến trang sách giáo khoa Việt Nam thành bản mà học sinh khiếm thị nghe được: ' +
     'mô tả hình vẽ, đọc công thức thành tiếng Việt, duỗi bảng biểu.',
   applicationName: 'Verso',
-  // Ưu tiên địa chỉ do nơi triển khai cấp, nhưng KHÔNG tin nó có sẵn:
-  // new URL(undefined) ném lỗi, và ném ở đây là vỡ cả trang chứ không phải
-  // hỏng mỗi thẻ og. Không đọc từ req.url được — trên Cloud Run đó là địa chỉ
-  // nội bộ 0.0.0.0:8080, đã dính một lần với mã QR.
-  metadataBase: new URL(process.env.APP_URL?.trim() || MIEN_MAC_DINH),
+  metadataBase: new URL(MIEN_CHINH),
   icons: {
     icon: [
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },

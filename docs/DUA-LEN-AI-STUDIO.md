@@ -66,3 +66,40 @@ Gói starter của AI Studio (2 ứng dụng full-stack, không cần project ha
 dụng** cho tài khoản đã từng có lịch sử thanh toán Google Cloud. Bạn đã liên kết tài khoản
 thanh toán để chạy Cloud Run, nên nhiều khả năng sẽ deploy vào chính project của mình —
 điều đó hoàn toàn ổn, thậm chí tiện hơn vì dùng lại được Firestore và kho giọng sẵn có.
+
+---
+
+## AI Studio TIẾP QUẢN dịch vụ Cloud Run, không dựng cái mới
+
+Chỗ này dễ hiểu nhầm tai hại.
+
+`https://verso-zkare.ai.studio` và `https://verso-262579043496.asia-southeast1.run.app`
+là **cùng một máy chủ**. Kiểm bằng cách băm nội dung hai đường dẫn — ra giống hệt nhau:
+
+```bash
+for u in https://verso-zkare.ai.studio \
+         https://verso-262579043496.asia-southeast1.run.app; do
+  curl -sL "$u" | md5
+done
+```
+
+Dịch vụ Cloud Run `verso` trong project `verso-43e8b` giờ mang dấu quản lý của AI Studio
+(`generativelanguage.googleapis.com/nonce`, và nguồn build trỏ vào
+`gs://ai-studio-bucket-…/services/verso/version-N/`). Tên miền `.ai.studio` chỉ là cửa
+trước của chính dịch vụ đó.
+
+**Hệ quả phải nhớ:**
+
+- **Xoá dịch vụ Cloud Run là xoá luôn link AI Studio.** Không có bản nào "thừa" để dọn.
+- **Đừng chạy `gcloud run deploy --source` lên dịch vụ này nữa.** Nó sẽ đá nhau với
+  đường build của AI Studio; lệnh đó hiện đã báo lỗi
+  *"Source annotation has sources that are not referenced by a container"*.
+- Đường đưa thay đổi lên từ nay là: **sửa mã → đẩy lên GitHub → AI Studio kéo về → Publish.**
+
+## Vì sao địa chỉ công khai bị ghi cứng trong mã
+
+Trang chủ là trang **dựng sẵn lúc build**, nên `metadataBase` lúc đó bị nướng thẳng vào
+thẻ `og:image`. Một lần build xem thử của AI Studio đặt `APP_URL` thành host tạm dạng
+`ais-dev-….run.app`, và trang chủ đi quảng cáo ảnh chia sẻ nằm trên một máy chủ sẽ biến
+mất. Vì vậy `app/layout.tsx` ghi cứng địa chỉ chính thức thay vì đọc biến môi trường —
+đổi tên miền thì sửa đúng một dòng.
