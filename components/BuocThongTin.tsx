@@ -1,16 +1,26 @@
 'use client';
 
 import React from 'react';
-import { Nut, O, The } from './ui';
+import { Nut, O, The, Icon } from './ui';
 import { useVerso, MON_HOC_DS } from '@/lib/store';
 import { MON_HOC_INFO, MA_XEM_THU } from '@/lib/constants';
+
+const SE_CO = [
+  'Trang web đọc được ngay — học sinh không phải cài gì',
+  'Mục lục nhảy thẳng tới từng bài, không phải nghe lại từ đầu',
+  'Hình vẽ được mô tả thành lời',
+  'Công thức giữ cả ký hiệu lẫn cách đọc thành lời',
+  'Bảng duỗi thẳng theo hàng và cột',
+  'Tải về EPUB 3 và DAISY 3 để đọc khi không có mạng',
+];
 
 export const BuocThongTin: React.FC = () => {
   const { ban, suaBan, datBuoc } = useVerso();
   const duNoiDung = ban.tieuDe.trim().length > 2 && ban.nguoiChuyen.trim().length > 1;
 
   return (
-    <div className="max-w-2xl grid gap-5">
+    <div className="max-w-5xl grid gap-5 lg:grid-cols-[minmax(0,1fr)_19rem] items-start">
+      <div className="grid gap-5 min-w-0">
       {/* Chưa làm gì đã bắt nhập liệu thì người ta không biết mình đang nhập cho cái
           gì. Cho nghe kết quả trước, hỏi sau — và đây là bản chuyển đổi thật, không
           phải màn dựng sẵn. */}
@@ -82,6 +92,32 @@ export const BuocThongTin: React.FC = () => {
         )}
       </div>
       </The>
+      </div>
+
+      {/* Cột phải trả lời câu hỏi mà người mở Verso lần đầu chưa ai trả lời: điền
+          xong mấy ô này thì cuối cùng mình được cái gì. Không có nó thì bước 1 chỉ
+          là một cái biểu mẫu bắt khai báo, chưa thấy phần thưởng đâu cả. */}
+      <aside aria-labelledby="se-co-gi" className="grid gap-4 min-w-0">
+        <div className="p-5 rounded-xl bg-white border border-vien">
+          <h2 id="se-co-gi" className="text-base font-extrabold m-0">Bản đọc sẽ có những gì</h2>
+          <ul className="mt-3 mb-0 p-0 list-none grid gap-2.5">
+            {SE_CO.map((c) => (
+              <li key={c} className="flex gap-2.5 text-sm text-muc-nhat leading-snug">
+                <span className="shrink-0 mt-0.5 text-xong-700" aria-hidden="true">
+                  <Icon ten="check" co={15} />
+                </span>
+                <span>{c}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="text-xs text-muc-mo leading-relaxed m-0 px-1">
+          Verso là công cụ hỗ trợ chuyển đổi, <b className="text-muc-nhat">không thay thế bản gốc</b>.
+          Bạn duyệt lại từng phần trước khi phát hành. Bản chuyển đổi dành cho người khuyết tật
+          chữ in theo Điều 25a Luật Sở hữu trí tuệ và Nghị định 17/2023/NĐ-CP.
+        </p>
+      </aside>
     </div>
   );
 };

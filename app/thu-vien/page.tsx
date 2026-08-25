@@ -3,6 +3,7 @@ import { danhSachThuVien } from '@/lib/kho.server';
 import { coFirebase } from '@/lib/firebase.server';
 import { MON_HOC_INFO } from '@/lib/constants';
 import type { MonHoc } from '@/lib/types';
+import { GoBanDoc } from '@/components/GoBanDoc';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
@@ -102,27 +103,38 @@ export default async function ThuVien({ searchParams }: Props) {
             </a>
           </div>
         ) : (
+          /* flex-col + mt-auto: tiêu đề dài ngắn khác nhau vẫn cho dòng số liệu nằm
+             cùng một độ cao, nếu không cả hàng thẻ trông xô lệch.
+
+             Thẻ không còn là một <a> bọc tất cả, vì bên trong đã có nút Gỡ — nút nằm
+             trong liên kết là HTML sai và bàn phím không đi vào nổi. Thay bằng liên kết
+             phủ kín: chỉ tiêu đề là liên kết thật, lớp after phủ hết mặt thẻ cho ai quen
+             bấm vào chỗ nào cũng được. */
           <ul className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3 m-0 p-0 list-none">
             {ds.map((b) => (
-              <li key={b.maChiaSe}>
-                {/* flex-col + mt-auto: tiêu đề dài ngắn khác nhau vẫn cho dòng số
-                    liệu nằm cùng một độ cao, nếu không cả hàng thẻ trông xô lệch. */}
-                <a href={`/doc/${b.maChiaSe}`}
-                  className="flex flex-col h-full p-4 rounded-xl bg-white border border-vien hover:border-verso-600 no-underline text-muc transition-colors">
-                  <p className="text-xs font-bold uppercase tracking-wider text-verso-700 m-0">
-                    {MON_HOC_INFO[b.monHoc]?.ten ?? 'Khác'}{b.lop ? ` · Lớp ${b.lop}` : ''}
+              <li key={b.maChiaSe}
+                className="relative flex flex-col h-full p-4 rounded-xl bg-white border border-vien
+                           transition-colors hover:border-verso-600 focus-within:border-verso-600">
+                <p className="text-xs font-bold uppercase tracking-wider text-verso-700 m-0">
+                  {MON_HOC_INFO[b.monHoc]?.ten ?? 'Khác'}{b.lop ? ` · Lớp ${b.lop}` : ''}
+                </p>
+                <p className="font-doc font-bold text-lg leading-snug mt-1.5 mb-2">
+                  <a href={`/doc/${b.maChiaSe}`}
+                    className="no-underline text-muc after:absolute after:inset-0 after:rounded-xl
+                               focus-visible:outline-2 focus-visible:outline-offset-2">
+                    {b.tieuDe}
+                  </a>
+                </p>
+                <div className="mt-auto pt-2">
+                  <p className="text-sm text-muc-mo m-0">
+                    {b.soTrang} trang · {b.soKhoi} phần
+                    {b.soHinh > 0 && <> · <b className="text-muc-nhat">{b.soHinh} hình mô tả</b></>}
                   </p>
-                  <p className="font-doc font-bold text-lg leading-snug mt-1.5 mb-2">{b.tieuDe}</p>
-                  <div className="mt-auto pt-2">
-                    <p className="text-sm text-muc-mo m-0">
-                      {b.soTrang} trang · {b.soKhoi} phần
-                      {b.soHinh > 0 && <> · <b className="text-muc-nhat">{b.soHinh} hình mô tả</b></>}
-                    </p>
-                    {b.nguoiChuyen && (
-                      <p className="text-xs text-muc-mo mt-1.5 mb-0">Người chuyển: {b.nguoiChuyen}</p>
-                    )}
-                  </div>
-                </a>
+                  {b.nguoiChuyen && (
+                    <p className="text-xs text-muc-mo mt-1.5 mb-0">Người chuyển: {b.nguoiChuyen}</p>
+                  )}
+                  <GoBanDoc ma={b.maChiaSe} ten={b.tieuDe} />
+                </div>
               </li>
             ))}
           </ul>

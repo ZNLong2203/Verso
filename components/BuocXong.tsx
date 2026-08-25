@@ -9,6 +9,7 @@ import { TaiVe } from './TaiVe';
 export const BuocXong: React.FC = () => {
   const { ban, maDaXuatBan, lamLai, datBuoc } = useVerso();
   const [daChep, setDaChep] = React.useState(false);
+  const [daChepSua, setDaChepSua] = React.useState(false);
   const [goc, setGoc] = React.useState('');
   const [dangGo, setDangGo] = React.useState(false);
   const [loiGo, setLoiGo] = React.useState('');
@@ -26,11 +27,24 @@ export const BuocXong: React.FC = () => {
     } catch { /* trình duyệt chặn clipboard */ }
   };
 
+  const chepSua = async () => {
+    try {
+      await navigator.clipboard.writeText(lienSua);
+      setDaChepSua(true);
+      setTimeout(() => setDaChepSua(false), 2500);
+    } catch { /* trình duyệt chặn clipboard */ }
+  };
+
   const soHinh = ban.trang.flatMap((t) => t.khoi).filter((k) => k.loai === 'hinh-anh').length;
   const soKhoi = ban.trang.reduce((s, t) => s + t.khoi.length, 0);
 
   return (
-    <div className="max-w-2xl grid gap-5">
+    <div className="max-w-5xl grid gap-5">
+      {/* Cột trái là việc phải làm ngay (chép link, tải file), cột phải là thứ để
+          tra lại (link sửa, cách gửi cho học sinh). Xếp một cột thì thầy cô phải
+          cuộn qua cả trang hướng dẫn mới thấy nút tải. */}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] items-start">
+      <div className="grid gap-5 min-w-0">
       <The lop="p-8 text-center">
         <div className="w-16 h-16 rounded-full bg-xong-50 text-xong-700 grid place-items-center mx-auto mb-4">
           <Icon ten="check" co={30} />
@@ -69,6 +83,10 @@ export const BuocXong: React.FC = () => {
         </div>
       </The>
 
+      <TaiVe ma={maDaXuatBan} />
+      </div>
+
+      <div className="grid gap-5 min-w-0">
       {lienSua && (
         <The lop="p-5">
           <h3 className="text-base font-extrabold m-0">Link để sửa lại sau — giữ riêng</h3>
@@ -78,13 +96,20 @@ export const BuocXong: React.FC = () => {
             <b> Đừng gửi link này cho học sinh</b> — ai có nó cũng sửa được bản đọc.
           </p>
           <label htmlFor="lien-sua" className="chi-doc-man-hinh">Đường dẫn để sửa lại</label>
-          <input id="lien-sua" readOnly value={lienSua}
+          {/* Ô một dòng cắt link cụt ở cột hẹp, mà link này không ai đọc bằng mắt —
+              người ta chép nó đi. Cho xuống dòng để thấy đủ, và có nút chép sẵn. */}
+          <textarea id="lien-sua" readOnly value={lienSua} rows={3}
             onFocus={(e) => e.currentTarget.select()}
-            className="w-full px-3.5 py-2.5 rounded-lg border-2 border-can-kiem-200 bg-can-kiem-50 text-sm font-mono" />
+            className="w-full px-3.5 py-2.5 rounded-lg border-2 border-can-kiem-200 bg-can-kiem-50
+                       text-xs font-mono break-all resize-none" />
+          <div className="mt-2">
+            <Nut co="nho" kieu={daChepSua ? 'nhe' : 'phu'}
+              icon={daChepSua ? 'check' : 'lien'} onClick={chepSua}>
+              {daChepSua ? 'Đã chép link sửa' : 'Chép link sửa'}
+            </Nut>
+          </div>
         </The>
       )}
-
-      <TaiVe ma={maDaXuatBan} />
 
       <The lop="p-6">
         <h3 className="text-base font-extrabold m-0">Gửi cho học sinh thế nào</h3>
@@ -96,6 +121,8 @@ export const BuocXong: React.FC = () => {
           <li>Em nào nhà không có mạng thì tải file EPUB hoặc DAISY về, chép vào máy đọc sách.</li>
         </ol>
       </The>
+      </div>
+      </div>
 
       {loiGo && <p role="alert" className="text-sm font-semibold text-loi-700 m-0">{loiGo}</p>}
 
