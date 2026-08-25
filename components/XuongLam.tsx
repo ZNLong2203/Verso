@@ -45,22 +45,43 @@ const Ruot: React.FC = () => {
       </header>
 
       <div className="max-w-5xl mx-auto px-5 py-7">
+        {/* Thanh bước.
+            Vòng tròn có dấu tích chứ không phải chữ "1. 2. 3.": giáo viên liếc một cái
+            là biết đã qua mấy bước, còn mấy bước nữa. Trạng thái vẫn nói thành lời cho
+            trình đọc màn hình, vì màu và dấu tích không tự đọc lên được. */}
         <nav aria-label="Các bước" className="mb-7">
-          <ol className="flex flex-wrap gap-x-2 gap-y-1.5 m-0 p-0 list-none text-sm">
+          <ol className="flex items-start m-0 p-0 list-none">
             {CAC_BUOC.map((b, i) => {
               const dangO = b.id === buoc;
               const daQua = i < viTri;
               const bamDuoc = daQua || (i === 1 && ban.tieuDe) || (i === 2 && ban.trang.length);
               return (
-                <li key={b.id} className="flex items-center gap-2">
-                  {i > 0 && <span className="text-muc-mo" aria-hidden="true">›</span>}
+                <li key={b.id} className="flex-1 flex flex-col items-center gap-1.5 relative min-w-0">
+                  {/* Vạch nối vẽ sau vòng tròn, lùi ra sau để không đè lên nó */}
+                  {i > 0 && (
+                    <span aria-hidden="true"
+                      className={`absolute top-[1.125rem] right-1/2 left-[-50%] h-0.5 -z-0 ${
+                        daQua || dangO ? 'bg-verso-600' : 'bg-vien'}`} />
+                  )}
                   <button onClick={() => bamDuoc && datBuoc(b.id)} disabled={!bamDuoc && !dangO}
                     aria-current={dangO ? 'step' : undefined}
-                    className={`px-3 min-h-[44px] rounded font-bold ${
-                      dangO ? 'bg-verso-700 text-white'
-                      : daQua ? 'text-verso-700 hover:bg-verso-50'
-                      : 'text-muc-mo cursor-default'}`}>
-                    <span className="tabular-nums">{i + 1}.</span> {b.ten}
+                    className="group relative z-10 flex flex-col items-center gap-1.5 px-1 pb-1 rounded-lg
+                               disabled:cursor-default enabled:hover:bg-verso-50/70 min-w-0 w-full">
+                    <span aria-hidden="true"
+                      className={`w-9 h-9 shrink-0 rounded-full grid place-items-center font-extrabold text-sm
+                                  border-2 transition-colors ${
+                        dangO ? 'bg-verso-700 border-verso-700 text-white'
+                        : daQua ? 'bg-verso-50 border-verso-600 text-verso-700'
+                        : 'bg-white border-vien text-muc-mo'}`}>
+                      {daQua ? <Icon ten="check" co={17} /> : i + 1}
+                    </span>
+                    <span className={`text-xs sm:text-sm font-bold text-center leading-tight truncate max-w-full ${
+                      dangO ? 'text-verso-700' : daQua ? 'text-muc-nhat' : 'text-muc-mo'}`}>
+                      {b.ten}
+                    </span>
+                    <span className="chi-doc-man-hinh">
+                      {dangO ? ' — bước đang làm' : daQua ? ' — đã xong' : ' — chưa tới'}
+                    </span>
                   </button>
                 </li>
               );
