@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { STORAGE_KEY } from './constants';
-import { taoId, chuanHoaTrang, demChuaDuyet } from './chuanHoa';
+import { taoId, chuanHoaTrang, demChuaDuyet } from './normalize';
 import type { BanVerso, Khoi, KetQuaDocTrang, MonHoc, Trang } from './types';
 
 export type Buoc = 'thong-tin' | 'tai-trang' | 'duyet' | 'xong';

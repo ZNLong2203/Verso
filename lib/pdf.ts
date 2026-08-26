@@ -1,6 +1,6 @@
 'use client';
 
-import { CANH_TOI_DA } from './anh';
+import { CANH_TOI_DA } from './image';
 
 /** Đọc PDF ngay trong trình duyệt.
  *
