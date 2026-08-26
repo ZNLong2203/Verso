@@ -65,10 +65,13 @@ export function chuanHoaKhoi(tho: KhoiTho, i: number): Khoi {
   };
 }
 
-export function chuanHoaTrang(kq: KetQuaDocTrang, thuTu: number, anhGoc: string): Trang {
+export function chuanHoaTrang(
+  kq: KetQuaDocTrang, thuTu: number, anhGoc: string, soTrangPdf?: number,
+): Trang {
   return {
     id: taoId(),
     soTrang: kq.soTrang || 0,
+    ...(soTrangPdf ? { soTrangPdf } : {}),
     thuTu,
     anhGoc,
     khoi: (kq.khoi ?? []).map(chuanHoaKhoi).sort((a, b) => a.thuTu - b.thuTu),
@@ -76,6 +79,28 @@ export function chuanHoaTrang(kq: KetQuaDocTrang, thuTu: number, anhGoc: string)
     anhKhongRo: !!kq.anhKhongRo,
     ghiChuDocAnh: kq.ghiChuDocAnh ?? '',
   };
+}
+
+/** Tên một trang, hiện cho giáo viên xem.
+ *
+ *  Luôn ưu tiên SỐ IN TRÊN SÁCH, vì đó là con số thầy cô và học sinh dùng để gọi
+ *  nhau ("làm bài trang 68"), và cũng là con số đi vào DAISY với EPUB.
+ *
+ *  Số trang PDF gần như luôn lệch — tệp có bìa và mục lục ở đầu. Chọn trang 70 mà
+ *  kết quả ghi trang 68 thì trông như đọc nhầm, nên phải nói ra chỗ lệch chứ không
+ *  giấu đi, và cũng không được lấy số PDF thay thế. */
+export function tenTrang(t: Trang): { chinh: string; phu?: string } {
+  if (t.soTrang) {
+    return {
+      chinh: `Trang ${t.soTrang}`,
+      phu: t.soTrangPdf && t.soTrangPdf !== t.soTrang
+        ? `số in trên sách · tách từ trang ${t.soTrangPdf} của PDF` : undefined,
+    };
+  }
+  if (t.soTrangPdf) {
+    return { chinh: `Trang ${t.soTrangPdf} của PDF`, phu: 'không thấy số in trên sách' };
+  }
+  return { chinh: `Trang ${t.thuTu}`, phu: 'không thấy số in trên sách' };
 }
 
 /** Số khối giáo viên còn phải xem trước khi được phép xuất bản. */

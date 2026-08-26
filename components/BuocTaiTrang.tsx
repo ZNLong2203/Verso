@@ -7,6 +7,7 @@ import { nenAnh, anhNho, catHinh } from '@/lib/anh';
 import { moPdf, docKhoangTrang, gopKhoang, TOI_DA_MOI_LAN, type TaiLieuPdf } from '@/lib/pdf';
 import { XemTruocPdf, XemTruocAnh, type AnhXem } from './XemTruoc';
 import { THONG_BAO_LOI } from '@/lib/loi';
+import { tenTrang } from '@/lib/chuanHoa';
 import type { KetQuaDocTrang } from '@/lib/types';
 
 /** Cắt mọi hình trên trang ra khỏi ảnh gốc, ngay tại máy giáo viên.
@@ -78,7 +79,8 @@ export const BuocTaiTrang: React.FC = () => {
     setAnhXem([]);
   }, []);
 
-  const xuLy = async (files: FileList | File[] | null) => {
+  /** @param soPdf tệp nào tách ra từ trang PDF số mấy — chỉ có khi đi từ nút tách PDF. */
+  const xuLy = async (files: FileList | File[] | null, soPdf?: Map<File, number>) => {
     if (!files?.length) return;
     const tep = Array.from(files);
 
@@ -132,7 +134,8 @@ export const BuocTaiTrang: React.FC = () => {
     const xem: AnhXem[] = ds.map((f, i) => {
       const url = URL.createObjectURL(f);
       urlRef.current.push(url);
-      return { id: `${i}-${f.name}`, ten: f.name, url, xong: false };
+      const sp = soPdf?.get(f);
+      return { id: `${i}-${f.name}`, ten: sp ? `Trang ${sp} của PDF` : f.name, url, xong: false };
     });
     setAnhXem(xem);
 
@@ -147,7 +150,7 @@ export const BuocTaiTrang: React.FC = () => {
         });
         const kq = await r.json();
         if (kq.loi) { setLoi((l) => [...l, `${ds[i].name}: ${THONG_BAO_LOI[kq.loi] ?? kq.loi}`]); }
-        else { themTrang(await catCacHinh(kq, a.dataUrl), await anhNho(a.dataUrl)); }
+        else { themTrang(await catCacHinh(kq, a.dataUrl), await anhNho(a.dataUrl), soPdf?.get(ds[i])); }
       } catch {
         setLoi((l) => [...l, `${ds[i].name}: không đọc được tệp này`]);
       }
@@ -172,7 +175,15 @@ export const BuocTaiTrang: React.FC = () => {
       const anh = await pdf.tl.anhDayDu(ds, (x, t) => setDangTach(`Đang tách trang ${x}/${t}…`));
       setDangTach('');
       dongPdf();
-      await xuLy(anh.map((a) => new File([a.blob], `trang-${a.so}.jpg`, { type: 'image/jpeg' })));
+      // Nhớ tệp nào ứng với trang PDF nào. Số này KHÔNG đi vào bản xuất, chỉ để
+      // giải thích cho giáo viên vì sao chọn trang 70 mà kết quả ghi trang 68.
+      const soPdf = new Map<File, number>();
+      const tep = anh.map((a) => {
+        const f = new File([a.blob], `trang-${a.so}.jpg`, { type: 'image/jpeg' });
+        soPdf.set(f, a.so);
+        return f;
+      });
+      await xuLy(tep, soPdf);
     } catch {
       setDangTach('');
       setNhac('Không tách được trang từ tệp PDF này.');
@@ -393,6 +404,7 @@ export const BuocTaiTrang: React.FC = () => {
             {ban.trang.map((t, idx) => {
               const hinh = t.khoi.filter((k) => k.loai === 'hinh-anh').length;
               const canKiem = t.khoi.filter((k) => !k.daDuyet).length;
+              const ten = tenTrang(t);
               return (
                 <li key={t.id} className="flex items-center gap-3 p-3 rounded-lg border border-vien-nhat">
                   {t.anhGoc
@@ -400,7 +412,10 @@ export const BuocTaiTrang: React.FC = () => {
                     : <div className="w-12 h-16 rounded bg-giay-sau grid place-items-center text-muc-mo"><Icon ten="anh" co={18} /></div>}
                   <div className="flex-1 min-w-0">
                     <p className="font-bold m-0 text-sm">
-                      Trang {t.soTrang || t.thuTu}{t.soTrang ? '' : ' (không thấy số trang)'}
+                      {ten.chinh}
+                      {ten.phu && (
+                        <span className="font-normal text-muc-mo ml-1.5">· {ten.phu}</span>
+                      )}
                     </p>
                     <p className="text-sm text-muc-mo m-0 flex flex-wrap gap-2 mt-1">
                       <span>{t.khoi.length} phần</span>
@@ -411,7 +426,7 @@ export const BuocTaiTrang: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-0.5 shrink-0">
                     <button onClick={() => doiThuTuTrang(t.id, -1)} disabled={idx === 0}
-                      aria-label={`Đưa trang ${t.soTrang || t.thuTu} lên trước`}
+                      aria-label={`Đưa ${ten.chinh.toLowerCase()} lên trước`}
                       className="w-10 h-10 grid place-items-center rounded-lg text-muc-mo hover:text-verso-700 hover:bg-verso-50 disabled:opacity-25 disabled:pointer-events-none">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -419,7 +434,7 @@ export const BuocTaiTrang: React.FC = () => {
                       </svg>
                     </button>
                     <button onClick={() => doiThuTuTrang(t.id, 1)} disabled={idx === ban.trang.length - 1}
-                      aria-label={`Đưa trang ${t.soTrang || t.thuTu} xuống sau`}
+                      aria-label={`Đưa ${ten.chinh.toLowerCase()} xuống sau`}
                       className="w-10 h-10 grid place-items-center rounded-lg text-muc-mo hover:text-verso-700 hover:bg-verso-50 disabled:opacity-25 disabled:pointer-events-none">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -428,7 +443,7 @@ export const BuocTaiTrang: React.FC = () => {
                     </button>
                     <button onClick={() => { dangThay.current = t.id; docLaiRef.current?.click(); }}
                       disabled={dangChay}
-                      aria-label={`Đọc lại trang ${t.soTrang || t.thuTu} bằng ảnh khác`}
+                      aria-label={`Đọc lại ${ten.chinh.toLowerCase()} bằng ảnh khác`}
                       title="Đọc lại trang này"
                       className="w-10 h-10 grid place-items-center rounded-lg text-muc-mo hover:text-verso-700 hover:bg-verso-50 disabled:opacity-25 disabled:pointer-events-none">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -436,7 +451,7 @@ export const BuocTaiTrang: React.FC = () => {
                         <path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" />
                       </svg>
                     </button>
-                    <button onClick={() => xoaTrang(t.id)} aria-label={`Xoá trang ${t.soTrang || t.thuTu}`}
+                    <button onClick={() => xoaTrang(t.id)} aria-label={`Xoá ${ten.chinh.toLowerCase()}`}
                       className="w-10 h-10 grid place-items-center rounded-lg text-muc-mo hover:text-loi-600 hover:bg-loi-50">
                       <Icon ten="xoa" co={16} />
                     </button>

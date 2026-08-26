@@ -100,7 +100,14 @@ export type TrangThaiTrang = 'cho' | 'dang-doc' | 'xong' | 'loi';
 
 export interface Trang {
   id: string;
-  soTrang: number;          // số trang đọc được trên ảnh, 0 nếu không thấy
+  soTrang: number;          // số trang IN TRÊN SÁCH, đọc được từ ảnh; 0 nếu không thấy
+  /** Trang thứ mấy trong tệp PDF, nếu trang này được tách ra từ PDF.
+   *
+   *  Gần như luôn lệch với soTrang, vì tệp PDF có bìa và mục lục ở đầu. Giữ lại
+   *  chỉ để giải thích cho giáo viên vì sao họ chọn trang 70 mà kết quả ghi trang 68
+   *  — KHÔNG dùng cho bản xuất, vì DAISY và EPUB phải nhảy theo số in trên sách
+   *  giấy thì thầy cô đọc "trang 68" học sinh mới tìm đúng chỗ. */
+  soTrangPdf?: number;
   thuTu: number;            // thứ tự người dùng tải lên
   anhGoc: string;           // dataURL bản thu nhỏ
   khoi: Khoi[];

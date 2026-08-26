@@ -4,6 +4,7 @@ import React from 'react';
 import { Nut, The, Icon, Nhan, ThanhTienDo } from './ui';
 import { useVerso } from '@/lib/store';
 import { nhanMuc } from '@/lib/neo';
+import { tenTrang } from '@/lib/chuanHoa';
 import { LOAI_KHOI_INFO } from '@/lib/constants';
 import { THONG_BAO_LOI } from '@/lib/loi';
 import type { Khoi, Trang } from '@/lib/types';
@@ -282,7 +283,7 @@ export const BuocDuyet: React.FC = () => {
             <div className="flex items-center gap-3 mb-3">
               {t.anhGoc && <img src={t.anhGoc} alt="" className="w-10 h-14 object-cover rounded border border-vien" />}
               <h3 className="text-base font-extrabold m-0">
-                Trang {t.soTrang || t.thuTu}
+                {tenTrang(t).chinh}
                 <span className="font-normal text-muc-mo text-sm ml-2">{ds.length}/{t.khoi.length} phần</span>
               </h3>
             </div>
