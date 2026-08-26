@@ -13,14 +13,26 @@ Dự thi **AI Riser Vietnam 2026 · #BuildwithGoogleAI** — hạng mục *Inclu
 
 ## Vấn đề: "nạn đói sách"
 
-Việt Nam có khoảng **2 triệu người khiếm thị**, trong đó **16.000–23.000 trẻ em**. Nhưng
-**dưới 1% sách ở Việt Nam** từng được chuyển sang dạng tiếp cận được.
+Việt Nam có khoảng **2 triệu người khiếm thị và suy giảm thị lực**, trong đó
+**16.000–23.000 trẻ em**. Nhưng **chưa tới 1% sách ở Việt Nam** từng được chuyển sang định
+dạng tiếp cận được.[^1]
 
-Suốt bốn năm qua **không có sách giáo khoa cho học sinh khiếm thị** — các em vào lớp 9 thiếu
-sách ở tất cả các môn, kể cả Toán, Văn, Anh. Giáo viên làm xuyên hè không nghỉ để chuyển sách
-sang chữ nổi mà vẫn không đủ. Sách chữ nổi đắt gấp **5–6 lần** sách thường.
+Không phải vì không ai làm. **In chữ nổi tốn gấp 5–6 lần sách thường**[^2] — một bộ sách
+giáo khoa chữ nổi lớp 1 khoảng **14 triệu đồng**, lớp 6 khoảng **18 triệu đồng**.[^3] Chương
+trình giáo dục phổ thông mới triển khai từ năm 2020, nhưng việc chuyển sang chữ nổi chạy sau
+từng lớp một: trường PTCS Nguyễn Đình Chiểu Hà Nội đã in được lớp 1, 2, 3, 6, 7 — **nhiều
+lớp khác đến nay vẫn chưa có sách**.[^3]
 
-**Nút thắt là công sức chuyển đổi thủ công.** Đó chính là thứ AI thay thế được.
+Hành lang pháp lý thì đã mở: Việt Nam gia nhập **Hiệp ước Marrakesh** ngày 6/12/2022, hiệu
+lực từ 6/3/2023, nội luật hoá bằng **Điều 25a Luật Sở hữu trí tuệ** và **Nghị định
+17/2023/NĐ-CP**.
+
+**Nút thắt không nằm ở luật, mà ở công sức chuyển đổi thủ công.** Đó chính là thứ AI thay
+thế được.
+
+[^1]: Nguyễn Diệu Nương, Giám đốc quốc gia Room to Read Việt Nam — [Thanh Niên, 14/11/2025](https://thanhnien.vn/gan-2-trieu-nguoi-viet-khiem-thi-suy-giam-thi-luc-chua-den-1-sach-chu-noi-185251114131539441.htm)
+[^2]: Nguyễn Văn Xứng, Trưởng phòng kỹ thuật in ấn, Trung tâm khiếm thị Nhật Hồng — [SGGP, 05/03/2026](https://www.sggp.org.vn/khat-sach-chu-noi-cho-tre-khiem-thi-post841164.html)
+[^3]: [Giáo dục & Thời đại](https://giaoducthoidai.vn/hoc-sinh-khuyet-tat-cho-sach-giao-khoa-moi-den-bao-gio-post630433.html) · [VOV2](https://vov2.vov.vn/giao-duc-dao-tao/bao-gio-hoc-sinh-khiem-thi-co-sach-giao-khoa-49798.vov2)
 
 ## Chỗ các công cụ hiện có bỏ trống
 
