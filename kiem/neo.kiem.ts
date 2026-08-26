@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dungNeo, nhanMuc, thanBaiTap, loiChuThich, soChuThich } from '@/lib/neo';
+import { dungNeo, nhanMuc, thanBaiTap, loiChuThich, soChuThich, neoChuThich, neoDauChuThich, soTuNeo } from '@/lib/neo';
 import type { BanVerso, Khoi } from '@/lib/types';
 
 const k = (o: Partial<Khoi>): Khoi =>
@@ -85,4 +85,13 @@ test('nhanMuc: câu dẫn không ghép thành "Bài tập Luyện tập 2"', () 
   // Câu dẫn ẩn của Verso dùng chung nhanMuc với mục lục, nếu không hai chỗ nói khác nhau.
   assert.equal(nhanMuc(k({ loai: 'bai-tap', soBaiTap: 'Luyện tập 2' })), 'Luyện tập 2');
   assert.equal(nhanMuc(k({ loai: 'bai-tap', soBaiTap: '2' })), 'Bài 2');
+});
+
+test('neoDauChuThich: dấu chú thích và lời chú thích khớp nhau hai chiều', () => {
+  // Hai bên tính từ cùng một cặp (trang, số) nên không bao giờ lệch. Lệch một
+  // ký tự là học sinh bấm "quay lại" mà rơi vào chỗ trống.
+  assert.equal(neoDauChuThich(1, '1'), 'dau-chu-thich-t1-1');
+  assert.equal(neoDauChuThich(1, '1').slice(4), neoChuThich(1, '1'));
+  assert.equal(neoDauChuThich(12, '3').slice(4), neoChuThich(12, '3'));
+  assert.equal(soTuNeo(neoChuThich(7, '2')), '2');
 });

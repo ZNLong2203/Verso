@@ -86,7 +86,15 @@ export const BuocTaiTrang: React.FC = () => {
     const tepPdf = tep.find((f) => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
     if (tepPdf) {
       if (fileRef.current) fileRef.current.value = '';
-      setLoi([]); setNhac('');
+      setLoi([]);
+      // Chọn cả thư mục thì rất dễ dính lẫn ảnh và vài tệp PDF. Mỗi lần chỉ mở
+      // được một tệp, nhưng lặng lẽ bỏ những tệp kia đi thì giáo viên tưởng
+      // Verso đã nhận hết.
+      const conLai = tep.length - 1;
+      setNhac(conLai > 0
+        ? `Mỗi lần chỉ mở được một tệp PDF. Đang mở "${tepPdf.name}"; ${conLai} tệp còn lại chưa `
+          + 'được nhận — chọn lại sau khi tách xong tệp này.'
+        : '');
       try {
         setDangTach('Đang mở tệp PDF…');
         dongPdf(); xoaAnhXem();
@@ -103,9 +111,20 @@ export const BuocTaiTrang: React.FC = () => {
     }
 
     const ds = tep.filter((f) => f.type.startsWith('image/'));
-    if (!ds.length) return;
+    if (!ds.length) {
+      // Trước đây chỗ này return trắng: kéo nhầm tệp Word vào thì ô sáng lên rồi
+      // tắt, không một chữ nào. Người dùng không có cách nào biết mình sai ở đâu.
+      setLoi([]);
+      setNhac(tep.length === 1
+        ? `Không dùng được tệp "${tep[0].name}". Verso nhận ảnh JPG, PNG hoặc tệp PDF.`
+        : `${tep.length} tệp vừa chọn đều không dùng được. Verso nhận ảnh JPG, PNG hoặc tệp PDF.`);
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
 
-    setDangChay(true); setLoi([]); setNhac(''); setTienDo({ xong: 0, tong: ds.length });
+    const boQua = tep.length - ds.length;
+    setDangChay(true); setLoi([]); setTienDo({ xong: 0, tong: ds.length });
+    setNhac(boQua > 0 ? `Đã bỏ qua ${boQua} tệp không phải ảnh hay PDF.` : '');
 
     // Hiện ảnh ra ngay, đừng đợi đọc xong: đọc một trang mất 5–15 giây, mà giáo
     // viên cần biết mình vừa chọn đúng tệp chưa ngay từ giây đầu.
@@ -169,7 +188,12 @@ export const BuocTaiTrang: React.FC = () => {
     const f = files?.[0];
     if (docLaiRef.current) docLaiRef.current.value = '';
     dangThay.current = '';
-    if (!id || !f?.type.startsWith('image/')) return;
+    if (!id) return;
+    if (!f?.type.startsWith('image/')) {
+      // Chọn nhầm tệp PDF cho nút Đọc lại thì trước đây cũng im lặng như trên.
+      if (f) setNhac(`Đọc lại cần một tệp ảnh. "${f.name}" không phải ảnh.`);
+      return;
+    }
 
     setDangChay(true); setLoi([]); setTienDo({ xong: 0, tong: 1 });
     try {

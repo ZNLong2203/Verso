@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Khoi } from '@/lib/types';
-import { neoChuThich, soTuNeo, loiChuThich, thanBaiTap, nhanMuc } from '@/lib/neo';
+import { neoChuThich, neoDauChuThich, soTuNeo, loiChuThich, thanBaiTap, nhanMuc } from '@/lib/neo';
 import { chiaNnu, maNnu, type Nnu } from '@/lib/nnu';
 
 /* Không có 'use client' — bộ dựng này chạy được ở máy chủ, nên trang học sinh
@@ -20,7 +20,7 @@ function noiChuThich(text: string, trang: number, coLien: boolean): React.ReactN
     if (!m) return <React.Fragment key={i}>{p}</React.Fragment>;
     if (!coLien) return <sup key={i} className="text-verso-700">[{m[1]}]</sup>;
     return (
-      <a key={i} href={`#${neoChuThich(trang, m[1])}`}
+      <a key={i} id={neoDauChuThich(trang, m[1])} href={`#${neoChuThich(trang, m[1])}`}
         className="text-verso-700 no-underline inline-grid place-items-center min-w-[24px] min-h-[24px] align-middle"
         aria-label={`Chú thích ${m[1]}`}>
         <sup>[{m[1]}]</sup>
@@ -201,6 +201,12 @@ export const KhoiDoc: React.FC<{
         <div {...chung} role="note" {...langKhoi} className="my-4 px-4 py-2 rounded-lg bg-giay-sau text-base">
           <span className="chi-doc-man-hinh">Chú thích{so ? ` ${so}` : ''}: </span>
           {ct(loiChuThich(k))}
+          {so && (
+            <a href={`#${neoDauChuThich(trang, so)}`}
+              className="block mt-1 text-sm font-bold text-verso-700 min-h-[44px] inline-flex items-center gap-1.5">
+              <span aria-hidden="true">↩</span> Quay lại chỗ đang đọc
+            </a>
+          )}
         </div>,
       );
     }

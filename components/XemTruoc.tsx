@@ -22,7 +22,9 @@ const TrangPdf: React.FC<{
   bam: () => void;
   kho: Map<number, string>;
   oRef: React.RefObject<HTMLDivElement | null>;
-}> = ({ tl, so, chon, bam, kho, oRef }) => {
+  /** Chỉ một ô trong cả lưới nhận Tab — xem chú thích ở XemTruocPdf. */
+  nhanTab: boolean;
+}> = ({ tl, so, chon, bam, kho, oRef, nhanTab }) => {
   const [anh, setAnh] = React.useState(() => kho.get(so) ?? '');
   const [hong, setHong] = React.useState(false);
   const ref = React.useRef<HTMLButtonElement>(null);
@@ -45,7 +47,7 @@ const TrangPdf: React.FC<{
   }, [tl, so, anh, hong, kho, oRef]);
 
   return (
-    <button ref={ref} type="button" onClick={bam} aria-pressed={chon}
+    <button ref={ref} type="button" onClick={bam} aria-pressed={chon} tabIndex={nhanTab ? 0 : -1}
       className={`group block w-full text-left rounded-lg border-2 p-1.5 transition-colors ${
         chon ? 'border-verso-600 bg-verso-50' : 'border-transparent hover:border-verso-200'}`}>
       <span className={`block rounded overflow-hidden border ${chon ? 'border-verso-600' : 'border-vien'} bg-white`}>
@@ -73,6 +75,13 @@ export const XemTruocPdf: React.FC<{
   bamTrang: (so: number) => void;
 }> = ({ tl, ten, chon, bamTrang }) => {
   const oRef = React.useRef<HTMLDivElement>(null);
+  /** Ô nào trong lưới đang giữ điểm dừng Tab.
+   *
+   *  Cuốn Lịch sử — Địa lí 9 có 252 trang, tức 252 nút. Để nguyên thì cả trang
+   *  có 265 điểm dừng Tab, và người dùng bàn phím phải bấm Tab 252 lần mới ra
+   *  khỏi ô xem trước — trên chính một sản phẩm về khả năng tiếp cận. Cả lưới
+   *  chỉ nhận MỘT điểm dừng, đi lại bên trong bằng phím mũi tên. */
+  const [oTab, setOTab] = React.useState(0);
   // Giữ theo tệp: đổi tệp thì bỏ hết ảnh cũ, không thì cuộn lên cuộn xuống
   // lại dựng lại từ đầu.
   const kho = React.useMemo(() => new Map<number, string>(), [tl]);
@@ -80,20 +89,43 @@ export const XemTruocPdf: React.FC<{
   const so = React.useMemo(
     () => Array.from({ length: tl.soTrang }, (_, i) => i + 1), [tl.soTrang]);
 
+  const COT = 2;   // lưới luôn là grid-cols-2
+  const phim = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const buoc: Record<string, number> = {
+      ArrowRight: 1, ArrowLeft: -1, ArrowDown: COT, ArrowUp: -COT,
+    };
+    let i = oTab;
+    if (e.key in buoc) i += buoc[e.key];
+    else if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = so.length - 1;
+    else return;
+    e.preventDefault();
+    i = Math.max(0, Math.min(so.length - 1, i));
+    setOTab(i);
+    const nut = oRef.current?.querySelectorAll<HTMLButtonElement>(':scope > button')[i];
+    // scrollIntoView để trang vừa nhận tiêu điểm không nằm ngoài khung cuộn.
+    nut?.focus();
+    nut?.scrollIntoView({ block: 'nearest' });
+  };
+
   return (
     <div className="grid gap-2 min-w-0">
       <p className="text-xs font-bold text-muc-mo m-0 truncate" title={ten}>
         Xem trước · {tl.soTrang} trang
       </p>
-      <div ref={oRef} data-o-xem-truoc
+      <div ref={oRef} data-o-xem-truoc role="group" aria-label={`Các trang của ${ten}`}
+        onKeyDown={phim}
         className="max-h-[28rem] overflow-y-auto overscroll-contain rounded-lg border border-vien
                    bg-giay-sau p-2 grid grid-cols-2 gap-2 content-start">
-        {so.map((n) => (
-          <TrangPdf key={n} tl={tl} so={n} kho={kho} oRef={oRef}
-            chon={daChon.has(n)} bam={() => bamTrang(n)} />
+        {so.map((n, i) => (
+          <TrangPdf key={n} tl={tl} so={n} kho={kho} oRef={oRef} nhanTab={i === oTab}
+            chon={daChon.has(n)} bam={() => { setOTab(i); bamTrang(n); }} />
         ))}
       </div>
-      <p className="text-xs text-muc-mo m-0">Bấm vào trang để thêm hoặc bỏ khỏi danh sách.</p>
+      <p className="text-xs text-muc-mo m-0">
+        Bấm vào trang để thêm hoặc bỏ khỏi danh sách. Dùng bàn phím thì đi lại bằng phím mũi tên,
+        chọn bằng phím cách.
+      </p>
     </div>
   );
 };

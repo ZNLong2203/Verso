@@ -31,6 +31,14 @@ export function dungNeo(ban: BanVerso): Map<string, string> {
 
 export const neoChuThich = (trang: number, so: string) => `chu-thich-t${trang}-${so}`;
 
+/** Neo của DẤU chú thích nằm trong bài, để lời chú thích có đường quay lại.
+ *
+ *  EPUB và DAISY không cần cái này — epub:type="noteref" và <noteref> đã nói cho
+ *  phần mềm đọc biết đây là dấu chú thích, và nó tự lo đường về. Trang web thì
+ *  không có ai lo hộ: học sinh bấm dấu (1), nghe xong lời giải nghĩa ở cuối trang,
+ *  rồi mắc kẹt ở đó — không có cách nào biết mình vừa rời khỏi chỗ nào. */
+export const neoDauChuThich = (trang: number, so: string) => `dau-${neoChuThich(trang, so)}`;
+
 /** Lấy lại số chú thích từ chính cái neo đã tính.
  *  Đọc từ neo chứ không tính lại, để nhãn nghe được và đích nhảy tới không bao giờ lệch nhau. */
 export const soTuNeo = (neo: string) => neo.match(/^chu-thich-t\d+-(\d+)/)?.[1];
