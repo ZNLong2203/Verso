@@ -8,10 +8,6 @@ import { TaiVe } from '@/components/Downloads';
 import { BaoDocSai } from '@/components/ReportMisreading';
 import { MON_HOC_INFO, MIEN_TRU } from '@/lib/constants';
 
-/* Trang này KHÔNG có 'use client'.
-   Học sinh khiếm thị thường dùng máy cũ, mạng yếu. HTML dựng sẵn ở máy chủ nghĩa là
-   trình đọc màn hình có nội dung ngay khi trang về, không phải chờ JavaScript. */
-
 export const dynamic = 'force-dynamic';
 
 type Props = { params: Promise<{ code: string }> };

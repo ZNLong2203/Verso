@@ -7,7 +7,6 @@ import { createHash } from 'node:crypto';
 
 export { boDau };
 
-
 /** Mã chia sẻ: 8 ký tự, bỏ các chữ dễ đọc nhầm (0/O, 1/I/l).
  *  Đủ ngắn để đọc qua điện thoại cho đồng nghiệp, đủ dài để không dò ra được. */
 const BANG_CHU = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -30,11 +29,6 @@ export interface TomTatBan {
   ngayXuatBan: string;
 }
 
-/** Bỏ ảnh scan gốc trước khi lưu.
- *
- *  Ngoại lệ bản quyền theo Điều 25a Luật SHTT cho phép tạo và phân phối BẢN TIẾP CẬN ĐƯỢC
- *  cho người khuyết tật chữ in — không phải phát tán lại bản scan nguyên trang.
- *  Nên thứ đi lên máy chủ chỉ là nội dung đã chuyển dạng. Lợi thêm: nhẹ hơn rất nhiều. */
 function bocAnhGoc(ban: BanVerso): BanVerso {
   return { ...ban, trang: ban.trang.map((t) => ({ ...t, anhGoc: '' })) };
 }
@@ -58,14 +52,8 @@ function tomTat(ban: BanVerso, ngayXuatBan: string): TomTatBan {
 /** Giới hạn tài liệu Firestore là 1 MB. Chừa biên an toàn. */
 const GIOI_HAN_BYTE = 900_000;
 
-/**
- * Firestore KHÔNG cho phép mảng lồng trực tiếp trong mảng, mà bảng của ta là
- * string[][]. Thay vì bẻ cong mô hình dữ liệu cho vừa hạ tầng, ta gói toàn bộ
- * phần nội dung thành một chuỗi JSON ở đúng tầng lưu trữ.
- *
- * Đổi lại không truy vấn được vào bên trong — nhưng ta không cần: thư viện lọc
- * bằng các trường tóm tắt để phẳng ở cấp cao nhất.
- */
+// Firestore không nhận mảng lồng trong mảng, mà bảng của ta là string[][] —
+// nên phần nội dung được gói thành một chuỗi JSON ở đúng tầng lưu trữ.
 function goiNoiDung(trang: BanVerso['trang']): string {
   const chuoi = JSON.stringify(trang);
   const byte = Buffer.byteLength(chuoi, 'utf8');
@@ -79,16 +67,6 @@ const moNoiDung = (chuoi: string): BanVerso['trang'] => {
   try { return JSON.parse(chuoi); } catch { return []; }
 };
 
-/** Mã sửa — chìa khoá riêng để mở lại bản đã phát hành.
- *
- *  Không dùng chính mã chia sẻ làm chìa: mã đó nằm trong đường dẫn cả lớp đang giữ,
- *  ai cũng đọc được. Lấy nó làm chìa nghĩa là bất kỳ ai có link đều sửa đè được sách
- *  của người khác — mà học sinh khiếm thị thì không có cách nào phát hiện bản đã bị đổi. */
-/** Đưa ảnh hình đã cắt lên kho, đổi dataURL thành mã tệp.
- *
- *  Bắt buộc phải tách ra khỏi tài liệu: một tài liệu Firestore chỉ chứa 1 MB, mà
- *  một trang sách Toán có thể có bảy hình. Khoá theo mã băm nội dung nên phát hành
- *  lại nhiều lần cũng chỉ tải lên một lần. */
 async function luuAnhHinh(ban: BanVerso): Promise<BanVerso> {
   const trang = await Promise.all(ban.trang.map(async (t) => ({
     ...t,
@@ -196,10 +174,6 @@ export async function danhSachThuVien(
     boDau([b.tieuDe, b.nguon, b.nguoiChuyen].join(' ')).includes(tk));
 }
 
-/** Gỡ một bản đã phát hành. Cần đúng mã sửa.
- *
- *  Thư viện là chỗ công khai ai cũng phát hành được, nên phải có đường gỡ: bản
- *  chuyển hỏng hoặc bản thử nghiệm nằm lại đó thì học sinh vẫn mở phải. */
 export async function goBan(maChiaSe: string, maSua: string): Promise<{ daGo: boolean }> {
   if (!coFirebase() || !maSua) throw new Error('SAI_MA_SUA');
   const kho = db().collection(BO_SUU_TAP).doc(maChiaSe.toUpperCase());
@@ -221,11 +195,6 @@ export interface GopY {
 
 const TOI_DA_GOP_Y = 300;
 
-/** Nhận báo lỗi từ người đang đọc.
- *
- *  Đây là mắt xích còn thiếu của cả sản phẩm: học sinh khiếm thị là NGƯỜI DUY NHẤT
- *  biết chỗ nào đọc lên nghe sai, mà lại không có đường nào nói lại. Không thu bất
- *  cứ thông tin cá nhân nào — chỉ nội dung góp ý và phần bị báo. */
 export async function guiGopY(maChiaSe: string, khoiId: string, noiDung: string): Promise<{ daNhan: boolean }> {
   if (!coFirebase()) throw new Error('THIEU_FIREBASE');
   const chu = db().collection(BO_SUU_TAP).doc(maChiaSe.toUpperCase());

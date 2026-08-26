@@ -1,10 +1,6 @@
 import type { Khoi } from './types';
 import { loiChuThich, thanBaiTap } from './anchors';
 
-/** Lưới an toàn: đổi ký hiệu còn sót sang tiếng Việt.
- *
- *  Đúng ra Gemini phải điền dạng đọc cho mọi câu có ký hiệu, và prompt đã yêu cầu vậy.
- *  Nhưng model bỏ sót là chuyện có thật — đo trên bản mẫu thấy α và ° vẫn lọt. */
 const KY_HIEU: [RegExp, string][] = [
   [/°/g, ' độ'], [/α/g, 'an-pha'], [/β/g, 'bê-ta'], [/γ/g, 'gam-ma'], [/δ/g, 'đen-ta'],
   [/θ/g, 'tê-ta'], [/λ/g, 'lam-đa'], [/μ/g, 'muy'], [/π/g, 'pi'], [/φ/g, 'phi'],
@@ -31,11 +27,6 @@ export function doiKyHieuSot(s: string): string {
   return donDauCau(r);
 }
 
-/** Dọn dấu câu thừa trong lời đọc.
- *
- *  Bộ dựng chèn ". " sau mỗi khối để chữ không dính nhau, nên chỗ nào vốn đã kết
- *  thúc bằng dấu chấm thì thành ".." — máy đọc ngắt hai lần, nghe như vấp. Nhiều
- *  chỗ như thế liên tiếp thì cả đoạn nghe như đang đọc từng dấu câu một. */
 export function donDauCau(s: string): string {
   return s
     .replace(/\s+/g, ' ')
@@ -46,10 +37,6 @@ export function donDauCau(s: string): string {
     .trim();
 }
 
-/** Lời đọc của MỘT khối, tính thẳng từ dữ liệu.
- *
- *  Dùng ở màn duyệt, nơi khối được hiển thị dưới dạng ô nhập chứ không phải HTML cuối,
- *  nên không đi qua DOM được. Phải khớp với những gì KhoiDoc dựng ra. */
 export function loiDocCuaKhoi(k: Khoi): string {
   const doi = (s?: string) => doiKyHieuSot(s ?? '');
   /** Câu dẫn ("Mô tả hình vẽ.", "Bài tập 3.") luôn là tiếng Việt, kể cả khi khối

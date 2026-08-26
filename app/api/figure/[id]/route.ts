@@ -3,10 +3,6 @@ import { thungLuu } from '@/lib/storage.server';
 
 export const runtime = 'nodejs';
 
-/** Ảnh hình vẽ đã cắt khỏi trang sách.
- *
- *  Mã là băm của chính nội dung ảnh nên nội dung không bao giờ đổi — cho phép
- *  trình duyệt giữ vĩnh viễn. */
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: ma } = await params;
   if (!/^[0-9a-f]{8,64}$/.test(ma)) {

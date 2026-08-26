@@ -1,11 +1,8 @@
 import 'server-only';
 import { deflateRawSync } from 'node:zlib';
 
-/** Bộ ghi file ZIP tối giản.
- *
- *  Tự viết thay vì thêm thư viện vì EPUB có một ràng buộc mà đa số thư viện zip
- *  giấu đi: mục `mimetype` phải nằm ĐẦU TIÊN và phải lưu KHÔNG NÉN, nếu không
- *  máy đọc sách sẽ từ chối file. Ở đây điều đó là một tham số rõ ràng. */
+// Tự viết thay vì thêm thư viện: EPUB đòi mục `mimetype` nằm ĐẦU TIÊN và KHÔNG NÉN,
+// ràng buộc mà đa số thư viện zip giấu đi. Ở đây nó là một tham số rõ ràng.
 
 const BANG_CRC = (() => {
   const b = new Int32Array(256);

@@ -3,11 +3,6 @@
 import React from 'react';
 import type { BangDuLieu } from '@/lib/types';
 
-/** Sửa bảng — cả dạng hiện lẫn dạng đọc.
- *
- *  Bảng là chỗ Gemini dễ sai nhất (ô gộp, cột lệch, ký hiệu toán), mà trước đây
- *  giáo viên không sửa được gì. Hai lưới xếp chồng: lưới trên là thứ hiện ra cho
- *  người sáng mắt, lưới dưới là thứ trình đọc màn hình sẽ đọc. */
 export const SuaBang: React.FC<{ bang: BangDuLieu; doi: (b: BangDuLieu) => void }> = ({ bang, doi }) => {
   const soCot = bang.tieuDeCot.length;
 

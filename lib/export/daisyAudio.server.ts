@@ -5,13 +5,6 @@ import { giayCuaMp3 } from './mp3';
 import { doanCanTieng, taoDaisy } from './daisy';
 import { layAnhHinh } from './figures.server';
 
-/** Dựng DAISY 3 ĐẦY ĐỦ CÓ TIẾNG (audioFullText).
- *
- *  Đây là dạng sách mà học sinh khiếm thị Việt Nam thật sự đang dùng, và cũng là
- *  thứ các trung tâm như Sao Mai đang làm THỦ CÔNG: đọc từng trang vào micro rồi
- *  cắt ghép khớp với chữ. Bản chỉ có chữ bắt máy đọc tự phát âm; bản có tiếng thì
- *  đọc được ngay trên máy đọc sách chuyên dụng, kể cả máy không có bộ đọc tiếng Việt. */
-
 /** Mỗi đoạn là một lượt gọi tổng hợp. Quá số này thì một yêu cầu chạy quá lâu và
  *  tệp trả về cũng vượt giới hạn phản hồi của Cloud Run. */
 export const TOI_DA_DOAN = 400;

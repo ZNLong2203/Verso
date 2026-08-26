@@ -6,13 +6,6 @@ import { chiaNnu, maNnu, type Nnu } from '@/lib/language';
 /* Không có 'use client' — bộ dựng này chạy được ở máy chủ, nên trang học sinh
    là HTML thuần. Trình đọc màn hình đọc được ngay cả khi JavaScript không tải. */
 
-/** Tách "[chú thích 3]" trong văn bản thành liên kết nhảy tới chú thích tương ứng.
- *  Trình đọc màn hình đọc "chú thích ba, liên kết" — người nghe biết đó là dấu chú
- *  thích chứ không phải một phần của câu, và nhảy tới đọc nghĩa được.
- *
- *  coLien = false dùng cho bản chỉ để NHÌN (đã aria-hidden). Bên trong vùng
- *  aria-hidden mà đặt liên kết thì người dùng bàn phím vẫn tab vào được một thứ
- *  trình đọc màn hình không hề xướng — lạc hẳn, không biết mình đang ở đâu. */
 function noiChuThich(text: string, trang: number, coLien: boolean): React.ReactNode[] {
   const phan = text.split(/(\[chú thích \d+\])/g);
   return phan.map((p, i) => {
@@ -29,11 +22,6 @@ function noiChuThich(text: string, trang: number, coLien: boolean): React.ReactN
   });
 }
 
-/** Dựng văn bản có xen tiếng Anh, kèm cả liên kết chú thích.
- *
- *  Thuộc tính lang là thứ trình đọc màn hình dùng để ĐỔI BỘ PHÁT ÂM. Thiếu nó,
- *  NVDA đọc "Hello, how are you" bằng âm tiếng Việt — học sinh học phát âm sai
- *  mà không có cách nào biết. Đây là WCAG 3.1.2 Ngôn ngữ của từng phần, mức AA. */
 function chuCoNnu(text: string, goc: Nnu, trang: number, coLien: boolean): React.ReactNode[] {
   return chiaNnu(text, goc).map((d, i) =>
     d.nnu === goc
@@ -58,9 +46,6 @@ export const KhoiDoc: React.FC<{
   /** Thứ tự trang (1-based), để dấu chú thích trỏ đúng chú thích của trang này. */
   trang: number;
   hienCoDuyet?: boolean;
-  /** Đẩy cấp tiêu đề xuống. Trang đọc đã có <h1> là tên tài liệu, nên tiêu đề
-   *  cấp 1 TRONG SÁCH phải thành <h2> — một trang chỉ được có đúng một <h1>,
-   *  nếu không người dùng trình đọc màn hình mất phương hướng khi nhảy theo cấp. */
   lechCap?: number;
 }> = ({ khoi: k, neo, trang, hienCoDuyet, lechCap = 1 }) => {
   const goc: Nnu = k.ngonNgu === 'en' ? 'en' : 'vi';

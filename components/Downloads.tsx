@@ -17,11 +17,6 @@ const Muc: React.FC<{ href: string; ten: string; mo: string }> = ({ href, ten, m
   </a>
 );
 
-/** Tải bản đọc về máy.
- *
- *  Lý do quan trọng hơn "tiện": học sinh khiếm thị Việt Nam đã quen máy đọc DAISY
- *  và NVDA. Đưa được file vào đúng công cụ các em ĐANG dùng thì không phải học
- *  lại gì cả — và đọc được cả khi nhà không có mạng. */
 export const TaiVe: React.FC<{ ma: string }> = ({ ma }) => (
   <section aria-labelledby="tai-ve-tieu-de"
     className="my-5 p-4 rounded-lg bg-giay-sau border border-vien">

@@ -17,9 +17,6 @@ function client(): GoogleGenAI {
   return _ai;
 }
 
-/** Lỗi tạm thời của phía Gemini — đo thực tế trên Cloud Run thấy khoảng 1/3 số lượt
- *  trả về "503 Deadline expired" rồi lượt sau lại chạy bình thường. Giáo viên tải
- *  20 trang mà mất 7 trang là không dùng được, nên phải tự thử lại. */
 const LOI_TAM_THOI =
   /UNAVAILABLE|Deadline expired|INTERNAL|503|500|502|504|ECONNRESET|ETIMEDOUT|socket hang up|fetch failed/i;
 
@@ -28,11 +25,6 @@ const LOI_THAT = /API_KEY|PERMISSION|UNAUTHENTICATED|SAFETY|PROHIBITED|INVALID_A
 
 const nghi = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Tổng thời gian chịu đựng cho MỘT trang, tính cả thử lại và đổi model.
- *
- *  Có trần này vì đã đo được chuyện thật: lúc model chính quá tải, một yêu cầu
- *  chạy 198 giây rồi mới xong, một yêu cầu khác 408 giây rồi hỏng. Người dùng
- *  ngồi nhìn vòng xoay bảy phút còn tệ hơn là được báo hỏng sớm và thử lại. */
 const HAN_CHOT_MS = 75_000;
 
 async function thuLai<T>(viec: () => Promise<T>, hetHan: number, lanToiDa = 3): Promise<T> {
@@ -55,11 +47,6 @@ async function thuLai<T>(viec: () => Promise<T>, hetHan: number, lanToiDa = 3): 
   throw loiCuoi;
 }
 
-/** Ghi lượng token đã dùng.
- *
- *  Không phải để theo dõi cho vui: câu hỏi "một trang tốn bao nhiêu" quyết định
- *  công cụ này có triển khai được cho cả một trường hay không, mà đoán thì
- *  không trả lời được. */
 function ghiSoToken(viec: string, model: string, res: any) {
   const u = res?.usageMetadata;
   if (!u) return;

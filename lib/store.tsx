@@ -29,11 +29,6 @@ interface Ctx {
   suaKhoi: (trangId: string, khoiId: string, p: Partial<Khoi>) => void;
   xoaKhoi: (trangId: string, khoiId: string) => void;
   duyetTatCa: () => void;
-  /** Ghi mã chia sẻ vào chính bản nháp.
-   *
-   *  Trước đây mã chỉ nằm trong state React: tải lại trang là mất link, và tệ hơn,
-   *  sửa xong phát hành lại thì sinh mã MỚI — link đã gửi cho học sinh vẫn trỏ vào
-   *  bản sai, mà thầy cô không hề biết. */
   datMaXuatBan: (ma: string, maSua?: string) => void;
   napBan: (b: BanVerso) => void;
   lamLai: () => void;
@@ -87,11 +82,6 @@ export const VersoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const themTrang = (kq: KetQuaDocTrang, anh: string, soTrangPdf?: number) =>
     datBan((b) => ({ ...b, trang: [...b.trang, chuanHoaTrang(kq, b.trang.length + 1, anh, soTrangPdf)] }));
 
-  /** Đọc lại một trang, giữ nguyên vị trí trong sách.
-   *
-   *  Trang đọc hỏng thì trước đây phải xoá rồi tải lại, mà trang mới luôn rơi
-   *  xuống cuối danh sách — thứ tự lệch khỏi sách thật là học sinh không theo
-   *  được lớp nữa. */
   const thayTrang = (id: string, kq: KetQuaDocTrang, anh: string, soTrangPdf?: number) =>
     datBan((b) => ({
       ...b,
@@ -107,9 +97,6 @@ export const VersoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       trang: b.trang.filter((t) => t.id !== id).map((t, i) => ({ ...t, thuTu: i + 1 })),
     }));
 
-  /** Đưa một trang lên trước hoặc xuống sau.
-   *  Cần vì trang đọc hỏng phải tải lại, và nó luôn rơi xuống cuối danh sách —
-   *  trong khi thứ tự trang phải khớp với sách thật thì học sinh mới theo được. */
   const doiThuTuTrang = (id: string, huong: -1 | 1) =>
     datBan((b) => {
       const i = b.trang.findIndex((t) => t.id === id);

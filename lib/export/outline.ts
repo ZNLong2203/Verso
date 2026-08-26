@@ -1,11 +1,6 @@
 import type { BanVerso, Khoi } from '@/lib/types';
 import { nhanMuc } from '@/lib/anchors';
 
-/** Chuyện chung của mọi định dạng xuất: gom khối phẳng thành cây đề mục.
- *
- *  Khối trong Verso là một danh sách phẳng theo đúng thứ tự đọc, còn cả EPUB lẫn
- *  DAISY đều cần cây phân cấp thì mới nhảy nhanh theo cấp được. */
-
 export interface Muc {
   id: string;
   nhan: string;
@@ -58,10 +53,6 @@ export interface MucNav {
   con: MucNav[];
 }
 
-/** Cây mục lục theo ĐÚNG thứ tự đọc, có cả bài tập nằm trong chương của nó.
- *
- *  Phải theo thứ tự đọc: EPUB coi mục lục nhảy lùi là lỗi cấu trúc, còn DAISY
- *  dùng playOrder để "đọc tiếp từ chỗ đang nghe" — sai thứ tự là nhảy loạn. */
 export function dungNav(cay: Muc[], neo: Map<string, string>): MucNav[] {
   return cay.map((m) => ({
     id: m.id,

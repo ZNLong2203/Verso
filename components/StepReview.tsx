@@ -20,15 +20,6 @@ const TinCay: React.FC<{ k: Khoi }> = ({ k }) =>
     </Nhan>
   );
 
-/** Nghe thử đúng thứ học sinh sẽ nghe.
- *
- *  Đây là lỗ hổng chất lượng lớn nhất trước đây: giáo viên duyệt mô tả hình bằng MẮT,
- *  nhưng thứ học sinh nhận là ÂM THANH. Đọc thấy trôi chảy không có nghĩa nghe lên trôi chảy —
- *  nhất là với công thức, nơi một dấu đọc sai làm hỏng cả bài. */
-/** Nghe thử ĐÚNG giọng học sinh sẽ nghe.
- *
- *  Dùng chung endpoint với trang đọc, nên nghe ở đây khớp một-một với thứ phát ra
- *  cho học sinh — nếu không thì việc "nghe thử để kiểm" mất hết ý nghĩa. */
 const NutNgheThu: React.FC<{ k: Khoi }> = ({ k }) => {
   const [trangThai, setTrangThai] = React.useState<'nghi' | 'tai' | 'doc'>('nghi');
   const [loi, setLoi] = React.useState('');
@@ -212,10 +203,6 @@ export const BuocDuyet: React.FC = () => {
   const tongKhoi = ban.trang.reduce((s, t) => s + t.khoi.length, 0);
   const daDuyet = tongKhoi - soChuaDuyet;
 
-  /** Nhảy tới khối người đọc báo sai.
-   *
-   *  Phải TẮT bộ lọc trước: khối bị báo thường đã duyệt rồi, mà màn này mặc định
-   *  chỉ hiện phần chưa duyệt — không tắt thì bấm xong chẳng đi đâu cả. */
   const toiKhoi = (khoiId: string) => {
     setChiCanKiem(false);
     requestAnimationFrame(() => {

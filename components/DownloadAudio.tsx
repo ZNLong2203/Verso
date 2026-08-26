@@ -2,12 +2,6 @@
 
 import React from 'react';
 
-/** Nút tải bản DAISY có tiếng.
- *
- *  Nâng cấp dần chứ không thay thế: thẻ <a download> bên dưới vẫn tải được khi
- *  JavaScript không chạy. Có JavaScript thì chặn lại để báo tiến trình — lần đầu
- *  phải tổng hợp giọng cho từng đoạn, một đường dẫn im lặng cả phút là người dùng
- *  tưởng hỏng và bấm đi bấm lại. */
 export const TaiVeTieng: React.FC<{ href: string; ten: string; mo: string }> = ({ href, ten, mo }) => {
   const [dangTao, setDangTao] = React.useState(false);
   const [loi, setLoi] = React.useState('');

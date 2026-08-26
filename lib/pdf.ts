@@ -2,15 +2,6 @@
 
 import { CANH_TOI_DA } from './image';
 
-/** Đọc PDF ngay trong trình duyệt.
- *
- *  Sách giáo khoa lưu hành dưới dạng PDF, và bản của Bộ là ảnh quét — không có
- *  lớp chữ nào. Bắt giáo viên tự tách từng trang ra ảnh rồi mới tải lên là chỗ
- *  người ta bỏ cuộc.
- *
- *  Tách ngay trên máy chứ không gửi cả tệp lên máy chủ: một cuốn SGK là hơn 20 MB,
- *  mà giáo viên chỉ cần vài trang. */
-
 /** Nhiều hơn mức này thì một mẻ mất hơn nửa tiếng và rất dễ đứt giữa chừng. */
 export const TOI_DA_MOI_LAN = 20;
 
@@ -31,11 +22,6 @@ async function nap(): Promise<Pdfjs> {
   return m;
 }
 
-/** Một tệp PDF đang mở.
- *
- *  Trước đây mỗi việc lại `getDocument()` một lần, nghĩa là đọc và phân tích lại
- *  toàn bộ tệp: đếm trang một lần, tách trang một lần nữa. Thêm ô xem trước thì
- *  thành ba, mà cuốn Lịch sử — Địa lí 9 nặng 88 MB. Mở một lần rồi giữ lấy. */
 export interface TaiLieuPdf {
   soTrang: number;
   /** Ảnh nhỏ để xem trước, trả về dataURL. */
@@ -132,11 +118,6 @@ export function docKhoangTrang(s: string, tong: number): number[] {
   return [...new Set(ra)].filter((n) => n >= 1 && n <= tong);
 }
 
-/** [71, 72, 73, 80] → "71-73, 80".
- *
- *  Chiều ngược của docKhoangTrang, để khi giáo viên bấm chọn trang trên ô xem
- *  trước thì ô nhập vẫn gọn — chọn 20 trang liền nhau mà hiện ra 20 con số cách
- *  nhau bởi dấu phẩy thì không ai đọc nổi. */
 export function gopKhoang(ds: number[]): string {
   const s = [...new Set(ds)].filter((n) => Number.isInteger(n) && n >= 1).sort((a, b) => a - b);
   const phan: string[] = [];

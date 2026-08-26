@@ -1,12 +1,3 @@
-/** Tách văn bản thành từng đoạn theo ngôn ngữ.
- *
- *  Sách Tiếng Anh của Việt Nam trộn hai thứ tiếng ngay trong một câu: lệnh bài
- *  bằng tiếng Việt, đoạn hội thoại bằng tiếng Anh. Một giọng đọc cả câu là sai
- *  ở nửa này hoặc nửa kia.
- *
- *  Đã thử thẻ SSML <lang xml:lang="en-US"> với Cloud TTS: API nhận nhưng KHÔNG
- *  đổi cách phát âm — cùng một câu trộn, có thẻ và không thẻ đều ra đúng 5,69
- *  giây. Nên phải tách thật rồi tổng hợp từng đoạn bằng giọng của nó. */
 
 export type Nnu = 'vi' | 'en';
 
@@ -17,12 +8,8 @@ export interface DoanNnu {
 
 const MOC = /\[(en|vi)\]([\s\S]*?)\[\/\1\]/g;
 
-/** Có chữ hoặc số để mà đọc không? Mảnh chỉ toàn dấu câu thì KHÔNG.
- *
- *  Quan trọng hơn vẻ ngoài của nó: gửi riêng một mảnh chỉ có "." tới Cloud TTS
- *  thì máy ĐỌC THÀNH LỜI "dấu chấm" — đo được 1,25 giây tiếng, còn dài hơn từ
- *  "yên bình". Mà tách theo ngôn ngữ lại sinh ra đúng loại mảnh đó: câu tiếng Việt
- *  kết thúc ngay sau một cụm tiếng Anh thì phần còn lại chỉ là dấu chấm. */
+// Mảnh chỉ toàn dấu câu phải bị bỏ: gửi riêng "." tới Cloud TTS thì máy ĐỌC THÀNH
+// LỜI "dấu chấm" — đo được 1,25 giây, dài hơn cả từ "yên bình".
 const coChu = (t: string) => /[0-9A-Za-zÀ-ỹ]/.test(t);
 
 /** Bỏ mọi dấu [en]…[/en] để lấy chữ trần. */

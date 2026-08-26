@@ -81,14 +81,6 @@ export function chuanHoaTrang(
   };
 }
 
-/** Tên một trang, hiện cho giáo viên xem.
- *
- *  Luôn ưu tiên SỐ IN TRÊN SÁCH, vì đó là con số thầy cô và học sinh dùng để gọi
- *  nhau ("làm bài trang 68"), và cũng là con số đi vào DAISY với EPUB.
- *
- *  Số trang PDF gần như luôn lệch — tệp có bìa và mục lục ở đầu. Chọn trang 70 mà
- *  kết quả ghi trang 68 thì trông như đọc nhầm, nên phải nói ra chỗ lệch chứ không
- *  giấu đi, và cũng không được lấy số PDF thay thế. */
 export function tenTrang(t: Trang): { chinh: string; phu?: string } {
   if (t.soTrang) {
     return {

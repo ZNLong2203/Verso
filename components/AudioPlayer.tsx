@@ -5,28 +5,6 @@ import { doiKyHieuSot, donDauCau } from '@/lib/speechText';
 import { taiTieng, taiTruoc, LoiTieng, THONG_BAO_TIENG } from '@/lib/audioClient';
 import { ghiDangNghe } from '@/lib/nowPlaying';
 
-/**
- * Trình nghe cho trang đọc.
- *
- * Nguyên tắc quyết định: nó đọc ĐÚNG THỨ mà trình đọc màn hình đọc — không phải
- * thứ hiện trên màn hình. Nghĩa là bỏ qua mọi phần tử aria-hidden (ký hiệu công thức,
- * ô bảng dạng ký hiệu) và lấy phần .chi-doc-man-hinh (dạng đọc thành lời).
- *
- * Nhờ vậy nút nghe cũng là công cụ tự kiểm: nghe thấy "căn bậc hai của hai trên hai"
- * nghĩa là NVDA cũng sẽ nghe thấy đúng như thế.
- *
- * Giọng do MÁY CHỦ sinh (Cloud Text-to-Speech, giọng vi-VN Chirp 3 HD) chứ không
- * phải Web Speech API của trình duyệt. Lý do ở lib/tieng.server.ts: máy không có
- * giọng vi-VN thì trình duyệt đọc tiếng Việt bằng giọng tiếng Anh, và học sinh
- * khiếm thị không có cách nào biết mình đang nghe sai.
- */
-
-/** Lấy lời đọc của một phần tử, đi đúng cách trình đọc màn hình đi.
- *
- *  Chỗ nào đổi sang tiếng Anh thì bọc lại bằng [en]…[/en] để máy chủ tổng hợp
- *  bằng giọng Anh. Lấy ngay từ thuộc tính lang trong DOM chứ không đoán lại:
- *  đó đúng là thứ trình đọc màn hình dùng để đổi bộ phát âm, nên hai bên không
- *  bao giờ lệch nhau. */
 function layLoiDoc(el: Element, nnuGoc: 'vi' | 'en' = 'vi'): string {
   let ra = '';
   const di = (n: Node, nnu: 'vi' | 'en') => {
@@ -71,7 +49,6 @@ function layLoiDoc(el: Element, nnuGoc: 'vi' | 'en' = 'vi'): string {
   return doiKyHieuSot(donDauCau(ra));
 }
 
-
 /** Khoá ghi chỗ đang nghe dở, riêng cho từng bản đọc. */
 const khoaViTri = (ma: string) => `verso:cho-nghe:${ma}`;
 
@@ -94,10 +71,6 @@ export const TrinhNghe: React.FC<{ ma?: string }> = ({ ma }) => {
   const khoi = React.useRef<Element[]>([]);
   const loiDoc = React.useRef<string[]>([]);
   const may = React.useRef<HTMLAudioElement | null>(null);
-  /** Số hiệu lượt đọc. Cờ boolean không đủ: bấm "Phần sau" là dừng lượt cũ rồi mở
-   *  lượt mới ngay, cờ bị bật lại false trước khi vòng cũ kịp thấy — hai vòng chạy
-   *  song song và phát chồng hai giọng. Mỗi lượt giữ số của mình và tự thoát khi
-   *  thấy số hiện tại đã khác. */
   const phien = React.useRef(0);
 
   React.useEffect(() => {
@@ -199,11 +172,6 @@ export const TrinhNghe: React.FC<{ ma?: string }> = ({ ma }) => {
     donDep('Đã dừng.');
   };
 
-  /** Mũi tên chỉ ăn khi tiêu điểm đang Ở TRONG cụm nút.
-   *
-   *  Không bắt phím ở cấp cả trang: NVDA và VoiceOver dùng chính mũi tên để đi
-   *  từng dòng trong chế độ đọc. Cướp phím đó là làm hỏng đúng cách người khiếm
-   *  thị đọc trang — đổi một tiện ích nhỏ lấy một thứ họ không thể thiếu. */
   const phimTrongCum = (e: React.KeyboardEvent) => {
     if (!dangDoc) return;
     if (e.key === 'ArrowRight') { e.preventDefault(); docTu(Math.min(viTri + 1, tong - 1)); }

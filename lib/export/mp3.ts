@@ -1,12 +1,3 @@
-/** Đo độ dài một tệp MP3 bằng cách đọc từng khung.
- *
- *  DAISY cần biết tổng thời lượng (dtb:totalTime) và thời lượng mỗi đoạn để máy
- *  đọc biết khi nào chuyển câu. Tự đọc khung thay vì thêm thư viện: định dạng
- *  khung MP3 cố định và ngắn, mà thư viện đọc thẻ nhạc thì kéo theo cả đống thứ
- *  không dùng tới.
- *
- *  Đọc hết mọi khung chứ không suy từ bitrate của khung đầu — Cloud TTS trả về
- *  luồng ghép từ nhiều lượt gọi, bitrate giữa các khung không nhất thiết giống nhau. */
 
 const BITRATE_V1_L3 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0];
 const BITRATE_V2_L3 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0];

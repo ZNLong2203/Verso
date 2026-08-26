@@ -11,13 +11,6 @@ export const runtime = 'nodejs';
 // Bản DAISY có tiếng phải tổng hợp giọng cho từng đoạn.
 export const maxDuration = 300;
 
-/** Tải bản đọc về máy.
- *
- *  Lý do có endpoint này: web chỉ chạy khi có mạng, mà nhiều em học ở nhà không
- *  có Internet ổn định. Quan trọng hơn, học sinh khiếm thị Việt Nam đã quen máy
- *  đọc DAISY và NVDA — đưa file vào đúng công cụ các em ĐANG dùng thì không phải
- *  học lại gì cả. */
-
 const DINH_DANG = {
   epub: { tao: async (b: BanVerso) => taoEpub(b, await layAnhHinh(b)), duoi: 'epub', kieu: 'application/epub+zip', hau: '' },
   daisy: { tao: async (b: BanVerso) => taoDaisy(b, undefined, await layAnhHinh(b)), duoi: 'zip', kieu: 'application/zip', hau: '-daisy' },

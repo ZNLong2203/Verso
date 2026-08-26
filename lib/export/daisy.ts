@@ -28,15 +28,6 @@ interface DoanTieng {
   giay: number;
 }
 
-/** Xuất DAISY 3 dạng chỉ có chữ (ANSI/NISO Z39.86, "textNCX").
- *
- *  Khác EPUB ở một điểm cốt lõi: DAISY sinh ra để NGHE, nên chỗ nào có dạng đọc
- *  thành lời thì dạng đọc CHÍNH LÀ văn bản. DTBook không có aria-hidden, giữ cả
- *  hai sẽ khiến máy đọc "x mũ hai cộng một, x bình phương cộng một" — nghe lắp bắp.
- *
- *  Điểm đáng giá nhất của định dạng này với lớp học: <pagenum> giữ số trang SÁCH
- *  GIẤY, nên thầy cô bảo "mở trang 71" là học sinh nhảy thẳng tới trang 71. */
-
 /** Dạng nên đọc thành tiếng của một khối. */
 const loiDoc = (k: Khoi) => k.vanBanDoc || k.vanBan || '';
 
@@ -142,10 +133,6 @@ function loiMoDau(ban: BanVerso): string {
   ].filter(Boolean).join(' ');
 }
 
-/** Những đoạn cần đọc thành tiếng, THEO ĐÚNG THỨ TỰ PHÁT.
- *
- *  Đi theo cây đề mục y như lúc dựng DTBook, không đi theo danh sách trang phẳng:
- *  SMIL phát tuần tự, lệch thứ tự một chỗ là cả cuốn sách đọc sai mạch. */
 export function doanCanTieng(ban: BanVerso): { khoiId: string; text: string; nnu: 'vi' | 'en' }[] {
   const neo = dungNeo(ban);
   const cay = dungCay(ban, neo);
@@ -210,9 +197,6 @@ export function taoDaisy(ban: BanVerso, tieng?: DoanTieng[], anh: Map<string, Bu
     return `<pagenum id="trang-${maSo(so)}"${sr} page="normal">${xml(so)}</pagenum>`;
   };
 
-  /** Đoạn tiếng đầu tiên nằm trong một mục. Cần vì có mục KHÔNG ứng với khối nào:
-   *  "Phần đầu" là mục tổng hợp dựng ra cho nội dung xuất hiện trước đề mục đầu
-   *  tiên của trang. Không bắc cầu thì nhảy vào đó là im lặng. */
   const parDauCuaMuc = (m: Muc): string | undefined => {
     const tuDeMuc = m.id.startsWith('khoi-') ? boi.par?.get(m.id.slice(5)) : undefined;
     if (tuDeMuc) return tuDeMuc;
@@ -343,9 +327,6 @@ ${dsTrang.map((t, i) => `<pageTarget id="pt-${i + 1}" type="normal" value="${par
 
   const tongGiay = (tieng ?? []).reduce((a, d) => a + d.giay, 0);
 
-  /* SMIL nối chữ với tiếng. Mỗi <par> ghép MỘT khối văn bản với MỘT tệp tiếng của
-     riêng nó, nên không cần clipBegin/clipEnd — máy phát trọn tệp rồi sang par sau.
-     Nhờ vậy độ dài đo được sai lệch bao nhiêu cũng không làm trôi phần đồng bộ. */
   const smil = !coTieng ? '' : `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE smil PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">
 <smil xmlns="http://www.w3.org/2001/SMIL20/">

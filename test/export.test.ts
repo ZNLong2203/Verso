@@ -8,10 +8,6 @@ import { taoDaisy, doanCanTieng } from '@/lib/export/daisy';
 import { inflateRawSync } from 'node:zlib';
 import type { BanVerso, Khoi } from '@/lib/types';
 
-/** Mở lại tệp ZIP do chính taoZip dựng ra.
- *
- *  Phải giải nén thật mới kiểm được nội dung: tìm chuỗi trong byte đã nén thì
- *  không bao giờ thấy, và test sẽ XANH một cách sai — đã dính đúng bẫy đó. */
 function moZip(z: Buffer): Map<string, Buffer> {
   const ra = new Map<string, Buffer>();
   let i = 0;

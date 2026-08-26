@@ -2,15 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Be_Vietnam_Pro, Noto_Serif } from 'next/font/google';
 import './globals.css';
 
-/** Địa chỉ công khai chính thức của Verso.
- *
- *  Ghi cứng, KHÔNG đọc từ biến môi trường. Trang chủ là trang dựng sẵn lúc build,
- *  nên địa chỉ nào có mặt lúc đó sẽ bị nướng thẳng vào thẻ og:image. Một lần build
- *  xem thử của AI Studio đặt APP_URL thành host tạm dạng ais-dev-….run.app, và
- *  trang chủ đi quảng cáo ảnh chia sẻ nằm trên một máy chủ sẽ biến mất.
- *
- *  Cũng không lấy được từ req.url: trên Cloud Run đó là 0.0.0.0:8080 của chính
- *  container — đã dính một lần với mã QR trỏ vào hư không. */
+/** Địa chỉ công khai. Ghi cứng, KHÔNG đọc từ biến môi trường — trang chủ dựng sẵn
+ *  lúc build nên host tạm của bản xem thử sẽ bị nướng thẳng vào og:image. */
 const MIEN_CHINH = 'https://verso-zkare.ai.studio';
 
 const beVietnam = Be_Vietnam_Pro({

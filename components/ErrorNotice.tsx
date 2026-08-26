@@ -2,11 +2,6 @@
 
 import React from 'react';
 
-/** Màn hình khi một trang hỏng.
- *
- *  Ba thứ bắt buộc, thiếu cái nào cũng bỏ rơi người dùng: nói rõ hỏng cái gì,
- *  cho thử lại tại chỗ, và cho một đường ra. Trang trắng thì người khiếm thị
- *  không có cách nào biết chuyện gì vừa xảy ra. */
 export const BaoHong: React.FC<{
   nhan: string;
   loi: Error & { digest?: string };

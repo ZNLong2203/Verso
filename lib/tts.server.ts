@@ -5,18 +5,6 @@ import { thungLuu } from './storage.server';
 import { GIONG_DOC, GIONG_DOC_EN, THUNG_TIENG } from './constants';
 import { chiaNnu, type Nnu } from './language';
 
-/** Sinh giọng đọc tiếng Việt ở MÁY CHỦ.
- *
- *  Vì sao không dùng Web Speech API của trình duyệt cho trang học sinh: giọng có
- *  hay không là chuyện may rủi theo từng máy. Chrome trên Windows không cài gói
- *  tiếng Việt thì KHÔNG có giọng vi-VN nào, mà `utterance.lang = 'vi-VN'` chỉ là
- *  một GỢI Ý — trình duyệt lấy giọng mặc định, thường là tiếng Anh, rồi đọc văn
- *  bản tiếng Việt bằng âm tiếng Anh. Người sáng mắt nghe thấy sai ngay; học sinh
- *  khiếm thị thì không có cách nào biết đó không phải giọng đúng.
- *
- *  Cloud Text-to-Speech có 40 giọng riêng cho tiếng Việt, trong đó 30 giọng
- *  Chirp 3 HD. Cùng một câu, mọi máy nghe giống nhau. */
-
 const DU_AN =
   process.env.FIREBASE_PROJECT_ID ||
   process.env.GOOGLE_CLOUD_PROJECT ||
@@ -106,10 +94,6 @@ async function thuLai<T>(viec: () => Promise<T>, lanToiDa = 3): Promise<T> {
   throw cuoi;
 }
 
-/** Đổi số này mỗi khi CÁCH đọc thay đổi — đổi giọng, đổi luật tách ngôn ngữ, sửa
- *  bảng ký hiệu. Không đổi thì tệp cũ vẫn được phát tiếp: đã gặp thật, những đoạn
- *  sinh ra trước khi có phần tách ngôn ngữ vẫn đọc "[en]" thành lời, và chúng sống
- *  sót qua mọi lần deploy vì mã băm không hề biết luật đã khác. */
 const DOI_TIENG = 2;
 
 export const maNoiDung = (text: string, giong: string) =>
@@ -118,12 +102,6 @@ export const maNoiDung = (text: string, giong: string) =>
     .digest('hex')
     .slice(0, 32);
 
-/** Trả về MP3 của một đoạn, ưu tiên lấy từ chỗ đã lưu.
- *
- *  Cache là phần bắt buộc, không phải tối ưu thêm: một trang sách tốn khoảng
- *  2.500 ký tự, mà tổng hợp lại cho từng người nghe thì đắt gấp nhiều lần chuyển
- *  đổi trang đó. Lưu theo mã nội dung nghĩa là mỗi khối chỉ tổng hợp MỘT lần,
- *  bao nhiêu học sinh nghe cũng vậy. */
 export async function tieng(
   text: string,
   ngonNgu: Nnu = 'vi',

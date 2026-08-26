@@ -4,17 +4,6 @@ import React from 'react';
 import { Icon } from './ui';
 import type { TaiLieuPdf } from '@/lib/pdf';
 
-/** Ô xem trước tệp vừa chọn.
- *
- *  Có ô này vì một lý do rất cụ thể: số trang trong tệp PDF gần như luôn lệch với
- *  số in trên sách (bìa, lời nói đầu, mục lục nằm trước). Không nhìn thấy trang thì
- *  giáo viên gõ số một cách mò mẫm, đọc nhầm trang, và mất luôn một lượt gọi model.
- *  Nhìn thấy thì gõ đúng ngay lần đầu. */
-
-/** Một trang PDF trong ô xem trước.
- *
- *  Chỉ dựng khi trang sắp lọt vào tầm nhìn: cuốn Lịch sử — Địa lí 9 có 252 trang,
- *  dựng hết một lượt là treo tab của giáo viên. */
 const TrangPdf: React.FC<{
   tl: TaiLieuPdf;
   so: number;
@@ -75,12 +64,6 @@ export const XemTruocPdf: React.FC<{
   bamTrang: (so: number) => void;
 }> = ({ tl, ten, chon, bamTrang }) => {
   const oRef = React.useRef<HTMLDivElement>(null);
-  /** Ô nào trong lưới đang giữ điểm dừng Tab.
-   *
-   *  Cuốn Lịch sử — Địa lí 9 có 252 trang, tức 252 nút. Để nguyên thì cả trang
-   *  có 265 điểm dừng Tab, và người dùng bàn phím phải bấm Tab 252 lần mới ra
-   *  khỏi ô xem trước — trên chính một sản phẩm về khả năng tiếp cận. Cả lưới
-   *  chỉ nhận MỘT điểm dừng, đi lại bên trong bằng phím mũi tên. */
   const [oTab, setOTab] = React.useState(0);
   // Giữ theo tệp: đổi tệp thì bỏ hết ảnh cũ, không thì cuộn lên cuộn xuống
   // lại dựng lại từ đầu.

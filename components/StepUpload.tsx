@@ -10,10 +10,6 @@ import { THONG_BAO_LOI } from '@/lib/errors';
 import { tenTrang } from '@/lib/normalize';
 import type { KetQuaDocTrang } from '@/lib/types';
 
-/** Cắt mọi hình trên trang ra khỏi ảnh gốc, ngay tại máy giáo viên.
- *
- *  Cắt ở đây chứ không ở máy chủ: ảnh trang gốc vốn đã nằm sẵn trong trình duyệt,
- *  gửi đi rồi gửi về chỉ tốn băng thông của một người đang chờ. */
 async function catCacHinh(kq: KetQuaDocTrang, anhTrang: string): Promise<KetQuaDocTrang> {
   const khoi = await Promise.all((kq.khoi ?? []).map(async (k) => {
     const kh = k.khungHinh;
@@ -24,9 +20,6 @@ async function catCacHinh(kq: KetQuaDocTrang, anhTrang: string): Promise<KetQuaD
   return { ...kq, khoi };
 }
 
-/** Ba trang mẫu do chính dự án soạn và vẽ — không phải bản chụp sách có bản quyền.
- *  Có ảnh thật kèm theo vì "Thử trang mẫu Toán 9" không nói được cho giáo viên biết
- *  họ sắp thấy gì; nhìn cái hình tam giác thì biết ngay. */
 const TRANG_MAU = [
   { ten: 'toan-9', nhan: 'Toán 9', phu: 'Hình vẽ, công thức và bảng' },
   { ten: 'ngu-van-9', nhan: 'Ngữ văn 9', phu: 'Bài thơ kèm câu hỏi' },
@@ -190,10 +183,6 @@ export const BuocTaiTrang: React.FC = () => {
     }
   };
 
-  /** Đọc lại một trang, giữ nguyên vị trí trong sách.
-   *
-   *  Ảnh gốc không được giữ lại (chỉ có bản thu nhỏ để xem), nên phải chọn lại
-   *  tệp — nhưng trang mới thay đúng chỗ trang cũ, không rơi xuống cuối. */
   const docLai = async (files: FileList | null) => {
     const id = dangThay.current;
     const f = files?.[0];
@@ -223,11 +212,6 @@ export const BuocTaiTrang: React.FC = () => {
     setDangChay(false);
   };
 
-  /** Thử ngay bằng trang sách mẫu.
-   *
-   *  Người mở Verso lần đầu hầu như không có sẵn ảnh trang sách trong máy, mà
-   *  chưa thấy kết quả thì không hiểu công cụ này làm gì. Hai trang mẫu dưới đây
-   *  do chính dự án soạn và vẽ — không phải bản chụp sách có bản quyền. */
   const dungMau = async (ten: string, nhan: string) => {
     setDangChay(true); setLoi([]); setTienDo({ xong: 0, tong: 1 });
     try {
@@ -242,9 +226,6 @@ export const BuocTaiTrang: React.FC = () => {
     }
   };
 
-  /** Bấm một trang trong ô xem trước thì thêm hoặc bỏ nó khỏi ô nhập.
-   *  Vẫn ghi ngược lại thành chuỗi để ô nhập là nguồn sự thật duy nhất — gõ tay
-   *  và bấm chuột không được phép cho ra hai danh sách khác nhau. */
   const bamTrang = (so: number) => {
     if (!pdf) return;
     const hien = docKhoangTrang(chonTrang, pdf.tl.soTrang);

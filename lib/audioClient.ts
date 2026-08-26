@@ -1,11 +1,5 @@
 'use client';
 
-/** Lấy và phát giọng đọc do máy chủ sinh.
- *
- *  Không dùng Web Speech API làm đường chính: máy nào không có giọng vi-VN thì
- *  trình duyệt lấy giọng mặc định (thường tiếng Anh) rồi đọc tiếng Việt bằng âm
- *  tiếng Anh — mà người khiếm thị không có cách nào biết đó là giọng sai. */
-
 const CACHE = new Map<string, string>();   // văn bản → blob URL
 const TOI_DA = 40;                         // đủ cho một trang sách, không phình bộ nhớ
 

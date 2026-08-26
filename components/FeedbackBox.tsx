@@ -5,10 +5,6 @@ import { useVerso } from '@/lib/store';
 
 interface GopY { id: string; khoiId: string; noiDung: string; luc: string }
 
-/** Góp ý người đọc gửi về, hiện ngay trong màn duyệt.
- *
- *  Đặt ở đây chứ không phải một trang riêng: chỗ duy nhất giáo viên sửa được nội
- *  dung là màn này, nên báo lỗi phải nằm cạnh chính chỗ sửa. */
 export const HopGopY: React.FC<{ toiKhoi: (khoiId: string) => void }> = ({ toiKhoi }) => {
   const { ban } = useVerso();
   const [ds, setDs] = React.useState<GopY[] | null>(null);

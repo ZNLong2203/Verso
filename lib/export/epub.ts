@@ -15,12 +15,6 @@ interface Boi {
   nnuCua: Map<string, Nnu>;
 }
 
-/** Xuất EPUB 3.
- *
- *  EPUB giữ CẢ HAI dạng như trang web: ký hiệu cho người sáng mắt (aria-hidden),
- *  dạng đọc thành lời cho trình đọc màn hình (ẩn khỏi mắt). Khác với DAISY —
- *  DAISY sinh ra để nghe nên ở đó dạng đọc là văn bản chính. */
-
 const CSS = `
 body { font-family: Georgia, 'Times New Roman', serif; line-height: 1.7; margin: 1em; }
 h1,h2,h3,h4 { line-height: 1.3; }
@@ -46,11 +40,6 @@ th, td { border: 1px solid #b9ac8e; padding: 0.4em 0.6em; text-align: left; }
 const capDoi = (kyHieu: string, loi: string) =>
   `<span aria-hidden="true">${xml(kyHieu)}</span><span class="chi-doc-man-hinh">${xml(loi)}</span>`;
 
-/** "[chú thích 3]" → liên kết nhảy tới lời giải nghĩa CỦA CHÍNH TRANG ĐÓ.
- *
- *  coLien = false cho bản chỉ để NHÌN (đã aria-hidden): liên kết nằm trong vùng
- *  aria-hidden thì người dùng bàn phím vẫn tab vào được một thứ trình đọc màn
- *  hình không hề xướng. */
 function noiChuThich(s: string, trang: number, coLien = true, goc: Nnu = 'vi'): string {
   const mot = (t: string) => t.split(/(\[chú thích \d+\])/g).map((p) => {
     const m = p.match(/^\[chú thích (\d+)\]$/);

@@ -5,15 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Icon } from './ui';
 import { THONG_BAO_LOI } from '@/lib/errors';
 
-/** Gỡ một bản đọc khỏi thư viện, ngay tại thư viện.
- *
- *  Gỡ vốn đã làm được ở bước Xuất bản, nhưng chỉ ngay sau khi phát hành, trên đúng
- *  máy đó — vì mã sửa nằm trong bản nháp lưu cục bộ. Người quay lại vài hôm sau thì
- *  vào thư viện tìm, và ở đó trước giờ không có đường nào.
- *
- *  KHÔNG gỡ trắng: thư viện là chỗ công khai, ai mở cũng được. Không hỏi mã sửa thì
- *  một người qua đường xoá sạch công của giáo viên khác. Mã sửa dài 12 ký tự, và
- *  máy chủ mới là bên đối chiếu — ô này chỉ chuyển mã đi. */
 export const GoBanDoc: React.FC<{ ma: string; ten: string }> = ({ ma, ten }) => {
   const router = useRouter();
   const [mo, setMo] = React.useState(false);

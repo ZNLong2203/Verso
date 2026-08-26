@@ -1,10 +1,3 @@
-/** Verso — kiểu dữ liệu.
- *
- *  Một "bản Verso" là một tài liệu đã được chuyển sang dạng nghe được:
- *  BanVerso  →  nhiều Trang  →  nhiều Khoi (khối nội dung theo đúng thứ tự đọc).
- *
- *  Khối là đơn vị trung tâm. Mỗi khối biết mình là loại gì, nên trình đọc màn hình
- *  đọc đúng cách, và học sinh nhảy được tới đúng bài tập. */
 
 export type MonHoc =
   | 'toan' | 'ngu-van' | 'vat-ly' | 'hoa-hoc' | 'sinh-hoc'
@@ -26,9 +19,6 @@ export type DoTinCay = 'cao' | 'trung-binh' | 'thap';
 export interface BangDuLieu {
   tieuDeCot: string[];
   hang: string[][];
-  /** Dạng đọc được của từng ô, cùng kích thước với `hang`.
-   *  Chỉ có khi bảng chứa công thức — ô "√2/2" thành "căn bậc hai của hai, trên hai".
-   *  Trang HTML hiển thị `hang` cho người sáng mắt và đưa `hangDoc` cho trình đọc màn hình. */
   hangDoc: string[][];
   tomTat: string;   // một câu mô tả bảng này nói về gì
 }
@@ -41,10 +31,6 @@ export interface Khoi {
   /** Văn bản nguyên văn — dùng cho tieu-de, van-ban, tho, bai-tap, chu-thich, khung-luu-y. */
   vanBan?: string;
 
-  /** Văn bản đó nhưng mọi ký hiệu toán học viết ở dạng đọc thành lời.
-   *  Chỉ có khi trong câu có ký hiệu — sách thật rất hay viết công thức XEN TRONG câu
-   *  ("chứng minh rằng sin²α + cos²α = 1"), lúc đó tách ra thành khối riêng sẽ làm
-   *  vỡ mạch đọc, nên giữ nguyên câu và kèm thêm bản đọc được. */
   vanBanDoc?: string;
 
   /** Mô tả hình vẽ, viết như giáo viên giảng cho học sinh khiếm thị. */
@@ -81,13 +67,6 @@ export interface Khoi {
    *  với lời giải nghĩa ở chân trang. Thiếu nó thì bấm vào dấu chú thích không đi đâu cả. */
   soChuThich?: string;
 
-  /** Ngôn ngữ CHÍNH của khối: 'vi' hoặc 'en'. Mặc định 'vi'.
-   *
-   *  Phải có vì hai lẽ, cả hai đều nghiêm trọng như nhau:
-   *  - Trình đọc màn hình đổi bộ phát âm theo thuộc tính lang. Thiếu nó, NVDA đọc
-   *    câu tiếng Anh bằng âm tiếng Việt (WCAG 3.1.2 Ngôn ngữ của từng phần, mức AA).
-   *  - Giọng đọc của Verso cũng phải đổi theo, nếu không thì đúng lại lỗi cũ nhưng
-   *    ngược chiều: đọc tiếng Anh bằng giọng Việt. */
   ngonNgu?: 'vi' | 'en';
 
   doTinCay: DoTinCay;
@@ -101,12 +80,8 @@ export type TrangThaiTrang = 'cho' | 'dang-doc' | 'xong' | 'loi';
 export interface Trang {
   id: string;
   soTrang: number;          // số trang IN TRÊN SÁCH, đọc được từ ảnh; 0 nếu không thấy
-  /** Trang thứ mấy trong tệp PDF, nếu trang này được tách ra từ PDF.
-   *
-   *  Gần như luôn lệch với soTrang, vì tệp PDF có bìa và mục lục ở đầu. Giữ lại
-   *  chỉ để giải thích cho giáo viên vì sao họ chọn trang 70 mà kết quả ghi trang 68
-   *  — KHÔNG dùng cho bản xuất, vì DAISY và EPUB phải nhảy theo số in trên sách
-   *  giấy thì thầy cô đọc "trang 68" học sinh mới tìm đúng chỗ. */
+  /** Trang thứ mấy trong tệp PDF. KHÔNG dùng cho bản xuất — DAISY và EPUB phải nhảy
+   *  theo số in trên sách giấy. */
   soTrangPdf?: number;
   thuTu: number;            // thứ tự người dùng tải lên
   anhGoc: string;           // dataURL bản thu nhỏ

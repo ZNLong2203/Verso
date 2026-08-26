@@ -4,10 +4,6 @@ import { tieng } from '@/lib/tts.server';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-/** Sinh giọng đọc tiếng Việt cho một đoạn.
- *
- *  Đặt ở máy chủ vì giọng tiếng Việt trong trình duyệt là chuyện may rủi theo
- *  từng máy — xem lib/tieng.server.ts. Qua đây thì mọi máy nghe giống nhau. */
 export async function POST(req: Request) {
   let text = '';
   let nnu: unknown;

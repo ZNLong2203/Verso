@@ -4,10 +4,6 @@ import { xuLy } from '@/lib/route-helper';
 
 export const runtime = 'nodejs';
 
-/** Mở lại một bản đã phát hành để sửa tiếp — cần đúng mã sửa.
- *
- *  Có endpoint này vì bản nháp chỉ nằm trong máy đang dùng: thầy cô chuyển xong ở
- *  trường, về nhà phát hiện sai một chữ, mà không mở lại được thì phải làm lại từ đầu. */
 export async function GET(req: Request, { params }: { params: Promise<{ code: string }> }) {
   const { code: ma } = await params;
   const khoa = new URL(req.url).searchParams.get('khoa') ?? '';

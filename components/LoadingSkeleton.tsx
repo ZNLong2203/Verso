@@ -1,10 +1,5 @@
 import React from 'react';
 
-/** Khung xương lúc đang tải.
- *
- *  role="status" chứ không phải hình trang trí: người dùng trình đọc màn hình
- *  không thấy vòng xoay, không có dòng này thì họ nghe thấy trang im lặng và
- *  không biết là đang tải hay đã hỏng. */
 export const ChoTai: React.FC<{ nhan: string }> = ({ nhan }) => (
   <div className="min-h-screen bg-giay">
     <div className="max-w-3xl mx-auto px-5 py-10">

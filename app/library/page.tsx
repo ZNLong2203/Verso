@@ -103,13 +103,6 @@ export default async function ThuVien({ searchParams }: Props) {
             </a>
           </div>
         ) : (
-          /* flex-col + mt-auto: tiêu đề dài ngắn khác nhau vẫn cho dòng số liệu nằm
-             cùng một độ cao, nếu không cả hàng thẻ trông xô lệch.
-
-             Thẻ không còn là một <a> bọc tất cả, vì bên trong đã có nút Gỡ — nút nằm
-             trong liên kết là HTML sai và bàn phím không đi vào nổi. Thay bằng liên kết
-             phủ kín: chỉ tiêu đề là liên kết thật, lớp after phủ hết mặt thẻ cho ai quen
-             bấm vào chỗ nào cũng được. */
           <ul className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3 m-0 p-0 list-none">
             {ds.map((b) => (
               <li key={b.maChiaSe}

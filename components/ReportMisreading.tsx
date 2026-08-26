@@ -4,11 +4,6 @@ import React from 'react';
 import { THONG_BAO_LOI } from '@/lib/errors';
 import { layDangNghe } from '@/lib/nowPlaying';
 
-/** Người đang đọc báo lại một chỗ đọc sai.
- *
- *  Đây là mắt xích còn thiếu của cả sản phẩm: học sinh khiếm thị là người DUY NHẤT
- *  biết chỗ nào nghe lên thành sai, mà trước đó không có đường nào nói lại. Giáo
- *  viên xem được ngay trong màn duyệt khi mở bằng link sửa. */
 export const BaoDocSai: React.FC<{ ma: string }> = ({ ma }) => {
   const [mo, setMo] = React.useState(false);
   const [noiDung, setNoiDung] = React.useState('');

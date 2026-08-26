@@ -43,14 +43,6 @@ export function anhNho(dataUrl: string, canh = 500): Promise<string> {
   });
 }
 
-/** Cắt một hình ra khỏi ảnh trang, theo khung Gemini chỉ.
- *
- *  Vì sao đáng cắt: học sinh khiếm thị hoàn toàn thì mô tả bằng lời là đủ, nhưng
- *  phần lớn "khiếm thị" ở trường là NHÌN KÉM — các em phóng to lên vẫn xem được
- *  hình. Và giáo viên duyệt thì cần nhìn thấy chính hình đó mới đối chiếu được
- *  lời mô tả, thay vì tin suông.
- *
- *  Khung là 0–1000 chuẩn hoá theo [ymin, xmin, ymax, xmax]. */
 export function catHinh(
   dataUrl: string,
   khung: [number, number, number, number],
