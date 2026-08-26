@@ -13,7 +13,7 @@ Toàn bộ lệnh gọi model nằm trong `lib/gemini.server.ts`, và **prompt n
 ## Component không bao giờ gọi thẳng Gemini
 
 ```
-components/*.tsx  →  /api/doc-trang  →  lib/gemini.server.ts  →  Gemini
+components/*.tsx  →  /api/read-page  →  lib/gemini.server.ts  →  Gemini
    (trình duyệt)      (máy chủ Node)       (giữ khoá)
 ```
 

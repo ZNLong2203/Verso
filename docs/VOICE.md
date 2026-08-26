@@ -80,7 +80,7 @@ phát âm**. Đo bằng thời lượng: cùng một câu trộn, có thẻ và 
 **5,69 giây**, không lệch một phần nghìn giây. Trong khi cùng câu tiếng Anh đó đọc bằng
 giọng Anh thật chỉ mất 1,85 giây so với 2,42 giây bằng giọng Việt.
 
-Nên phải **tách thật rồi tổng hợp từng đoạn bằng giọng của nó** (`lib/nnu.ts`), rồi nối
+Nên phải **tách thật rồi tổng hợp từng đoạn bằng giọng của nó** (`lib/language.ts`), rồi nối
 lại — chỗ này dùng luôn cách nối MP3 đã có sẵn cho phần cắt theo byte.
 
 ### Đánh dấu ở đâu
@@ -107,7 +107,7 @@ lại nghe như **một người song ngữ**, không phải hai người thay p
 
 ### Đổi cách đọc thì phải đổi luôn mã cache
 
-`DOI_TIENG` trong `lib/tieng.server.ts` nằm trong mã băm. Không có nó, những đoạn sinh
+`DOI_TIENG` trong `lib/tts.server.ts` nằm trong mã băm. Không có nó, những đoạn sinh
 ra **trước** khi có phần tách ngôn ngữ vẫn đọc "[en]" thành lời và sống sót qua mọi lần
 deploy — đã gặp thật, một câu 95 ký tự phát ra 29 giây thay vì 9 giây.
 

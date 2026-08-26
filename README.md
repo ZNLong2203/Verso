@@ -106,7 +106,7 @@ npm run dev
 | | |
 |---|---|
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Ranh giới client/máy chủ, mô hình Khối, ba cái bẫy đã vấp |
-| [LUONG-CHAY.md](docs/LUONG-CHAY.md) | Từ ảnh trang sách tới tai học sinh — bốn bước và cổng duyệt |
+| [LUONG-CHAY.md](docs/DATA-FLOW.md) | Từ ảnh trang sách tới tai học sinh — bốn bước và cổng duyệt |
 | [ACCESSIBILITY.md](docs/ACCESSIBILITY.md) | Mười kỹ thuật tiếp cận và lý do đằng sau |
 | [AI-INTEGRATION.md](docs/AI-INTEGRATION.md) | Prompt 9 môn, schema, ba trường sinh ra từ sách thật |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Chạy, triển khai Cloud Run, bảng xử lý sự cố |

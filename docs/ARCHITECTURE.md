@@ -23,8 +23,8 @@ Trang dựng sẵn ở máy chủ thì **HTML về là đọc được ngay**. �
 tiếp cận, không phải về tốc độ.
 
 ```
-app/doc/[ma]/page.tsx      ← KHÔNG có 'use client'
-components/KhoiDoc.tsx     ← KHÔNG có 'use client'
+app/doc/[code]/page.tsx      ← KHÔNG có 'use client'
+components/ReaderBlock.tsx     ← KHÔNG có 'use client'
 ```
 
 Hệ quả: `KhoiDoc` không được dùng `useState`, `onClick`, hay bất cứ thứ gì cần trình duyệt.
@@ -39,7 +39,7 @@ flowchart TB
     subgraph tr["🌐 Trình duyệt giáo viên"]
         UI["Xưởng làm việc<br/>4 bước, nhiều thao tác"]
         store["lib/store.tsx<br/>bản nháp trong localStorage"]
-        anh["lib/anh.ts<br/>nén ảnh trước khi gửi"]
+        anh["lib/image.ts<br/>nén ảnh trước khi gửi"]
         UI <--> store
         UI --> anh
     end
@@ -47,13 +47,13 @@ flowchart TB
     subgraph mc["🔒 Máy chủ Node"]
         api["app/api/*/route.ts"]
         gem["lib/gemini.server.ts<br/>import 'server-only'"]
-        kho["lib/kho.server.ts"]
+        kho["lib/documents.server.ts"]
         api --> gem
         api --> kho
     end
 
     subgraph hs["📖 Trình duyệt học sinh"]
-        doc["app/doc/[ma]/page.tsx<br/>HTML dựng sẵn"]
+        doc["app/doc/[code]/page.tsx<br/>HTML dựng sẵn"]
     end
 
     anh -->|"POST ảnh"| api

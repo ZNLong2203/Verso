@@ -122,9 +122,9 @@ từ đầu trang. Đó là thứ một file MP3 không làm được.
 |---|---|---|
 | Điền thông tin | trình duyệt · localStorage | không |
 | Nén ảnh | trình duyệt · canvas | không |
-| Đọc trang | máy chủ · `/api/doc-trang` | **có** — Gemini multimodal + `responseSchema` |
+| Đọc trang | máy chủ · `/api/read-page` | **có** — Gemini multimodal + `responseSchema` |
 | Duyệt, sửa | trình duyệt · localStorage | không |
-| Xuất bản | máy chủ · `/api/xuat-ban` | không — chỉ kiểm tra và ghi Firestore |
+| Xuất bản | máy chủ · `/api/publish` | không — chỉ kiểm tra và ghi Firestore |
 | Học sinh đọc | máy chủ dựng sẵn | không |
 
 Chỉ **một** bước tốn lượt gọi model. Mọi thứ khác miễn phí và tức thì.

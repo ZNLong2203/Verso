@@ -76,7 +76,7 @@ Giọng do **Cloud Text-to-Speech** sinh ở máy chủ, giọng `vi-VN-Chirp3-H
 | Hạn mức miễn phí hằng tháng | ≈ **640 trang** |
 
 Con số này là **một lần cho cả tài liệu**, không phải mỗi lượt nghe: mỗi đoạn được
-lưu theo mã băm của chính nội dung (`lib/tieng.server.ts`), nên bao nhiêu học sinh
+lưu theo mã băm của chính nội dung (`lib/tts.server.ts`), nên bao nhiêu học sinh
 nghe cũng chỉ tổng hợp đúng một lần. Đo trên bản chạy thật: lần đầu **3,0 giây**,
 lần sau **0,3 giây** và không tốn thêm gì.
 

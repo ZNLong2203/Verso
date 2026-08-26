@@ -5,9 +5,9 @@ máy đọc DAISY và trình đọc màn hình NVDA. Đưa được bản chuy�
 các em đang dùng nghĩa là **không phải học lại gì cả** — và đọc được cả khi nhà mất mạng.
 
 ```
-GET /api/tai-ve/{maChiaSe}?dang=epub          → .epub
-GET /api/tai-ve/{maChiaSe}?dang=daisy         → .zip (DAISY 3, chỉ có chữ)
-GET /api/tai-ve/{maChiaSe}?dang=daisy-tieng   → .zip (DAISY 3 đầy đủ CÓ TIẾNG)
+GET /api/download/{maChiaSe}?dang=epub          → .epub
+GET /api/download/{maChiaSe}?dang=daisy         → .zip (DAISY 3, chỉ có chữ)
+GET /api/download/{maChiaSe}?dang=daisy-tieng   → .zip (DAISY 3 đầy đủ CÓ TIẾNG)
 ```
 
 ---
@@ -49,7 +49,7 @@ nút "nhảy tới trang số…". Số trang lấy từ chính ảnh trang sác
 
 Chỗ dễ sai: trang mới thường bắt đầu **đúng ở một đề mục**, mà đề mục thì thành `<level>`
 chứ không phải khối nội dung — nên phải tra riêng, nếu không mất hẳn số trang đó
-(`lib/xuat/daisy.ts`).
+(`lib/export/daisy.ts`).
 
 ---
 
@@ -61,7 +61,7 @@ chú thích đánh lại từ `(1)` ở **mỗi trang**.
 Để trùng `id` thì mục lục nhảy về chỗ trùng tên **đầu tiên** — học sinh bấm "Luyện tập 2"
 ở bài 3 lại rơi về bài 1, mà không có cách nào biết mình đang ở đâu.
 
-`lib/neo.ts` tính một bảng neo cho cả tài liệu, dùng chung cho **cả ba** nơi dựng nội dung
+`lib/anchors.ts` tính một bảng neo cho cả tài liệu, dùng chung cho **cả ba** nơi dựng nội dung
 (trang web, EPUB, DAISY) nên ba nơi luôn khớp nhau:
 
 - bài tập trùng số hiệu → thêm hậu tố đếm
@@ -91,7 +91,7 @@ lộ ra lỗi trùng neo ở trên.
 
 ## Vì sao tự viết bộ ghi ZIP
 
-`lib/xuat/zip.ts`, khoảng 100 dòng, dùng `node:zlib` có sẵn.
+`lib/export/zip.ts`, khoảng 100 dòng, dùng `node:zlib` có sẵn.
 
 EPUB có một ràng buộc mà đa số thư viện zip giấu đi: mục `mimetype` phải nằm **đầu tiên**
 và lưu **không nén**. Sai là máy đọc sách từ chối cả file. Tự viết thì điều đó là một
