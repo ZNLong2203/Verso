@@ -115,3 +115,4 @@ chỉ là đổi một hằng số trong `lib/constants.ts`.
 
 Chỗ tốn nhất là **token ra**, mà phần lớn token ra là mô tả hình vẽ — tức là đúng thứ
 đáng tiền nhất trong cả sản phẩm.
+
